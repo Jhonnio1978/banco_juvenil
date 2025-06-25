@@ -116,7 +116,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body>
     <div class="container bg-gray-100">
         <div class="card p-8 md:p-10 w-full max-w-md mx-auto">
             <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Banco Juvenil</h1>
@@ -279,8 +279,9 @@
             <!-- Admin Dashboard (Hidden initially) -->
             <div id="adminSection" class="hidden mt-8 w-full max-w-lg mx-auto">
                 <h2 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Panel de Administración</h2>
+
                 <h3 class="text-xl font-bold text-gray-700 mb-3">Depósitos Pendientes</h3>
-                <div class="table-container bg-white rounded-lg shadow">
+                <div class="table-container bg-white rounded-lg shadow mb-8">
                     <table class="min-w-full">
                         <thead>
                             <tr>
@@ -297,6 +298,25 @@
                         </tbody>
                     </table>
                 </div>
+
+                <h3 class="text-xl font-bold text-gray-700 mb-3">Retiros Pendientes</h3>
+                <div class="table-container bg-white rounded-lg shadow">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th>Usuario ID</th>
+                                <th>Monto</th>
+                                <th>Moneda</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingWithdrawalsTableBody">
+                            <!-- Withdrawals will be loaded here -->
+                            <tr><td colspan="4" class="text-center text-gray-500 py-4">No hay retiros pendientes.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <button id="backToDashboardBtn" class="btn-primary w-full mt-6">Volver al Panel de Usuario</button>
             </div>
         </div>
@@ -334,7 +354,7 @@
         const USD_TO_DOP_RATE = 58.0; // Example rate
 
         // Admin email for prototype purposes - UPDATED TO MATCH USER'S ADMIN EMAIL
-        const ADMIN_EMAIL = `admin.jhonnio@${appId}.com`;
+        const ADMIN_EMAIL = `admin.jhonnio@${appId}.com`; // This will be admin.jhonnio@banco-juvenil-12903.com
 
         // UI Elements
         const loginTab = document.getElementById('loginTab');
@@ -342,7 +362,7 @@
         const loginSection = document.getElementById('loginSection');
         const registerSection = document.getElementById('registerSection');
         const dashboardSection = document.getElementById('dashboardSection');
-        const adminSection = document.getElementById('adminSection'); // New Admin Section
+        const adminSection = document.getElementById('adminSection'); // Admin Section
 
         const loginForm = document.getElementById('loginForm');
         const loginIdentifierInput = document.getElementById('loginIdentifier'); // Renamed from loginEmail
@@ -352,9 +372,10 @@
         const dashboardUserId = document.getElementById('dashboardUserId');
         const accountBalance = document.getElementById('accountBalance');
         const toggleCurrencyBtn = document.getElementById('toggleCurrency');
-        const adminPanelBtn = document.getElementById('adminPanelBtn'); // New Admin Panel button
+        const adminPanelBtn = document.getElementById('adminPanelBtn'); // Admin Panel button
         const backToDashboardBtn = document.getElementById('backToDashboardBtn'); // Back button in admin panel
         const pendingDepositsTableBody = document.getElementById('pendingDepositsTableBody'); // Table for deposits
+        const pendingWithdrawalsTableBody = document.getElementById('pendingWithdrawalsTableBody'); // Table for withdrawals
 
         const messageBox = document.getElementById('messageBox');
         const messageText = document.getElementById('messageText');
@@ -381,9 +402,9 @@
         // --- Utility Functions ---
 
         /**
-         * Muestra un mensaje en la caja de mensajes de la interfaz.
-         * @param {string} msg El mensaje a mostrar.
-         * @param {string} type El tipo de mensaje (success, error, info).
+         * Displays a message in the UI message box.
+         * @param {string} msg The message to display.
+         * @param {string} type The type of message (success, error, info).
          */
         function showMessage(msg, type = 'info') {
             messageText.textContent = msg;
@@ -400,15 +421,15 @@
         }
 
         /**
-         * Oculta la caja de mensajes.
+         * Hides the UI message box.
          */
         function hideMessage() {
             messageBox.classList.add('hidden');
         }
 
         /**
-         * Muestra un mensaje de estado de transacción.
-         * @param {string} msg El mensaje a mostrar.
+         * Displays a transaction status message.
+         * @param {string} msg The message to display.
          */
         function showTransactionStatus(msg) {
             transactionStatusText.textContent = msg;
@@ -416,16 +437,16 @@
         }
 
         /**
-         * Oculta el mensaje de estado de transacción.
+         * Hides the transaction status message.
          */
         function hideTransactionStatus() {
             transactionStatusMsg.classList.add('hidden');
         }
 
         /**
-         * Alterna la visibilidad entre secciones.
-         * @param {HTMLElement} showElement Elemento a mostrar.
-         * @param {HTMLElement} ...hideElements Lista de elementos a ocultar.
+         * Toggles visibility between sections.
+         * @param {HTMLElement} showElement Element to show.
+         * @param {HTMLElement} ...hideElements List of elements to hide.
          */
         function showSection(showElement, ...hideElements) {
             showElement.classList.remove('hidden');
@@ -433,8 +454,8 @@
         }
 
         /**
-         * Alterna el estado de las pestañas de login/registro.
-         * @param {string} activeTabId 'login' o 'register'.
+         * Toggles the active state of login/register tabs.
+         * @param {string} activeTabId 'login' or 'register'.
          */
         function toggleTabs(activeTabId) {
             if (activeTabId === 'login') {
@@ -450,7 +471,7 @@
         }
 
         /**
-         * Cierra cualquier modal abierto.
+         * Closes any open modal.
          */
         function closeModal(modalElement) {
             modalElement.classList.add('hidden');
@@ -459,8 +480,8 @@
         // --- Firebase Authentication & Firestore Operations ---
 
         /**
-         * Maneja el registro de nuevos usuarios.
-         * @param {Event} e Evento de envío del formulario.
+         * Handles new user registration.
+         * @param {Event} e Form submission event.
          */
         async function handleRegister(e) {
             e.preventDefault();
@@ -523,8 +544,8 @@
         }
 
         /**
-         * Maneja el inicio de sesión del usuario, aceptando email o Firebase UID.
-         * @param {Event} e Evento de envío del formulario.
+         * Handles user login, accepting email or Firebase UID.
+         * @param {Event} e Form submission event.
          */
         async function handleLogin(e) {
             e.preventDefault();
@@ -577,7 +598,7 @@
         }
 
         /**
-         * Maneja el cierre de sesión del usuario.
+         * Handles user logout.
          */
         async function handleLogout() {
             try {
@@ -590,7 +611,7 @@
         }
 
         /**
-         * Actualiza el saldo en la interfaz.
+         * Updates the balance display in the UI.
          */
         function updateBalanceDisplay() {
             if (showCurrencyUSD) {
@@ -603,7 +624,7 @@
         }
 
         /**
-         * Maneja el cambio de moneda en la interfaz del tablero.
+         * Handles toggling currency display in the dashboard.
          */
         function toggleCurrencyDisplay() {
             showCurrencyUSD = !showCurrencyUSD;
@@ -611,7 +632,7 @@
         }
 
         /**
-         * Escucha los cambios de autenticación para actualizar la interfaz.
+         * Listens for authentication state changes to update the UI.
          */
         onAuthStateChanged(auth, async (user) => {
             hideMessage(); // Clear any messages
@@ -682,14 +703,14 @@
         // --- Transfer Money Functionality ---
 
         /**
-         * Muestra el modal de transferencia.
+         * Shows the transfer money modal.
          */
         transferMoneyBtn.addEventListener('click', () => {
             transferModal.classList.remove('hidden');
         });
 
         /**
-         * Cierra el modal de transferencia.
+         * Closes the transfer money modal.
          */
         cancelTransfer.addEventListener('click', () => {
             closeModal(transferModal);
@@ -697,9 +718,9 @@
         });
 
         /**
-         * Maneja el envío del formulario de transferencia.
-         * (Esta es una implementación simplificada para la simulación de tiempo.
-         * La lógica real de seguridad debe estar en una Cloud Function).
+         * Handles transfer form submission.
+         * (This is a simplified implementation for time simulation.
+         * Real security logic should be in a Cloud Function).
          */
         transferForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -718,7 +739,7 @@
             let actualRecipientEmail = recipientIdentifier; // Assume it's an email by default
             let actualRecipientUid = null;
 
-            // If identifier is not an email, assume it's a Firebase UID
+            // If identifier is not an email, assume it's a UID
             if (!recipientIdentifier.includes('@')) {
                 const usersCollectionRef = collection(db, 'artifacts', appId, 'users');
                 const q = query(usersCollectionRef, where('userId', '==', recipientIdentifier));
@@ -787,13 +808,13 @@
         });
 
         /**
-         * Ejecuta la lógica de transferencia real después del retraso.
-         * En un entorno real, esto DEBERÍA SER UNA CLOUD FUNCTION DE FIREBASE por seguridad.
-         * @param {string} senderUid Firebase UID del remitente.
-         * @param {string} actualRecipientUid Firebase UID del destinatario.
-         * @param {number} amount Monto a transferir.
-         * @param {string} currency Moneda de la transferencia (USD/DOP).
-         * @param {string} recipientIdentifier El ID (email o UID) que el usuario ingresó para el destinatario.
+         * Executes the actual transfer logic after the delay.
+         * In a real environment, this SHOULD BE A FIREBASE CLOUD FUNCTION for security.
+         * @param {string} senderUid Firebase UID of the sender.
+         * @param {string} actualRecipientUid Firebase UID of the recipient.
+         * @param {number} amount Amount to transfer.
+         * @param {string} currency Currency of the transfer (USD/DOP).
+         * @param {string} recipientIdentifier The ID (email or UID) the user entered for the recipient.
          */
         async function performTransfer(senderUid, actualRecipientUid, amount, currency, recipientIdentifier) {
             try {
@@ -870,14 +891,14 @@
         // --- Deposit Money Functionality ---
 
         /**
-         * Muestra el modal de depósito.
+         * Shows the deposit money modal.
          */
         depositMoneyBtn.addEventListener('click', () => {
             depositModal.classList.remove('hidden');
         });
 
         /**
-         * Cierra el modal de depósito.
+         * Closes the deposit money modal.
          */
         cancelDeposit.addEventListener('click', () => {
             closeModal(depositModal);
@@ -885,8 +906,8 @@
         });
 
         /**
-         * Maneja el envío del formulario de depósito.
-         * (La aprobación del administrador es una característica clave aquí y debe ser manejada por Cloud Functions).
+         * Handles deposit form submission.
+         * (Admin approval is a key feature here and should be handled by Cloud Functions).
          */
         depositForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -946,14 +967,14 @@
         // --- Withdraw Money Functionality ---
 
         /**
-         * Muestra el modal de retiro.
+         * Shows the withdraw money modal.
          */
         withdrawMoneyBtn.addEventListener('click', () => {
             withdrawModal.classList.remove('hidden');
         });
 
         /**
-         * Cierra el modal de retiro.
+         * Closes the withdraw money modal.
          */
         cancelWithdraw.addEventListener('click', () => {
             closeModal(withdrawModal);
@@ -961,8 +982,8 @@
         });
 
         /**
-         * Maneja el envío del formulario de retiro.
-         * (La aprobación del administrador es una característica clave aquí y debe ser manejada por Cloud Functions).
+         * Handles withdrawal form submission.
+         * (Admin approval is a key feature here and should be handled by Cloud Functions).
          */
         withdrawForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1008,14 +1029,14 @@
         // --- Admin Panel Functionality ---
 
         /**
-         * Carga y muestra los depósitos pendientes en la tabla del panel de administración.
+         * Loads and displays pending deposits in the admin panel table.
          */
         function loadPendingDeposits() {
             // Path: artifacts/{appId}/public/data/pending_deposits
             const depositsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_deposits');
             const q = query(depositsCollectionRef, where('status', '==', 'pending'));
 
-            onSnapshot(q, async (snapshot) => { // Made async to use await for fetching user names
+            onSnapshot(q, async (snapshot) => {
                 pendingDepositsTableBody.innerHTML = ''; // Clear current table
                 if (snapshot.empty) {
                     pendingDepositsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">No hay depósitos pendientes.</td></tr>';
@@ -1030,12 +1051,12 @@
                     const userProfileRef = doc(db, 'artifacts', appId, 'users', deposit.userId);
                     const userDocSnap = await getDoc(userProfileRef);
                     // Display name and truncated Firebase UID
-                    const userNameDisplay = userDocSnap.exists() ? `${userDocSnap.data().name} ${userDocSnap.data().surname}` : 'Usuario Desconocido';
+                    const userNameDisplay = userDocSnap.exists() ? `${userDocSnap.data().name} ${userDocSnap.data().surname}` : `ID: ${deposit.userId.substring(0, 5)}...`;
 
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${userNameDisplay} (${deposit.userId.substring(0, 5)}...)</td>
+                        <td>${userNameDisplay}</td>
                         <td>${deposit.serialNumber}</td>
                         <td>${deposit.amount.toFixed(2)} ${deposit.currency}</td>
                         <td>${new Date(deposit.timestamp.seconds * 1000).toLocaleString()}</td>
@@ -1072,11 +1093,11 @@
         }
 
         /**
-         * Confirma un depósito pendiente, actualizando el saldo del usuario.
-         * @param {string} depositId El ID del documento del depósito pendiente.
-         * @param {string} userId El Firebase UID del usuario que hizo el depósito.
-         * @param {number} amount El monto del depósito.
-         * @param {string} currency La moneda del depósito.
+         * Confirms a pending deposit, updating the user's balance.
+         * @param {string} depositId The document ID of the pending deposit.
+         * @param {string} userId The Firebase UID of the user who made the deposit.
+         * @param {number} amount The deposit amount.
+         * @param {string} currency The deposit currency.
          */
         async function confirmDeposit(depositId, userId, amount, currency) {
             try {
@@ -1127,9 +1148,9 @@
         }
 
         /**
-         * Rechaza un depósito pendiente, eliminándolo de la lista y restableciendo la bandera hasPendingDeposit del usuario.
-         * @param {string} depositId El ID del documento del depósito pendiente.
-         * @param {string} userId El Firebase UID del usuario que hizo el depósito.
+         * Rejects a pending deposit, deleting it from the list and resetting the user's hasPendingDeposit flag.
+         * @param {string} depositId The document ID of the pending deposit.
+         * @param {string} userId The Firebase UID of the user who made the deposit.
          */
         async function rejectDeposit(depositId, userId) {
             try {
@@ -1147,6 +1168,137 @@
             } catch (error) {
                 console.error("Error rejecting deposit:", error);
                 showMessage('Error al rechazar el depósito. Por favor, inténtalo de nuevo.', 'error');
+            }
+        }
+
+        /**
+         * Loads and displays pending withdrawals in the admin panel table.
+         */
+        function loadPendingWithdrawals() {
+            // Path: artifacts/{appId}/public/data/pending_withdrawals
+            const withdrawalsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_withdrawals');
+            const q = query(withdrawalsCollectionRef, where('status', '==', 'pending'));
+
+            onSnapshot(q, async (snapshot) => {
+                pendingWithdrawalsTableBody.innerHTML = ''; // Clear current table
+                if (snapshot.empty) {
+                    pendingWithdrawalsTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-4">No hay retiros pendientes.</td></tr>';
+                    return;
+                }
+
+                for (const docEntry of snapshot.docs) {
+                    const withdrawal = docEntry.data();
+                    const withdrawalId = docEntry.id;
+
+                    const userProfileRef = doc(db, 'artifacts', appId, 'users', withdrawal.userId);
+                    const userDocSnap = await getDoc(userProfileRef);
+                    const userNameDisplay = userDocSnap.exists() ? `${userDocSnap.data().name} ${userDocSnap.data().surname}` : `ID: ${withdrawal.userId.substring(0, 5)}...`;
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${userNameDisplay}</td>
+                        <td>${withdrawal.amount.toFixed(2)} ${withdrawal.currency}</td>
+                        <td>${new Date(withdrawal.timestamp.seconds * 1000).toLocaleString()}</td>
+                        <td>
+                            <button class="btn-success confirm-withdrawal-btn" data-withdrawal-id="${withdrawalId}" data-user-id="${withdrawal.userId}" data-amount="${withdrawal.amount}" data-currency="${withdrawal.currency}">Confirmar</button>
+                            <button class="btn-danger reject-withdrawal-btn" data-withdrawal-id="${withdrawalId}" data-user-id="${withdrawal.userId}">Rechazar</button>
+                        </td>
+                    `;
+                    pendingWithdrawalsTableBody.appendChild(row);
+                }
+
+                document.querySelectorAll('.confirm-withdrawal-btn').forEach(button => {
+                    button.onclick = async (event) => {
+                        const withdrawalId = event.target.dataset.withdrawalId;
+                        const userId = event.target.dataset.userId;
+                        const amount = parseFloat(event.target.dataset.amount);
+                        const currency = event.target.dataset.currency;
+                        await confirmWithdrawal(withdrawalId, userId, amount, currency);
+                    };
+                });
+                document.querySelectorAll('.reject-withdrawal-btn').forEach(button => {
+                    button.onclick = async (event) => {
+                        const withdrawalId = event.target.dataset.withdrawalId;
+                        const userId = event.target.dataset.userId;
+                        await rejectWithdrawal(withdrawalId, userId);
+                    };
+                });
+            }, (error) => {
+                console.error("Error loading pending withdrawals:", error);
+                pendingWithdrawalsTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-red-500 py-4">Error al cargar retiros.</td></tr>`;
+            });
+        }
+
+        /**
+         * Confirms a pending withdrawal, updating the user's balance.
+         * @param {string} withdrawalId The document ID of the pending withdrawal.
+         * @param {string} userId The Firebase UID of the user who made the withdrawal.
+         * @param {number} amount The withdrawal amount.
+         * @param {string} currency The withdrawal currency.
+         */
+        async function confirmWithdrawal(withdrawalId, userId, amount, currency) {
+            try {
+                const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
+                const withdrawalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_withdrawals', withdrawalId);
+
+                const userDocSnap = await getDoc(userProfileRef);
+                if (!userDocSnap.exists()) {
+                    showMessage('Error: Usuario no encontrado para el retiro.', 'error');
+                    return;
+                }
+                const userData = userDocSnap.data();
+
+                let newBalanceUSD = userData.balanceUSD || 0;
+                let newBalanceDOP = userData.balanceDOP || 0;
+
+                let withdrawalAmountInUSD = amount;
+                if (currency === 'DOP') {
+                    withdrawalAmountInUSD = amount / USD_TO_DOP_RATE;
+                }
+
+                // Ensure user has sufficient balance before confirming
+                if (newBalanceUSD < withdrawalAmountInUSD) {
+                    showMessage(`Error: Saldo insuficiente (${newBalanceUSD.toFixed(2)} USD) para confirmar este retiro de ${amount.toFixed(2)} ${currency}.`, 'error');
+                    // Optionally, you could also reject the request here if balance is insufficient
+                    return;
+                }
+
+                newBalanceUSD -= withdrawalAmountInUSD;
+                newBalanceDOP = newBalanceUSD * USD_TO_DOP_RATE;
+
+                await updateDoc(userProfileRef, {
+                    balanceUSD: newBalanceUSD,
+                    balanceDOP: newBalanceDOP
+                });
+
+                await updateDoc(withdrawalDocRef, {
+                    status: 'completed',
+                    confirmedAt: serverTimestamp()
+                });
+
+                showMessage(`Retiro #${withdrawalId} de ${amount.toFixed(2)} ${currency} para ${userData.name} confirmado exitosamente.`, 'success');
+
+            } catch (error) {
+                console.error("Error confirming withdrawal:", error);
+                showMessage('Error al confirmar el retiro. Por favor, inténtalo de nuevo.', 'error');
+            }
+        }
+
+        /**
+         * Rejects a pending withdrawal, deleting it from the list.
+         * @param {string} withdrawalId The document ID of the pending withdrawal.
+         * @param {string} userId The Firebase UID of the user who made the withdrawal.
+         */
+        async function rejectWithdrawal(withdrawalId, userId) {
+            try {
+                const withdrawalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_withdrawals', withdrawalId);
+                // In a real app, you might update the user's hasPendingWithdrawal flag if it existed
+                // For simplicity here, we just delete the request.
+                await deleteDoc(withdrawalDocRef);
+                showMessage(`Retiro #${withdrawalId} rechazado exitosamente.`, 'info');
+            } catch (error) {
+                console.error("Error rejecting withdrawal:", error);
+                showMessage('Error al rechazar el retiro. Por favor, inténtalo de nuevo.', 'error');
             }
         }
 
@@ -1170,6 +1322,7 @@
         adminPanelBtn.addEventListener('click', () => {
             showSection(adminSection, dashboardSection, loginSection, registerSection);
             loadPendingDeposits(); // Load deposits when admin panel is shown
+            loadPendingWithdrawals(); // Load withdrawals when admin panel is shown
         });
         backToDashboardBtn.addEventListener('click', () => {
             showSection(dashboardSection, adminSection, loginSection, registerSection);
