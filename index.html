@@ -322,6 +322,20 @@
         </div>
     </div>
 
+    <!-- Rules Consent Modal (New) -->
+    <div id="rulesConsentModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Reglas del Banco Juvenil</h3>
+            <div id="briefRulesTextContainer" class="max-h-60 overflow-y-auto text-gray-700 text-sm mb-6 p-4 border rounded-lg bg-gray-50">
+                <!-- Brief rules will be inserted here by JS -->
+            </div>
+            <div class="flex justify-end space-x-4">
+                <button type="button" id="rejectRulesBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Rechazar</button>
+                <button type="button" id="acceptRulesBtn" class="btn-primary">Aceptar Reglas</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
@@ -367,6 +381,11 @@
         const loginForm = document.getElementById('loginForm');
         const loginIdentifierInput = document.getElementById('loginIdentifier'); // Renamed from loginEmail
         const registerForm = document.getElementById('registerForm');
+        const registerNameInput = document.getElementById('registerName'); // Capture for temp data
+        const registerSurnameInput = document.getElementById('registerSurname'); // Capture for temp data
+        const registerAgeInput = document.getElementById('registerAge');     // Capture for temp data
+        const registerPasswordInput = document.getElementById('registerPassword'); // Capture for temp data
+
         const logoutBtn = document.getElementById('logoutBtn');
         const dashboardUserName = document.getElementById('dashboardUserName');
         const dashboardUserId = document.getElementById('dashboardUserId');
@@ -382,6 +401,25 @@
         const closeMessage = document.getElementById('closeMessage');
         const transactionStatusMsg = document.getElementById('transactionStatusMsg');
         const transactionStatusText = document.getElementById('transactionStatusText');
+
+        // Rules Consent Modal elements (New)
+        const rulesConsentModal = document.getElementById('rulesConsentModal');
+        const briefRulesTextContainer = document.getElementById('briefRulesTextContainer');
+        const acceptRulesBtn = document.getElementById('acceptRulesBtn');
+        const rejectRulesBtn = document.getElementById('rejectRulesBtn');
+
+        // Store registration form data temporarily for rules consent
+        let tempRegisterData = {};
+
+        // Define brief rules text
+        const briefRulesText = `
+            <p class="mb-2"><strong>1. Seguridad de Cuenta:</strong> Tu contraseña es confidencial. Nunca la compartas. Eres responsable de la seguridad de tu ID de usuario y contraseña.</p>
+            <p class="mb-2"><strong>2. Edad Mínima:</strong> Debes tener al menos 13 años para registrarte.</p>
+            <p class="mb-2"><strong>3. Monedas:</strong> Manejamos USD y DOP. Las tasas de cambio aplican para conversiones.</p>
+            <p class="mb-2"><strong>4. Depósitos:</strong> Todos los depósitos requieren aprobación del banco. No podrás hacer otro depósito si tienes uno pendiente.</p>
+            <p class="mb-2"><strong>5. Retiros:</strong> Las solicitudes de retiro también requieren aprobación del banco. Se aplicará una tarifa del 4% a cada retiro.</p>
+            <p><strong>6. Transferencias:</strong> Las transferencias tienen un tiempo de procesamiento de 2 minutos. Verifica bien al destinatario, no son reversibles.</p>
+        `;
 
         // Modal elements
         const transferMoneyBtn = document.getElementById('transferMoneyBtn');
@@ -461,11 +499,11 @@
             if (activeTabId === 'login') {
                 loginTab.classList.add('active');
                 registerTab.classList.remove('active');
-                showSection(loginSection, registerSection, dashboardSection, adminSection);
+                showSection(loginSection, registerSection, dashboardSection, adminSection, rulesConsentModal); // Hide rules modal too
             } else {
                 registerTab.classList.add('active');
                 loginTab.classList.remove('active');
-                showSection(registerSection, loginSection, dashboardSection, adminSection);
+                showSection(registerSection, loginSection, dashboardSection, adminSection, rulesConsentModal); // Hide rules modal too
             }
             hideMessage(); // Hide any previous messages when changing tabs
         }
@@ -480,52 +518,62 @@
         // --- Firebase Authentication & Firestore Operations ---
 
         /**
-         * Handles new user registration.
+         * Handles new user registration form submission (initiates rules consent).
          * @param {Event} e Form submission event.
          */
-        async function handleRegister(e) {
+        registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessage();
-            const name = registerName.value.trim();
-            const surname = registerSurname.value.trim();
-            const age = parseInt(registerAge.value);
-            const password = registerPassword.value;
+            const name = registerNameInput.value.trim();
+            const surname = registerSurnameInput.value.trim();
+            const age = parseInt(registerAgeInput.value);
+            const password = registerPasswordInput.value;
 
             if (!name || !surname || !password || isNaN(age) || age <= 0) {
                 showMessage('Por favor, completa todos los campos correctamente.', 'error');
                 return;
             }
 
-            // Firebase Authentication requires an email. We generate one based on name/surname.
-            // This generated email will serve as the user's login ID.
+            // Store data temporarily for use after rules consent
+            tempRegisterData = { name, surname, age, password };
+
+            // Show rules consent modal
+            briefRulesTextContainer.innerHTML = briefRulesText;
+            rulesConsentModal.classList.remove('hidden');
+        });
+
+        /**
+         * Performs the actual user registration after rules consent.
+         * @param {string} name User's name.
+         * @param {string} surname User's surname.
+         * @param {number} age User's age.
+         * @param {string} password User's password.
+         */
+        async function performRegistration(name, surname, age, password) {
             const generatedEmail = `${name.toLowerCase().replace(/\s/g, '')}.${surname.toLowerCase().replace(/\s/g, '')}@${appId}.com`;
 
             try {
-                // Create user with email and password in Firebase Authentication
                 const userCredential = await createUserWithEmailAndPassword(auth, generatedEmail, password);
                 const user = userCredential.user;
-                const userId = user.uid; // This is the unique Firebase UID for the user
+                const userId = user.uid;
 
-                // Store additional user data directly in the user's document in Firestore
-                // Path: artifacts/{appId}/users/{userId}
                 await setDoc(doc(db, 'artifacts', appId, 'users', userId), {
-                    userId: userId, // Firebase UID
+                    userId: userId,
                     name: name,
                     surname: surname,
                     age: age,
-                    email: generatedEmail, // The generated email that serves as the login ID
+                    email: generatedEmail,
                     balanceUSD: 0,
                     balanceDOP: 0,
                     currencyPreference: 'USD',
-                    hasPendingDeposit: false, // Flag for pending deposits
+                    hasPendingDeposit: false,
                     createdAt: serverTimestamp()
                 });
 
                 showMessage(`¡Registro exitoso, ${name}! Tu ID de usuario para iniciar sesión es: ${generatedEmail}. Por favor, anótalo.`, 'success');
-                // Auto-fill login form with generated email for convenience
                 loginIdentifierInput.value = generatedEmail;
                 loginPassword.value = password;
-                toggleTabs('login'); // Switch to login tab after successful registration
+                toggleTabs('login');
 
             } catch (error) {
                 console.error("Error during registration:", error);
@@ -540,8 +588,11 @@
                     errorMessage = 'Error de configuración de autenticación. Asegúrate de que "Email/Password" esté habilitado en Firebase Auth.';
                 }
                 showMessage(errorMessage, 'error');
+            } finally {
+                tempRegisterData = {}; // Clear temporary data regardless of outcome
             }
         }
+
 
         /**
          * Handles user login, accepting email or Firebase UID.
@@ -684,7 +735,7 @@
                 });
 
                 // Display dashboard and hide login/register forms
-                showSection(dashboardSection, loginSection, registerSection, adminSection);
+                showSection(dashboardSection, loginSection, registerSection, adminSection, rulesConsentModal); // Ensure rules modal is hidden
 
             } else {
                 // User is signed out
@@ -739,7 +790,7 @@
             let actualRecipientEmail = recipientIdentifier; // Assume it's an email by default
             let actualRecipientUid = null;
 
-            // If identifier is not an email, assume it's a UID
+            // If identifier is not an email, assume it's a Firebase UID
             if (!recipientIdentifier.includes('@')) {
                 const usersCollectionRef = collection(db, 'artifacts', appId, 'users');
                 const q = query(usersCollectionRef, where('userId', '==', recipientIdentifier));
@@ -998,10 +1049,18 @@
                 return;
             }
 
-            // Check user's balance
+            // Check user's balance for requested amount (fee is calculated later)
             let userBalance = currency === 'USD' ? currentBalanceUSD : currentBalanceDOP;
-            if (amount > userBalance) {
-                showMessage('Saldo insuficiente para realizar este retiro.', 'error');
+            // The user must have enough to cover the withdrawal amount PLUS the fee
+            let amountWithPotentialFeeInUSD = amount;
+            if (currency === 'DOP') {
+                amountWithPotentialFeeInUSD = amount / USD_TO_DOP_RATE;
+            }
+            const estimatedFeeInUSD = amountWithPotentialFeeInUSD * 0.04; // Calculate based on requested amount
+            const totalRequiredForWithdrawalInUSD = amountWithPotentialFeeInUSD + estimatedFeeInUSD;
+
+            if (currentBalanceUSD < totalRequiredForWithdrawalInUSD) {
+                showMessage(`Saldo insuficiente para cubrir el retiro de ${amount.toFixed(2)} ${currency} y la tarifa del 4%. Necesitas $${totalRequiredForWithdrawalInUSD.toFixed(2)} USD.`, 'error');
                 return;
             }
 
@@ -1016,7 +1075,7 @@
                     status: 'pending' // Status for admin approval
                 });
 
-                showMessage(`Solicitud de retiro de ${amount.toFixed(2)} ${currency} enviada. Esperando aprobación del banco.`, 'success');
+                showMessage(`Solicitud de retiro de ${amount.toFixed(2)} ${currency} enviada. Esperando aprobación del banco. Se aplicará una tarifa del 4% al confirmar.`, 'success');
                 closeModal(withdrawModal);
                 withdrawForm.reset();
 
@@ -1230,7 +1289,7 @@
         }
 
         /**
-         * Confirms a pending withdrawal, updating the user's balance.
+         * Confirms a pending withdrawal, updating the user's balance and transferring fee to admin.
          * @param {string} withdrawalId The document ID of the pending withdrawal.
          * @param {string} userId The Firebase UID of the user who made the withdrawal.
          * @param {number} amount The withdrawal amount.
@@ -1256,14 +1315,19 @@
                     withdrawalAmountInUSD = amount / USD_TO_DOP_RATE;
                 }
 
-                // Ensure user has sufficient balance before confirming
-                if (newBalanceUSD < withdrawalAmountInUSD) {
-                    showMessage(`Error: Saldo insuficiente (${newBalanceUSD.toFixed(2)} USD) para confirmar este retiro de ${amount.toFixed(2)} ${currency}.`, 'error');
-                    // Optionally, you could also reject the request here if balance is insufficient
+                // Calculate 4% fee
+                const feePercentage = 0.04;
+                const feeInUSD = withdrawalAmountInUSD * feePercentage;
+                const totalDeductionFromUserInUSD = withdrawalAmountInUSD; // User is charged the requested amount + fee. The fee is then added to admin.
+
+                // Ensure user has sufficient balance before confirming including the fee
+                if (newBalanceUSD < totalDeductionFromUserInUSD) { // Check only for requested amount, because fee is taken from their balance directly in this step
+                    showMessage(`Error: Saldo insuficiente ($${newBalanceUSD.toFixed(2)} USD) para confirmar este retiro de ${amount.toFixed(2)} ${currency}.`, 'error');
                     return;
                 }
 
-                newBalanceUSD -= withdrawalAmountInUSD;
+                // Deduct the full requested amount from user (including the portion that is fee)
+                newBalanceUSD -= totalDeductionFromUserInUSD;
                 newBalanceDOP = newBalanceUSD * USD_TO_DOP_RATE;
 
                 await updateDoc(userProfileRef, {
@@ -1271,12 +1335,51 @@
                     balanceDOP: newBalanceDOP
                 });
 
+                // Add the fee to the admin's account
+                const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
+                const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
+                const adminSnapshot = await getDocs(adminQuery);
+
+                if (!adminSnapshot.empty) {
+                    const adminDoc = adminSnapshot.docs[0];
+                    const adminId = adminDoc.id;
+                    const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
+                    const adminData = adminDoc.data();
+
+                    let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeInUSD;
+                    let adminNewBalanceDOP = adminNewBalanceUSD * USD_TO_DOP_RATE;
+
+                    await updateDoc(adminProfileRef, {
+                        balanceUSD: adminNewBalanceUSD,
+                        balanceDOP: adminNewBalanceDOP
+                    });
+
+                    // Record the fee transaction for the admin (optional but good for audit)
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                        payerId: userId, // User who paid the fee
+                        receiverId: adminId, // Admin who received the fee
+                        amount: feeInUSD,
+                        currency: 'USD',
+                        timestamp: serverTimestamp(),
+                        type: 'withdrawal_fee',
+                        status: 'completed',
+                        originalWithdrawalId: withdrawalId // Link to original withdrawal
+                    });
+
+                } else {
+                    console.warn("Admin account not found for fee collection.");
+                    showMessage('Advertencia: Cuenta de administrador no encontrada para cobrar la tarifa de retiro. Contacta soporte.', 'warning');
+                }
+
+                // Update the withdrawal status to 'completed' and record fee details
                 await updateDoc(withdrawalDocRef, {
                     status: 'completed',
-                    confirmedAt: serverTimestamp()
+                    confirmedAt: serverTimestamp(),
+                    feeAmount: feeInUSD,
+                    feeCurrency: 'USD'
                 });
 
-                showMessage(`Retiro #${withdrawalId} de ${amount.toFixed(2)} ${currency} para ${userData.name} confirmado exitosamente.`, 'success');
+                showMessage(`Retiro #${withdrawalId} de ${amount.toFixed(2)} ${currency} para ${userData.name} confirmado exitosamente. Se cobró una tarifa del 4% ($${feeInUSD.toFixed(2)} USD).`, 'success');
 
             } catch (error) {
                 console.error("Error confirming withdrawal:", error);
@@ -1292,8 +1395,7 @@
         async function rejectWithdrawal(withdrawalId, userId) {
             try {
                 const withdrawalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_withdrawals', withdrawalId);
-                // In a real app, you might update the user's hasPendingWithdrawal flag if it existed
-                // For simplicity here, we just delete the request.
+                // Optionally, in a real app, you might want to notify the user of rejection
                 await deleteDoc(withdrawalDocRef);
                 showMessage(`Retiro #${withdrawalId} rechazado exitosamente.`, 'info');
             } catch (error) {
@@ -1314,18 +1416,32 @@
         closeMessage.addEventListener('click', hideMessage);
 
         loginForm.addEventListener('submit', handleLogin);
-        registerForm.addEventListener('submit', handleRegister);
         logoutBtn.addEventListener('click', handleLogout);
         toggleCurrencyBtn.addEventListener('click', toggleCurrencyDisplay);
 
+        // Rules Consent buttons
+        acceptRulesBtn.addEventListener('click', () => {
+            rulesConsentModal.classList.add('hidden');
+            // Proceed with registration using stored data
+            performRegistration(tempRegisterData.name, tempRegisterData.surname, tempRegisterData.age, tempRegisterData.password);
+        });
+
+        rejectRulesBtn.addEventListener('click', () => {
+            rulesConsentModal.classList.add('hidden');
+            showMessage('Debes aceptar las reglas para registrarte en el Banco Juvenil.', 'error');
+            registerForm.reset(); // Clear the form if rules are rejected
+            tempRegisterData = {}; // Clear temporary data
+        });
+
+
         // Admin Panel buttons
         adminPanelBtn.addEventListener('click', () => {
-            showSection(adminSection, dashboardSection, loginSection, registerSection);
+            showSection(adminSection, dashboardSection, loginSection, registerSection, rulesConsentModal);
             loadPendingDeposits(); // Load deposits when admin panel is shown
             loadPendingWithdrawals(); // Load withdrawals when admin panel is shown
         });
         backToDashboardBtn.addEventListener('click', () => {
-            showSection(dashboardSection, adminSection, loginSection, registerSection);
+            showSection(dashboardSection, adminSection, loginSection, registerSection, rulesConsentModal);
         });
 
     </script>
