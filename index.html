@@ -114,6 +114,20 @@
             background-color: #16A34A; /* Darker green */
             transform: translateY(-1px);
         }
+        .btn-secondary {
+            background-color: #6B7280; /* Gray */
+            color: white;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            background-color: #4B5563;
+        }
     </style>
 </head>
 <body>
@@ -132,7 +146,7 @@
                 <form id="loginForm" class="space-y-4">
                     <div>
                         <label for="loginIdentifier" class="block text-gray-700 text-sm font-semibold mb-2">ID de Usuario (Email o ID único)</label>
-                        <input type="text" id="loginIdentifier" class="input-field" placeholder="suid@bancojuvenil.com o su ID de Firebase" required>
+                        <input type="text" id="loginIdentifier" class="input-field" placeholder="ej. JU#1234 o tu email" required>
                     </div>
                     <div>
                         <label for="loginPassword" class="block text-gray-700 text-sm font-semibold mb-2">Contraseña</label>
@@ -175,7 +189,7 @@
             <!-- User Dashboard (Hidden initially) -->
             <div id="dashboardSection" class="hidden mt-8 text-center">
                 <h2 class="text-2xl font-semibold text-gray-800 mb-4">Bienvenido, <span id="dashboardUserName"></span>!</h2>
-                <p class="text-lg text-gray-700 mb-4">Tu ID de Usuario: <span id="dashboardUserId" class="font-mono bg-gray-100 p-2 rounded-md text-sm"></span></p>
+                <p class="text-lg text-gray-700 mb-4">Tu ID de Usuario: <span id="dashboardDisplayId" class="font-mono bg-gray-100 p-2 rounded-md text-sm"></span></p>
                 <div class="mt-6 p-6 bg-blue-50 border border-blue-200 rounded-xl text-blue-800">
                     <h3 class="text-xl font-bold mb-2">Saldo Actual:</h3>
                     <p id="accountBalance" class="text-3xl font-extrabold">$0.00 USD</p>
@@ -196,7 +210,8 @@
                         <form id="transferForm" class="space-y-4">
                             <div>
                                 <label for="transferRecipientId" class="block text-gray-700 text-sm font-semibold mb-2">ID de Destinatario (Email o ID único)</label>
-                                <input type="text" id="transferRecipientId" class="input-field" placeholder="emaildelotro@bancojuvenil.com o ID de Firebase" required>
+                                <input type="text" id="transferRecipientId" class="input-field" placeholder="ej. MA#5678 o email@banco.com" required>
+                                <p id="recipientNameDisplay" class="text-xs text-gray-500 mt-1"></p>
                             </div>
                             <div>
                                 <label for="transferAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto</label>
@@ -210,8 +225,8 @@
                                 </select>
                             </div>
                             <div class="flex justify-end space-x-4">
-                                <button type="button" id="cancelTransfer" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
-                                <button type="submit" class="btn-primary">Confirmar Transferencia</button>
+                                <button type="button" id="cancelTransferModalBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
+                                <button type="submit" id="confirmTransferBtn" class="btn-primary" disabled>Confirmar Transferencia</button>
                             </div>
                         </form>
                     </div>
@@ -223,11 +238,11 @@
                         <h3 class="text-2xl font-bold mb-4 text-gray-800">Depositar Dinero</h3>
                         <form id="depositForm" class="space-y-4">
                             <div>
-                                <label for="depositSerialNumber" class="block text-gray-700 text-sm font-semibold mb-2">Número de Serie Único</label>
-                                <input type="text" id="depositSerialNumber" class="input-field" placeholder="Tu número de serie del depósito" required>
+                                <label for="depositSerialNumber" class="block text-gray-700 text-sm font-semibold mb-2">Número de Serie Único (Generado)</label>
+                                <input type="text" id="depositSerialNumber" class="input-field" readonly>
                             </div>
                             <div>
-                                <label for="depositAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto (para referencia)</label>
+                                <label for="depositAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto</label>
                                 <input type="number" id="depositAmount" class="input-field" placeholder="Ej: 500.00" min="0.01" step="0.01" required>
                             </div>
                             <div>
@@ -261,6 +276,7 @@
                                     <option value="DOP">Peso Dominicano (DOP)</option>
                                 </select>
                             </div>
+                            <p class="text-sm text-gray-600 mt-2">Se aplicará una tarifa del 4% a este retiro.</p>
                             <div class="flex justify-end space-x-4">
                                 <button type="button" id="cancelWithdraw" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
                                 <button type="submit" class="btn-primary">Solicitar Retiro</button>
@@ -272,6 +288,7 @@
                 <!-- Transfer/Deposit/Withdrawal Status Message (for 2-minute transfers or pending deposits) -->
                 <div id="transactionStatusMsg" class="mt-6 p-4 rounded-lg text-sm hidden bg-yellow-100 border border-yellow-200 text-yellow-800" role="status">
                     <p id="transactionStatusText"></p>
+                    <button id="cancelOngoingTransferBtn" class="mt-2 btn-secondary hidden">Cancelar Transferencia</button>
                 </div>
 
             </div>
@@ -367,8 +384,16 @@
         // Exchange rate (example, in a real app this would come from an API)
         const USD_TO_DOP_RATE = 58.0; // Example rate
 
-        // Admin email for prototype purposes - UPDATED TO MATCH USER'S ADMIN EMAIL
+        // Admin email for prototype purposes
         const ADMIN_EMAIL = `admin.jhonnio@${appId}.com`; // This will be admin.jhonnio@banco-juvenil-12903.com
+
+        // Transfer specific variables
+        let transferInterval = null; // To hold the interval ID for cancellation
+        let currentTransferRecipientUid = null; // To store recipient UID for transfer confirmation
+        let currentTransferAmount = 0;
+        let currentTransferCurrency = '';
+        let currentTransferRecipientIdentifier = ''; // The ID or email the user typed
+        let currentTransferRecipientDisplayName = ''; // The name displayed to the user
 
         // UI Elements
         const loginTab = document.getElementById('loginTab');
@@ -379,16 +404,16 @@
         const adminSection = document.getElementById('adminSection'); // Admin Section
 
         const loginForm = document.getElementById('loginForm');
-        const loginIdentifierInput = document.getElementById('loginIdentifier'); // Renamed from loginEmail
+        const loginIdentifierInput = document.getElementById('loginIdentifier');
         const registerForm = document.getElementById('registerForm');
-        const registerNameInput = document.getElementById('registerName'); // Capture for temp data
-        const registerSurnameInput = document.getElementById('registerSurname'); // Capture for temp data
-        const registerAgeInput = document.getElementById('registerAge');     // Capture for temp data
-        const registerPasswordInput = document.getElementById('registerPassword'); // Capture for temp data
+        const registerNameInput = document.getElementById('registerName');
+        const registerSurnameInput = document.getElementById('registerSurname');
+        const registerAgeInput = document.getElementById('registerAge');
+        const registerPasswordInput = document.getElementById('registerPassword');
 
         const logoutBtn = document.getElementById('logoutBtn');
         const dashboardUserName = document.getElementById('dashboardUserName');
-        const dashboardUserId = document.getElementById('dashboardUserId');
+        const dashboardDisplayId = document.getElementById('dashboardDisplayId'); // Simplified user ID for display
         const accountBalance = document.getElementById('accountBalance');
         const toggleCurrencyBtn = document.getElementById('toggleCurrency');
         const adminPanelBtn = document.getElementById('adminPanelBtn'); // Admin Panel button
@@ -401,6 +426,7 @@
         const closeMessage = document.getElementById('closeMessage');
         const transactionStatusMsg = document.getElementById('transactionStatusMsg');
         const transactionStatusText = document.getElementById('transactionStatusText');
+        const cancelOngoingTransferBtn = document.getElementById('cancelOngoingTransferBtn'); // New cancel transfer button
 
         // Rules Consent Modal elements (New)
         const rulesConsentModal = document.getElementById('rulesConsentModal');
@@ -424,13 +450,17 @@
         // Modal elements
         const transferMoneyBtn = document.getElementById('transferMoneyBtn');
         const transferModal = document.getElementById('transferModal');
-        const cancelTransfer = document.getElementById('cancelTransfer');
+        const cancelTransferModalBtn = document.getElementById('cancelTransferModalBtn'); // Button to cancel modal
         const transferForm = document.getElementById('transferForm');
+        const transferRecipientIdInput = document.getElementById('transferRecipientId');
+        const recipientNameDisplay = document.getElementById('recipientNameDisplay');
+        const confirmTransferBtn = document.getElementById('confirmTransferBtn'); // New confirmation button in transfer modal
 
         const depositMoneyBtn = document.getElementById('depositMoneyBtn');
         const depositModal = document.getElementById('depositModal');
         const cancelDeposit = document.getElementById('cancelDeposit');
         const depositForm = document.getElementById('depositForm');
+        const depositSerialNumberInput = document.getElementById('depositSerialNumber');
 
         const withdrawMoneyBtn = document.getElementById('withdrawMoneyBtn');
         const withdrawModal = document.getElementById('withdrawModal');
@@ -472,6 +502,8 @@
         function showTransactionStatus(msg) {
             transactionStatusText.textContent = msg;
             transactionStatusMsg.classList.remove('hidden');
+            // Show cancel button only if it's an actual transfer in progress (not deposit/withdrawal status)
+            cancelOngoingTransferBtn.classList.remove('hidden');
         }
 
         /**
@@ -479,6 +511,7 @@
          */
         function hideTransactionStatus() {
             transactionStatusMsg.classList.add('hidden');
+            cancelOngoingTransferBtn.classList.add('hidden');
         }
 
         /**
@@ -513,6 +546,18 @@
          */
         function closeModal(modalElement) {
             modalElement.classList.add('hidden');
+        }
+
+        /**
+         * Generates a simple, readable ID for display purposes.
+         * @param {string} name User's first name.
+         * @param {string} surname User's last name.
+         * @returns {string} A user-friendly display ID.
+         */
+        function generateUserDisplayId(name, surname) {
+            const initials = `${name.substring(0, 1).toUpperCase()}${surname.substring(0, 1).toUpperCase()}`;
+            const randomNumber = Math.floor(1000 + Math.random() * 9000); // 4-digit number
+            return `${initials}#${randomNumber}`;
         }
 
         // --- Firebase Authentication & Firestore Operations ---
@@ -550,19 +595,23 @@
          * @param {string} password User's password.
          */
         async function performRegistration(name, surname, age, password) {
+            // Generate email for Firebase Auth (internal use primarily)
             const generatedEmail = `${name.toLowerCase().replace(/\s/g, '')}.${surname.toLowerCase().replace(/\s/g, '')}@${appId}.com`;
+            // Generate a simple, user-friendly ID for display
+            const userDisplayId = generateUserDisplayId(name, surname);
 
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, generatedEmail, password);
                 const user = userCredential.user;
-                const userId = user.uid;
+                const userId = user.uid; // Firebase UID
 
                 await setDoc(doc(db, 'artifacts', appId, 'users', userId), {
-                    userId: userId,
+                    userId: userId, // Internal Firebase UID
+                    userDisplayId: userDisplayId, // User-friendly display ID
                     name: name,
                     surname: surname,
                     age: age,
-                    email: generatedEmail,
+                    email: generatedEmail, // Primary login email
                     balanceUSD: 0,
                     balanceDOP: 0,
                     currencyPreference: 'USD',
@@ -570,16 +619,17 @@
                     createdAt: serverTimestamp()
                 });
 
-                showMessage(`¡Registro exitoso, ${name}! Tu ID de usuario para iniciar sesión es: ${generatedEmail}. Por favor, anótalo.`, 'success');
-                loginIdentifierInput.value = generatedEmail;
-                loginPassword.value = password;
-                toggleTabs('login');
+                showMessage(`¡Registro exitoso, ${name}! Tu ID de usuario para iniciar sesión es: ${generatedEmail}. Tu ID público es: ${userDisplayId}. Por favor, anótalo.`, 'success');
+                loginIdentifierInput.value = generatedEmail; // Pre-fill login field with generated email
+                loginPassword.value = password; // Pre-fill password
+                // No explicit toggleTabs('login') here, as onAuthStateChanged handles showing dashboard
+                // if login is successful after registration automatically.
 
             } catch (error) {
                 console.error("Error during registration:", error);
                 let errorMessage = 'Error al registrar. Por favor, inténtalo de nuevo.';
                 if (error.code === 'auth/email-already-in-use') {
-                    errorMessage = `Ya existe una cuenta con este nombre y apellido (ID de usuario: ${generatedEmail}). Prueba a iniciar sesión o usa otro nombre/apellido.`;
+                    errorMessage = `Ya existe una cuenta con este nombre y apellido (o email ${generatedEmail}). Prueba a iniciar sesión o usa otro nombre/apellido.`;
                 } else if (error.code === 'auth/weak-password') {
                     errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
                 } else if (error.code === 'auth/invalid-email') {
@@ -601,7 +651,7 @@
         async function handleLogin(e) {
             e.preventDefault();
             hideMessage();
-            const identifier = loginIdentifierInput.value.trim(); // Can be email or UID
+            const identifier = loginIdentifierInput.value.trim(); // Can be email, userDisplayId, or Firebase UID
             const password = loginPassword.value;
             let emailToLogin = identifier;
 
@@ -611,18 +661,26 @@
             }
 
             try {
-                // Check if the identifier looks like an email
+                // If the identifier does not look like an email, try to find the email by userDisplayId or Firebase UID
                 if (!identifier.includes('@')) {
-                    // If not an email, assume it's a Firebase UID and try to find the associated email
                     const usersCollectionRef = collection(db, 'artifacts', appId, 'users');
-                    const q = query(usersCollectionRef, where('userId', '==', identifier)); // Query by Firebase UID
-                    const querySnapshot = await getDocs(q);
+                    let querySnapshot;
+
+                    // 1. Try to find by userDisplayId (preferred for user-friendliness)
+                    let q = query(usersCollectionRef, where('userDisplayId', '==', identifier));
+                    querySnapshot = await getDocs(q);
+
+                    if (querySnapshot.empty) {
+                        // 2. If not found by userDisplayId, try to find by Firebase UID
+                        q = query(usersCollectionRef, where('userId', '==', identifier));
+                        querySnapshot = await getDocs(q);
+                    }
 
                     if (querySnapshot.empty) {
                         showMessage('ID de usuario o contraseña incorrectos.', 'error');
                         return;
                     }
-                    // Found user by UID, get their associated email
+                    // Found user, get their associated email for Firebase Auth
                     emailToLogin = querySnapshot.docs[0].data().email;
                     if (!emailToLogin) {
                         showMessage('No se pudo encontrar el email asociado a este ID de usuario.', 'error');
@@ -701,7 +759,8 @@
                     if (docSnap.exists()) {
                         const userData = docSnap.data();
                         dashboardUserName.textContent = userData.name || 'Usuario';
-                        dashboardUserId.textContent = userData.userId; // Display the actual Firebase UID
+                        // Display the user-friendly ID, fallback to Firebase UID if not set
+                        dashboardDisplayId.textContent = userData.userDisplayId || userData.userId;
 
                         currentBalanceUSD = userData.balanceUSD || 0;
                         currentBalanceDOP = userData.balanceDOP || 0;
@@ -742,7 +801,7 @@
                 currentUser = null;
                 currentUserId = null;
                 dashboardUserName.textContent = '';
-                dashboardUserId.textContent = '';
+                dashboardDisplayId.textContent = ''; // Clear display ID
                 accountBalance.textContent = '$0.00 USD';
                 toggleCurrencyBtn.textContent = 'Cambiar a DOP';
                 showCurrencyUSD = true; // Reset currency display preference
@@ -754,109 +813,151 @@
         // --- Transfer Money Functionality ---
 
         /**
-         * Shows the transfer money modal.
+         * Shows the transfer money modal and resets its state.
          */
         transferMoneyBtn.addEventListener('click', () => {
             transferModal.classList.remove('hidden');
+            transferForm.reset();
+            recipientNameDisplay.textContent = ''; // Clear previous recipient name
+            confirmTransferBtn.disabled = true; // Disable confirm button initially
         });
 
         /**
          * Closes the transfer money modal.
          */
-        cancelTransfer.addEventListener('click', () => {
+        cancelTransferModalBtn.addEventListener('click', () => {
             closeModal(transferModal);
             transferForm.reset();
+            recipientNameDisplay.textContent = '';
+            confirmTransferBtn.disabled = true;
         });
+
+        // Event listener for recipient ID input to fetch name
+        transferRecipientIdInput.addEventListener('input', async () => {
+            const identifier = transferRecipientIdInput.value.trim();
+            recipientNameDisplay.textContent = 'Buscando usuario...';
+            confirmTransferBtn.disabled = true;
+            currentTransferRecipientUid = null; // Reset UID on new input
+
+            if (!identifier) {
+                recipientNameDisplay.textContent = '';
+                return;
+            }
+
+            let recipientData = null;
+            let querySnapshot;
+
+            // 1. Try to find by email
+            if (identifier.includes('@')) {
+                const q = query(collection(db, 'artifacts', appId, 'users'), where('email', '==', identifier));
+                querySnapshot = await getDocs(q);
+            } else {
+                // 2. If not email, try to find by userDisplayId
+                const q = query(collection(db, 'artifacts', appId, 'users'), where('userDisplayId', '==', identifier));
+                querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    // 3. Finally, try to find by Firebase UID
+                    const q2 = query(collection(db, 'artifacts', appId, 'users'), where('userId', '==', identifier));
+                    querySnapshot = await getDocs(q2);
+                }
+            }
+
+            if (!querySnapshot.empty) {
+                recipientData = querySnapshot.docs[0].data();
+                // Store the actual Firebase UID for transaction
+                currentTransferRecipientUid = recipientData.userId;
+                // Store the identifier the user typed for messaging
+                currentTransferRecipientIdentifier = identifier;
+                currentTransferRecipientDisplayName = `${recipientData.name} ${recipientData.surname}`;
+                recipientNameDisplay.textContent = `Usuario: ${currentTransferRecipientDisplayName}`;
+                confirmTransferBtn.disabled = false;
+
+                // Prevent self-transfer
+                if (currentTransferRecipientUid === currentUserId) {
+                    recipientNameDisplay.textContent = '¡No puedes transferir dinero a tu propia cuenta!';
+                    confirmTransferBtn.disabled = true;
+                    currentTransferRecipientUid = null; // Invalidate recipient
+                }
+            } else {
+                recipientNameDisplay.textContent = 'Usuario no encontrado.';
+                confirmTransferBtn.disabled = true;
+                currentTransferRecipientUid = null;
+                currentTransferRecipientDisplayName = '';
+            }
+        });
+
 
         /**
          * Handles transfer form submission.
-         * (This is a simplified implementation for time simulation.
-         * Real security logic should be in a Cloud Function).
          */
         transferForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             hideMessage();
             hideTransactionStatus();
 
-            const recipientIdentifier = transferRecipientId.value.trim(); // User enters email or UID
-            const amount = parseFloat(transferAmount.value);
-            const currency = transferCurrency.value;
+            if (!currentTransferRecipientUid) {
+                showMessage('Por favor, selecciona un destinatario válido.', 'error');
+                return;
+            }
 
-            if (amount <= 0 || isNaN(amount)) {
+            currentTransferAmount = parseFloat(transferAmount.value);
+            currentTransferCurrency = transferCurrency.value;
+
+            if (currentTransferAmount <= 0 || isNaN(currentTransferAmount)) {
                 showMessage('El monto a transferir debe ser un número positivo.', 'error');
                 return;
             }
 
-            let actualRecipientEmail = recipientIdentifier; // Assume it's an email by default
-            let actualRecipientUid = null;
-
-            // If identifier is not an email, assume it's a Firebase UID
-            if (!recipientIdentifier.includes('@')) {
-                const usersCollectionRef = collection(db, 'artifacts', appId, 'users');
-                const q = query(usersCollectionRef, where('userId', '==', recipientIdentifier));
-                const querySnapshot = await getDocs(q);
-
-                if (querySnapshot.empty) {
-                    showMessage('Error: El ID de destinatario no existe.', 'error');
-                    closeModal(transferModal);
-                    return;
-                }
-                const recipientData = querySnapshot.docs[0].data();
-                actualRecipientEmail = recipientData.email;
-                actualRecipientUid = recipientData.userId;
-            } else {
-                // If it's an email, we need to find the UID
-                const usersCollectionRef = collection(db, 'artifacts', appId, 'users');
-                const q = query(usersCollectionRef, where('email', '==', recipientIdentifier));
-                const querySnapshot = await getDocs(q);
-                if (!querySnapshot.empty) {
-                    actualRecipientUid = querySnapshot.docs[0].data().userId;
-                }
-            }
-
-            if (!actualRecipientUid) {
-                showMessage('Error: No se pudo verificar el ID del destinatario.', 'error');
-                closeModal(transferModal);
-                return;
-            }
-
-            // Prevent self-transfer
-            if (actualRecipientUid === currentUserId) {
-                showMessage('No puedes transferir dinero a tu propia cuenta.', 'error');
-                closeModal(transferModal);
-                return;
-            }
-
-            // Check sender's balance
-            let senderBalance = currency === 'USD' ? currentBalanceUSD : currentBalanceDOP;
-            if (amount > senderBalance) {
+            // Check sender's balance (currentBalanceUSD and currentBalanceDOP are already updated by onSnapshot)
+            let senderBalance = currentTransferCurrency === 'USD' ? currentBalanceUSD : currentBalanceDOP;
+            if (currentTransferAmount > senderBalance) {
                 showMessage('Saldo insuficiente para realizar esta transferencia.', 'error');
-                closeModal(transferModal);
+                closeModal(transferModal); // Close modal on error
                 return;
             }
 
-            showMessage(`Iniciando transferencia de ${amount.toFixed(2)} ${currency} a ${recipientIdentifier}... Por favor, espera 2 minutos.`, 'info');
+            showMessage(`Iniciando transferencia de ${currentTransferAmount.toFixed(2)} ${currentTransferCurrency} a ${currentTransferRecipientDisplayName}... Por favor, espera 2 minutos.`, 'info');
             closeModal(transferModal); // Close the modal immediately
-            showTransactionStatus(`Transferencia a ${recipientIdentifier} en proceso... (2 minutos restantes)`);
+            showTransactionStatus(`Transferencia a ${currentTransferRecipientDisplayName} en proceso... (2 minutos restantes)`);
             transferForm.reset(); // Reset form fields
+            recipientNameDisplay.textContent = ''; // Clear recipient name display
+            confirmTransferBtn.disabled = true; // Disable button after submission
 
             // --- SIMULACIÓN DE 2 MINUTOS DE ESPERA ---
             let countdown = 120; // 2 minutes in seconds
-            const interval = setInterval(() => {
+            cancelOngoingTransferBtn.classList.remove('hidden'); // Show cancel button for ongoing transfer
+
+            transferInterval = setInterval(() => {
                 countdown--;
                 if (countdown >= 0) {
-                    showTransactionStatus(`Transferencia a ${recipientIdentifier} en proceso... (${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')} restantes)`);
+                    transactionStatusText.textContent = `Transferencia a ${currentTransferRecipientDisplayName} en proceso... (${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')} restantes)`;
                 }
 
                 if (countdown <= 0) {
-                    clearInterval(interval);
-                    showTransactionStatus('Transferencia completada. Actualizando saldos...');
-
-                    // Perform the actual balance update after the delay
-                    performTransfer(currentUserId, actualRecipientUid, amount, currency, recipientIdentifier);
+                    clearInterval(transferInterval);
+                    transferInterval = null; // Clear interval ID
+                    hideTransactionStatus(); // Hide status message
+                    performTransfer(currentUserId, currentTransferRecipientUid, currentTransferAmount, currentTransferCurrency, currentTransferRecipientDisplayName);
                 }
             }, 1000); // Update every second
         });
+
+        // Cancel Ongoing Transfer button handler
+        cancelOngoingTransferBtn.addEventListener('click', () => {
+            if (transferInterval) {
+                clearInterval(transferInterval);
+                transferInterval = null; // Clear interval ID
+                hideTransactionStatus();
+                showMessage('Transferencia cancelada.', 'info');
+                // Reset any state related to the transfer
+                currentTransferRecipientUid = null;
+                currentTransferAmount = 0;
+                currentTransferCurrency = '';
+                currentTransferRecipientIdentifier = '';
+                currentTransferRecipientDisplayName = '';
+            }
+        });
+
 
         /**
          * Executes the actual transfer logic after the delay.
@@ -865,9 +966,9 @@
          * @param {string} actualRecipientUid Firebase UID of the recipient.
          * @param {number} amount Amount to transfer.
          * @param {string} currency Currency of the transfer (USD/DOP).
-         * @param {string} recipientIdentifier The ID (email or UID) the user entered for the recipient.
+         * @param {string} recipientDisplayName The name displayed to the user for the recipient.
          */
-        async function performTransfer(senderUid, actualRecipientUid, amount, currency, recipientIdentifier) {
+        async function performTransfer(senderUid, actualRecipientUid, amount, currency, recipientDisplayName) {
             try {
                 const senderProfileRef = doc(db, 'artifacts', appId, 'users', senderUid);
                 const recipientProfileRef = doc(db, 'artifacts', appId, 'users', actualRecipientUid);
@@ -878,8 +979,7 @@
 
                 if (!senderSnap.exists() || !recipientSnap.exists()) {
                     showMessage('Error: No se encontraron los perfiles de remitente o destinatario para completar la transferencia.', 'error');
-                    hideTransactionStatus();
-                    return;
+                    return; // Do not proceed with transfer if profiles not found
                 }
 
                 const senderData = senderSnap.data();
@@ -894,6 +994,12 @@
                 let amountInUSD = amount;
                 if (currency === 'DOP') {
                     amountInUSD = amount / USD_TO_DOP_RATE;
+                }
+
+                // Double check sender's balance
+                if (senderCurrentBalanceUSD < amountInUSD) {
+                    showMessage('Error: Saldo insuficiente para completar la transferencia (posiblemente ya gastado o error de concurrencia).', 'error');
+                    return;
                 }
 
                 // Update sender's balance
@@ -927,13 +1033,14 @@
                     status: 'completed'
                 });
 
-                showMessage(`Transferencia de ${amount.toFixed(2)} ${currency} a ${recipientIdentifier} completada exitosamente.`, 'success');
-                hideTransactionStatus();
+                showMessage(`Transferencia de ${amount.toFixed(2)} ${currency} a ${recipientDisplayName} completada exitosamente.`, 'success');
                 // Balances will be updated automatically by the onSnapshot listener
 
             } catch (error) {
                 console.error("Error al completar la transferencia:", error);
                 showMessage('Error al procesar la transferencia. Por favor, inténtalo de nuevo.', 'error');
+            } finally {
+                // Ensure transaction status is hidden after completion or error
                 hideTransactionStatus();
             }
         }
@@ -942,9 +1049,10 @@
         // --- Deposit Money Functionality ---
 
         /**
-         * Shows the deposit money modal.
+         * Shows the deposit money modal with an auto-generated serial number.
          */
         depositMoneyBtn.addEventListener('click', () => {
+            depositSerialNumberInput.value = crypto.randomUUID().substring(0, 8).toUpperCase(); // Generate a shorter unique ID
             depositModal.classList.remove('hidden');
         });
 
@@ -965,7 +1073,7 @@
             hideMessage();
             hideTransactionStatus();
 
-            const serialNumber = depositSerialNumber.value.trim();
+            const serialNumber = depositSerialNumberInput.value.trim();
             const amount = parseFloat(depositAmount.value);
             const currency = depositCurrency.value;
 
@@ -1050,14 +1158,12 @@
             }
 
             // Check user's balance for requested amount (fee is calculated later)
-            let userBalance = currency === 'USD' ? currentBalanceUSD : currentBalanceDOP;
-            // The user must have enough to cover the withdrawal amount PLUS the fee
-            let amountWithPotentialFeeInUSD = amount;
+            let amountInUSD = amount;
             if (currency === 'DOP') {
-                amountWithPotentialFeeInUSD = amount / USD_TO_DOP_RATE;
+                amountInUSD = amount / USD_TO_DOP_RATE;
             }
-            const estimatedFeeInUSD = amountWithPotentialFeeInUSD * 0.04; // Calculate based on requested amount
-            const totalRequiredForWithdrawalInUSD = amountWithPotentialFeeInUSD + estimatedFeeInUSD;
+            const estimatedFeeInUSD = amountInUSD * 0.04; // Calculate based on requested amount
+            const totalRequiredForWithdrawalInUSD = amountInUSD + estimatedFeeInUSD;
 
             if (currentBalanceUSD < totalRequiredForWithdrawalInUSD) {
                 showMessage(`Saldo insuficiente para cubrir el retiro de ${amount.toFixed(2)} ${currency} y la tarifa del 4%. Necesitas $${totalRequiredForWithdrawalInUSD.toFixed(2)} USD.`, 'error');
@@ -1095,7 +1201,7 @@
             const depositsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_deposits');
             const q = query(depositsCollectionRef, where('status', '==', 'pending'));
 
-            onSnapshot(q, async (snapshot) => {
+            onSnapshot(q, async (snapshot) => { // Made async to use await for fetching user names
                 pendingDepositsTableBody.innerHTML = ''; // Clear current table
                 if (snapshot.empty) {
                     pendingDepositsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">No hay depósitos pendientes.</td></tr>';
@@ -1106,11 +1212,15 @@
                     const deposit = docEntry.data();
                     const depositId = docEntry.id; // Document ID for the pending deposit
 
-                    // Fetch user's name for display in the admin panel
+                    // Fetch user's name and userDisplayId for display in the admin panel
                     const userProfileRef = doc(db, 'artifacts', appId, 'users', deposit.userId);
                     const userDocSnap = await getDoc(userProfileRef);
-                    // Display name and truncated Firebase UID
-                    const userNameDisplay = userDocSnap.exists() ? `${userDocSnap.data().name} ${userDocSnap.data().surname}` : `ID: ${deposit.userId.substring(0, 5)}...`;
+                    // Display name, surname, and userDisplayId if available, fallback to Firebase UID
+                    let userNameDisplay = `ID: ${deposit.userId.substring(0, 5)}...`; // Fallback
+                    if (userDocSnap.exists()) {
+                        const userData = userDocSnap.data();
+                        userNameDisplay = `${userData.name} ${userData.surname} (${userData.userDisplayId || userData.userId.substring(0, 5) + '...'})`;
+                    }
 
 
                     const row = document.createElement('tr');
@@ -1251,7 +1361,12 @@
 
                     const userProfileRef = doc(db, 'artifacts', appId, 'users', withdrawal.userId);
                     const userDocSnap = await getDoc(userProfileRef);
-                    const userNameDisplay = userDocSnap.exists() ? `${userDocSnap.data().name} ${userDocSnap.data().surname}` : `ID: ${withdrawal.userId.substring(0, 5)}...`;
+                    // Display name, surname, and userDisplayId if available, fallback to Firebase UID
+                    let userNameDisplay = `ID: ${withdrawal.userId.substring(0, 5)}...`; // Fallback
+                    if (userDocSnap.exists()) {
+                        const userData = userDocSnap.data();
+                        userNameDisplay = `${userData.name} ${userData.surname} (${userData.userDisplayId || userData.userId.substring(0, 5) + '...'})`;
+                    }
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -1307,32 +1422,34 @@
                 }
                 const userData = userDocSnap.data();
 
-                let newBalanceUSD = userData.balanceUSD || 0;
-                let newBalanceDOP = userData.balanceDOP || 0;
+                let userBalanceUSD = userData.balanceUSD || 0;
+                let userBalanceDOP = userData.balanceDOP || 0;
 
                 let withdrawalAmountInUSD = amount;
                 if (currency === 'DOP') {
                     withdrawalAmountInUSD = amount / USD_TO_DOP_RATE;
                 }
 
-                // Calculate 4% fee
+                // Calculate 4% fee based on the requested withdrawal amount
                 const feePercentage = 0.04;
                 const feeInUSD = withdrawalAmountInUSD * feePercentage;
-                const totalDeductionFromUserInUSD = withdrawalAmountInUSD; // User is charged the requested amount + fee. The fee is then added to admin.
 
-                // Ensure user has sufficient balance before confirming including the fee
-                if (newBalanceUSD < totalDeductionFromUserInUSD) { // Check only for requested amount, because fee is taken from their balance directly in this step
-                    showMessage(`Error: Saldo insuficiente ($${newBalanceUSD.toFixed(2)} USD) para confirmar este retiro de ${amount.toFixed(2)} ${currency}.`, 'error');
+                // The total amount to deduct from the user's account is the requested amount + the fee.
+                const totalDeductionFromUserInUSD = withdrawalAmountInUSD + feeInUSD;
+
+                // Ensure user has sufficient balance for the requested amount PLUS the fee
+                if (userBalanceUSD < totalDeductionFromUserInUSD) {
+                    showMessage(`Error: Saldo insuficiente ($${userBalanceUSD.toFixed(2)} USD) para cubrir el retiro de ${amount.toFixed(2)} ${currency} más la tarifa del 4% ($${feeInUSD.toFixed(2)} USD).`, 'error');
                     return;
                 }
 
-                // Deduct the full requested amount from user (including the portion that is fee)
-                newBalanceUSD -= totalDeductionFromUserInUSD;
-                newBalanceDOP = newBalanceUSD * USD_TO_DOP_RATE;
+                // Deduct the total amount (withdrawal + fee) from user's balance
+                userBalanceUSD -= totalDeductionFromUserInUSD;
+                userBalanceDOP = userBalanceUSD * USD_TO_DOP_RATE;
 
                 await updateDoc(userProfileRef, {
-                    balanceUSD: newBalanceUSD,
-                    balanceDOP: newBalanceDOP
+                    balanceUSD: userBalanceUSD,
+                    balanceDOP: userBalanceDOP
                 });
 
                 // Add the fee to the admin's account
@@ -1367,7 +1484,7 @@
                     });
 
                 } else {
-                    console.warn("Admin account not found for fee collection.");
+                    console.warn("Admin account not found for fee collection. Fee not transferred.");
                     showMessage('Advertencia: Cuenta de administrador no encontrada para cobrar la tarifa de retiro. Contacta soporte.', 'warning');
                 }
 
