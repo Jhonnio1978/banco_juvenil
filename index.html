@@ -550,7 +550,7 @@
         const cancelWithdraw = document.getElementById('cancelWithdraw');
         const withdrawForm = document.getElementById('withdrawForm');
 
-        // User History Modal Elements (New)
+        // User History Modal Elements
         const viewHistoryBtn = document.getElementById('viewHistoryBtn');
         const userHistoryModal = document.getElementById('userHistoryModal');
         const userHistoryTableBody = document.getElementById('userHistoryTableBody');
@@ -655,9 +655,13 @@
          * @returns {Promise<string>} The user's display name (Name Surname (ID#ABCD)) or a truncated ID.
          */
         async function getUserDisplayName(userId) {
-            if (userId === ADMIN_EMAIL.split('@')[0]) { // Special case for admin's generated ID if it's based on email part
+            // Check if userId matches the Firebase UID of the admin email
+            const adminQuery = query(collection(db, 'artifacts', appId, 'users'), where('email', '==', ADMIN_EMAIL));
+            const adminSnapshot = await getDocs(adminQuery);
+            if (!adminSnapshot.empty && adminSnapshot.docs[0].id === userId) {
                 return "Administrador";
             }
+
             if (userDisplayNamesCache[userId]) {
                 return userDisplayNamesCache[userId];
             }
@@ -1353,6 +1357,7 @@
          * Loads and displays pending deposits in the admin panel table.
          */
         function loadPendingDeposits() {
+            console.log("Loading pending deposits..."); // Debug log
             // Path: artifacts/{appId}/public/data/pending_deposits
             const depositsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_deposits');
             const q = query(depositsCollectionRef, where('status', '==', 'pending'));
@@ -1361,6 +1366,7 @@
                 pendingDepositsTableBody.innerHTML = ''; // Clear current table
                 if (snapshot.empty) {
                     pendingDepositsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">No hay depósitos pendientes.</td></tr>';
+                    console.log("No pending deposits found."); // Debug log
                     return;
                 }
 
@@ -1383,6 +1389,7 @@
                     `;
                     pendingDepositsTableBody.appendChild(row);
                 }
+                console.log(`Loaded ${snapshot.docs.length} pending deposits.`); // Debug log
 
                 // Add event listeners to the new buttons
                 document.querySelectorAll('.confirm-deposit-btn').forEach(button => {
@@ -1503,6 +1510,7 @@
          * Loads and displays pending withdrawals in the admin panel table.
          */
         function loadPendingWithdrawals() {
+            console.log("Loading pending withdrawals..."); // Debug log
             // Path: artifacts/{appId}/public/data/pending_withdrawals
             const withdrawalsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_withdrawals');
             const q = query(withdrawalsCollectionRef, where('status', '==', 'pending'));
@@ -1511,6 +1519,7 @@
                 pendingWithdrawalsTableBody.innerHTML = ''; // Clear current table
                 if (snapshot.empty) {
                     pendingWithdrawalsTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-4">No hay retiros pendientes.</td></tr>';
+                    console.log("No pending withdrawals found."); // Debug log
                     return;
                 }
 
@@ -1532,6 +1541,7 @@
                     `;
                     pendingWithdrawalsTableBody.appendChild(row);
                 }
+                console.log(`Loaded ${snapshot.docs.length} pending withdrawals.`); // Debug log
 
                 document.querySelectorAll('.confirm-withdrawal-btn').forEach(button => {
                     button.onclick = async (event) => {
@@ -1623,6 +1633,19 @@
                         balanceUSD: adminNewBalanceUSD,
                         balanceDOP: adminNewBalanceDOP
                     });
+
+                    // Record the fee transaction for the admin (optional but good for audit)
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                        payerId: userId, // User who paid the fee
+                        receiverId: adminId, // Admin who received the fee
+                        amount: feeInUSD,
+                        currency: 'USD',
+                        timestamp: serverTimestamp(),
+                        type: 'withdrawal_fee',
+                        status: 'completed',
+                        originalWithdrawalId: withdrawalId // Link to original withdrawal
+                    });
+
                 } else {
                     console.warn("Admin account not found for fee collection. Fee not transferred.");
                     showMessage('Advertencia: Cuenta de administrador no encontrada para cobrar la tarifa de retiro. Contacta soporte.', 'warning');
@@ -1684,6 +1707,9 @@
             const transactionsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'transactions');
 
             // Query for transactions where current user is sender, recipient, or directly involved (deposit/withdrawal)
+            // Note: Firestore doesn't allow OR queries across different fields without indexes.
+            // For a simple app, we can fetch all and filter in memory, or make multiple queries.
+            // Given the small scale of this protoype, filtering in memory is acceptable for now.
             const q = query(transactionsCollectionRef,
                 where('status', '==', 'completed') // Only show completed transactions in history
             );
@@ -1696,12 +1722,19 @@
                     const transaction = { id: docEntry.id, ...docEntry.data() };
 
                     // Filter transactions relevant to the current user
-                    if (transaction.userId === currentUserId ||
-                        transaction.senderId === currentUserId ||
-                        transaction.recipientId === currentUserId ||
-                        transaction.adminReceiverId === currentUserId) // Check if admin is receiving fee for this user's withdrawal
-                    {
+                    // A transaction is relevant if:
+                    // 1. It's a deposit or withdrawal and `userId` matches current user.
+                    // 2. It's a transfer where `senderId` or `recipientId` matches current user.
+                    // 3. It's a withdrawal_fee where `payerId` matches current user (they paid the fee).
+                    if ((transaction.type === 'deposit' || transaction.type === 'withdrawal') && transaction.userId === currentUserId) {
                         userTransactions.push(transaction);
+                    } else if (transaction.type === 'transfer' && (transaction.senderId === currentUserId || transaction.recipientId === currentUserId)) {
+                        userTransactions.push(transaction);
+                    } else if (transaction.type === 'withdrawal_fee' && transaction.payerId === currentUserId) {
+                        // User sees fee they paid as part of the withdrawal, not as a separate transaction for themselves.
+                        // Admin would see it as a separate transaction.
+                        // For user history, we already covered the withdrawal itself.
+                        continue; // Skip separate fee transaction for user history view.
                     }
                 }
 
@@ -1717,50 +1750,33 @@
                     const date = new Date(transaction.timestamp.seconds * 1000).toLocaleString();
                     let typeDisplay = '';
                     let detailsDisplay = '';
-                    let amountDisplay = `${transaction.amount.toFixed(2)} ${transaction.currency}`;
+                    let amountDisplay = ''; // Start empty, will be prefixed with + or -
 
                     switch (transaction.type) {
                         case 'deposit':
                             typeDisplay = 'Depósito';
                             detailsDisplay = `Serie: ${transaction.description.split('Serie: ')[1] || 'N/A'}`;
-                            amountDisplay = `+${amountDisplay}`;
+                            amountDisplay = `+${transaction.amount.toFixed(2)} ${transaction.currency}`;
                             break;
                         case 'withdrawal':
                             typeDisplay = 'Retiro';
                             detailsDisplay = `Tarifa: ${transaction.feeAmount ? `$${transaction.feeAmount.toFixed(2)} USD` : '0.00'}`;
-                            amountDisplay = `-${amountDisplay}`; // User loses this amount
+                            amountDisplay = `-${transaction.amount.toFixed(2)} ${transaction.currency}`;
                             break;
                         case 'transfer':
                             if (transaction.senderId === currentUserId) {
                                 typeDisplay = 'Transferencia Enviada';
                                 const recipientDisplayName = await getUserDisplayName(transaction.recipientId);
                                 detailsDisplay = `A: ${recipientDisplayName}`;
-                                amountDisplay = `-${amountDisplay}`;
+                                amountDisplay = `-${transaction.amount.toFixed(2)} ${transaction.currency}`;
                             } else if (transaction.recipientId === currentUserId) {
                                 typeDisplay = 'Transferencia Recibida';
                                 const senderDisplayName = await getUserDisplayName(transaction.senderId);
                                 detailsDisplay = `De: ${senderDisplayName}`;
-                                amountDisplay = `+${amountDisplay}`;
-                            }
-                            break;
-                        case 'withdrawal_fee': // This transaction type is specifically for the admin receiving the fee. Users won't see this directly in their 'normal' history unless they are the admin.
-                             if (transaction.receiverId === currentUserId && currentUser.email === ADMIN_EMAIL) {
-                                typeDisplay = 'Tarifa de Retiro Cobrada';
-                                const payerDisplayName = await getUserDisplayName(transaction.payerId);
-                                detailsDisplay = `De: ${payerDisplayName}`;
                                 amountDisplay = `+${transaction.amount.toFixed(2)} ${transaction.currency}`;
-                            } else {
-                                continue; // Skip if it's a fee transaction not for current user or current user is not admin
                             }
                             break;
                     }
-                    if(transaction.type === 'withdrawal_fee' && transaction.receiverId !== currentUserId) {
-                        continue; // Ensure regular users don't see this. Admin will see it in admin history.
-                    }
-                    if(transaction.type === 'withdrawal_fee' && currentUser.email !== ADMIN_EMAIL) {
-                        continue; // Only admin sees the fee received type explicitly.
-                    }
-
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -1778,10 +1794,12 @@
             });
         }
 
+
         /**
          * Loads and displays the full transaction history for all users in the admin panel.
          */
         async function loadAdminFullHistory() {
+            console.log("Loading admin full history..."); // Debug log
             adminFullHistoryTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando historial completo...</td></tr>';
             const transactionsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'transactions');
             const q = query(transactionsCollectionRef, where('status', '==', 'completed')); // Only completed transactions
@@ -1790,6 +1808,7 @@
                 adminFullHistoryTableBody.innerHTML = ''; // Clear current table
                 if (snapshot.empty) {
                     adminFullHistoryTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay transacciones en el historial.</td></tr>';
+                    console.log("No transactions found for admin history."); // Debug log
                     return;
                 }
 
@@ -1826,11 +1845,11 @@
                             details = `Descripción: ${transaction.description || 'N/A'}`;
                             break;
                         case 'withdrawal_fee':
-                            typeDisplay = 'Tarifa de Retiro';
+                            typeDisplay = 'Tarifa de Retiro Cobrada';
                             const feePayer = await getUserDisplayName(transaction.payerId);
                             const feeReceiver = await getUserDisplayName(transaction.receiverId);
                             usersInvolved = `${feePayer} (paga) -> ${feeReceiver} (recibe)`;
-                            details = `Original Withdrawal ID: ${transaction.originalWithdrawalId || 'N/A'}`;
+                            details = `ID Retiro Original: ${transaction.originalWithdrawalId || 'N/A'}`;
                             break;
                         default:
                             usersInvolved = transaction.userId || 'N/A'; // Fallback
@@ -1843,13 +1862,14 @@
                         <td>${date}</td>
                         <td>${typeDisplay}</td>
                         <td>${usersInvolved}</td>
-                        <td>${transaction.amount.toFixed(2)} ${transaction.currency}</td>
+                        <td>${transaction.amount.toFixed(2)}</td>
                         <td>${transaction.currency}</td>
                         <td>${transaction.status}</td>
                         <td>${details}</td>
                     `;
                     adminFullHistoryTableBody.appendChild(row);
                 }
+                console.log(`Loaded ${snapshot.docs.length} total transactions for admin history.`); // Debug log
             }, (error) => {
                 console.error("Error loading admin full history:", error);
                 adminFullHistoryTableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error al cargar el historial completo.</td></tr>`;
