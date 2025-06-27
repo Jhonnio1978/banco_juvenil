@@ -210,19 +210,18 @@
                     <button id="withdrawMoneyBtn" class="btn-primary w-full">Retirar Dinero</button>
                     <button id="viewHistoryBtn" class="btn-primary w-full bg-blue-600 hover:bg-blue-700">Ver Historial de Movimientos</button>
 
-                    <!-- User-specific Pending Requests Button (NEW) -->
+                    <!-- User-specific Pending Requests Button -->
                     <button id="viewUserPendingRequestsBtn" class="btn-primary w-full bg-purple-600 hover:bg-purple-700">Ver Mis Solicitudes Pendientes</button>
 
-                    <!-- NEW: Online Shopping Button -->
+                    <!-- Online Shopping Button -->
                     <button id="onlineShoppingBtn" class="btn-primary w-full bg-teal-600 hover:bg-teal-700">Comprar por Internet</button>
-                    <!-- NEW: Streaming Service Button -->
+                    <!-- Streaming Service Button -->
                     <button id="streamingPaymentBtn" class="btn-primary w-full bg-pink-600 hover:bg-pink-700">Pagar Servicio de Streaming</button>
 
                     <!-- Admin specific buttons, initially hidden -->
                     <div id="adminButtonsContainer" class="hidden space-y-4 mt-6 border-t pt-4 border-gray-200">
                         <h3 class="text-xl font-bold text-gray-700 border-b pb-2 mb-4">Funciones de Administrador</h3>
-                        <button id="viewPendingDepositsBtn" class="btn-primary w-full bg-yellow-600 hover:bg-yellow-700">Ver Depósitos Pendientes (Admin)</button>
-                        <button id="viewPendingWithdrawalsBtn" class="btn-primary w-full bg-orange-600 hover:bg-orange-700">Ver Retiros Pendientes (Admin)</button>
+                        <button id="viewAdminPendingRequestsBtn" class="btn-primary w-full bg-teal-800 hover:bg-teal-900">Ver Solicitudes Pendientes (Admin)</button>
                         <button id="adminFullHistoryBtn" class="btn-primary w-full bg-green-600 hover:bg-green-700">Ver Historial Completo (Admin)</button>
                     </div>
 
@@ -378,52 +377,29 @@
         </div>
     </div>
 
-    <!-- Pending Deposits Modal -->
-    <div id="pendingDepositsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+    <!-- NEW Admin Pending Requests Modal (Unified for deposits, withdrawals, online shopping, streaming) -->
+    <div id="adminPendingRequestsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
         <div class="modal-content p-8">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Depósitos Pendientes</h3>
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Solicitudes Pendientes (Admin)</h3>
             <div class="table-container bg-white rounded-lg shadow">
                 <table class="min-w-full">
                     <thead>
                         <tr>
-                            <th>Usuario ID</th>
-                            <th>Serie</th>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Usuario</th>
                             <th>Monto</th>
                             <th>Moneda</th>
-                            <th>Fecha</th>
+                            <th>Detalles</th>
                             <th>Acción</th>
                         </tr>
                     </thead>
-                    <tbody id="pendingDepositsTableBodyModal">
-                        <tr><td colspan="6" class="text-center text-gray-500 py-4">No hay depósitos pendientes.</td></tr>
+                    <tbody id="adminPendingRequestsTableBody">
+                        <tr><td colspan="7" class="text-center text-gray-500 py-4">No hay solicitudes pendientes.</td></tr>
                     </tbody>
                 </table>
             </div>
-            <button id="closePendingDepositsModalBtn" class="btn-primary w-full mt-6">Cerrar</button>
-        </div>
-    </div>
-
-    <!-- Pending Withdrawals Modal -->
-    <div id="pendingWithdrawalsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Retiros Pendientes</h3>
-            <div class="table-container bg-white rounded-lg shadow">
-                <table class="min-w-full">
-                    <thead>
-                        <tr>
-                            <th>Usuario ID</th>
-                            <th>Monto</th>
-                            <th>Moneda</th>
-                            <th>Fecha</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pendingWithdrawalsTableBodyModal">
-                        <tr><td colspan="5" class="text-center text-gray-500 py-4">No hay retiros pendientes.</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <button id="closePendingWithdrawalsModalBtn" class="btn-primary w-full mt-6">Cerrar</button>
+            <button id="closeAdminPendingRequestsModalBtn" class="btn-primary w-full mt-6">Cerrar</button>
         </div>
     </div>
 
@@ -458,22 +434,22 @@
                 </div>
                 <div>
                     <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo funciona la compra por internet?</h4>
-                    <p class="text-sm">Puedes solicitar la compra de productos de tiendas como Shein, Alibaba, AliExpress o Temu. Proporciona el monto estimado y los enlaces de los productos. Se te cobrará una tarifa del 3% sobre el total. Una vez confirmado el pago, el administrador recibirá tu solicitud vía WhatsApp para procesar la compra.</p>
+                    <p class="text-sm">Puedes solicitar la compra de productos de tiendas como Shein, Alibaba, AliExpress o Temu. Proporciona el monto estimado y los enlaces de los productos. Se te cobrará una tarifa del 3% sobre el total. **Tu solicitud será revisada y confirmada por el administrador antes de que se deduzca el dinero de tu cuenta.**</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo puedo pagar servicios de streaming?</h4>
-                    <p class="text-sm">Puedes pagar tus suscripciones a servicios como Netflix, Disney+, Spotify, etc. Introduce el nombre del servicio, tu usuario/email de cuenta y el monto. Se aplicará una tarifa del 3%. Después de confirmar el pago, el administrador recibirá la información para procesar tu recarga o pago.</p>
+                    <p class="text-sm">Puedes pagar tus suscripciones a servicios como Netflix, Disney+, Spotify, etc. Introduce el nombre del servicio, tu usuario/email de cuenta y el monto. Se aplicará una tarifa del 3%. **Tu solicitud será revisada y confirmada por el administrador antes de que se deduzca el dinero de tu cuenta.**</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Puedo ver mis solicitudes de depósito y retiro pendientes?</h4>
-                    <p class="text-sm">Sí, en tu dashboard puedes hacer clic en "Ver Mis Solicitudes Pendientes" para revisar el estado de tus depósitos y retiros que aún no han sido procesados por el administrador.</p>
+                    <p class="text-sm">Sí, en tu dashboard puedes hacer clic en "Ver Mis Solicitudes Pendientes" para revisar el estado de todas tus solicitudes (depósitos, retiros, compras y pagos de streaming) que aún no han sido procesadas por el administrador.</p>
                 </div>
             </div>
             <button id="closeFAQModalBtn" class="btn-primary w-full mt-6">Cerrar FAQ</button>
         </div>
     </div>
 
-    <!-- NEW: Online Shopping Modal -->
+    <!-- Online Shopping Modal -->
     <div id="onlineShoppingModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
         <div class="modal-content p-8 w-full max-w-lg">
             <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Compra por Internet</h3>
@@ -495,17 +471,18 @@
                 </div>
                 <div class="text-right text-sm text-gray-600">
                     <p>Tarifa (3%): <span id="shoppingFeeDisplay">$0.00 USD</span></p>
-                    <p class="font-bold text-base text-gray-800">Total a Pagar: <span id="shoppingTotalDisplay">$0.00 USD</span></p>
+                    <p class="font-bold text-base text-gray-800">Total Solicitado: <span id="shoppingTotalDisplay">$0.00 USD</span></p>
+                    <p class="text-xs text-red-500 mt-1">Este monto será deducido de tu cuenta SÓLO después de la aprobación del administrador.</p>
                 </div>
                 <div class="flex justify-end space-x-4">
                     <button type="button" id="cancelOnlineShopping" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
-                    <button type="submit" id="confirmOnlineShopping" class="btn-primary">Confirmar Compra y Enviar a Admin</button>
+                    <button type="submit" id="requestOnlineShopping" class="btn-primary">Enviar Solicitud de Compra</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- NEW: Streaming Payment Modal -->
+    <!-- Streaming Payment Modal -->
     <div id="streamingPaymentModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
         <div class="modal-content p-8 w-full max-w-sm">
             <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Pagar Servicio de Streaming</h3>
@@ -540,17 +517,18 @@
                 </div>
                 <div class="text-right text-sm text-gray-600">
                     <p>Tarifa (3%): <span id="streamingFeeDisplay">$0.00 USD</span></p>
-                    <p class="font-bold text-base text-gray-800">Total a Pagar: <span id="streamingTotalDisplay">$0.00 USD</span></p>
+                    <p class="font-bold text-base text-gray-800">Total Solicitado: <span id="streamingTotalDisplay">$0.00 USD</span></p>
+                    <p class="text-xs text-red-500 mt-1">Este monto será deducido de tu cuenta SÓLO después de la aprobación del administrador.</p>
                 </div>
                 <div class="flex justify-end space-x-4">
                     <button type="button" id="cancelStreamingPayment" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
-                    <button type="submit" id="confirmStreamingPayment" class="btn-primary">Confirmar Pago y Enviar a Admin</button>
+                    <button type="submit" id="requestStreamingPayment" class="btn-primary">Enviar Solicitud de Pago</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- NEW: User Pending Requests Modal -->
+    <!-- User Pending Requests Modal -->
     <div id="userPendingRequestsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
         <div class="modal-content p-8">
             <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Mis Solicitudes Pendientes</h3>
@@ -572,6 +550,17 @@
                 </table>
             </div>
             <button id="closeUserPendingRequestsModalBtn" class="btn-primary w-full mt-6">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Receipt/Invoice Modal for Users (NEW) -->
+    <div id="receiptModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8 w-full max-w-md">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Recibo de Transacción</h3>
+            <div id="receiptContent" class="text-left text-gray-700 space-y-2 text-sm bg-gray-50 p-4 rounded-lg">
+                <!-- Receipt details will be inserted here by JS -->
+            </div>
+            <button id="closeReceiptModalBtn" class="btn-primary w-full mt-6">Cerrar Recibo</button>
         </div>
     </div>
 
@@ -621,6 +610,7 @@
         // Exchange rate (example, in a real app this would come from an API)
         const USD_TO_DOP_RATE = 58.0; // Example rate
         const COMMISSION_RATE = 0.03; // 3% commission for online shopping and streaming
+        const WITHDRAWAL_FEE_RATE = 0.04; // 4% fee for withdrawals
 
         // Admin email for prototype purposes
         const ADMIN_EMAIL = `admin.jhonnio@${appId}.com`;
@@ -659,17 +649,14 @@
         const accountBalance = document.getElementById('accountBalance');
         const toggleCurrencyBtn = document.getElementById('toggleCurrency');
 
-        // Admin Buttons (now directly on dashboard)
+        // Buttons
         const adminFullHistoryBtn = document.getElementById('adminFullHistoryBtn');
-        const viewPendingDepositsBtn = document.getElementById('viewPendingDepositsBtn');
-        const viewPendingWithdrawalsBtn = document.getElementById('viewPendingWithdrawalsBtn');
         const viewFAQBtn = document.getElementById('viewFAQBtn'); // FAQ Button
-        const onlineShoppingBtn = document.getElementById('onlineShoppingBtn'); // NEW Online Shopping Button
-        const streamingPaymentBtn = document.getElementById('streamingPaymentBtn'); // NEW Streaming Payment Button
-        const viewUserPendingRequestsBtn = document.getElementById('viewUserPendingRequestsBtn'); // NEW User Pending Requests Button
+        const onlineShoppingBtn = document.getElementById('onlineShoppingBtn'); // Online Shopping Button
+        const streamingPaymentBtn = document.getElementById('streamingPaymentBtn'); // Streaming Payment Button
+        const viewUserPendingRequestsBtn = document.getElementById('viewUserPendingRequestsBtn'); // User Pending Requests Button
+        const viewAdminPendingRequestsBtn = document.getElementById('viewAdminPendingRequestsBtn'); // NEW Admin Pending Requests Button
 
-        const pendingDepositsTableBodyModal = document.getElementById('pendingDepositsTableBodyModal'); // Table for deposits (now in modal)
-        const pendingWithdrawalsTableBodyModal = document.getElementById('pendingWithdrawalsTableBodyModal'); // Table for withdrawals (now in modal)
         const adminFullHistoryTableBodyModal = document.getElementById('adminFullHistoryTableBodyModal'); // Admin History (in modal)
 
         const messageBox = document.getElementById('messageBox');
@@ -688,24 +675,25 @@
         // Store registration form data temporarily for rules consent
         let tempRegisterData = {};
 
-        // Define brief rules text
+        // Define brief rules text (updated to reflect new pending approval flows)
         const briefRulesText = `
             <p class="mb-2"><strong>1. Seguridad de Cuenta:</strong> Tu contraseña es confidencial. Nunca la compartas. Eres responsable de la seguridad de tu ID de usuario y contraseña.</p>
             <p class="mb-2"><strong>2. Edad Mínima:</strong> Debes tener al menos 13 años para registrarte.</p>
             <p class="mb-2"><strong>3. Monedas:</strong> Manejamos USD y DOP. Las tasas de cambio aplican para conversiones.</p>
             <p class="mb-2"><strong>4. Depósitos:</strong> Todos los depósitos requieren aprobación del banco. No podrás hacer otro depósito si tienes uno pendiente.</p>
             <p class="mb-2"><strong>5. Retiros:</strong> Las solicitudes de retiro también requieren aprobación del banco. Se aplicará una tarifa del 4% a cada retiro.</p>
-            <p><strong>6. Transferencias:</strong> Las transferencias tienen un tiempo de procesamiento de 2 minutos. Verifica bien al destinatario, no son reversibles.</p>
+            <p class="mb-2"><strong>6. Compras y Streaming:</strong> Las solicitudes de compra por internet y pago de servicios de streaming requieren la aprobación del administrador antes de que se deduzca el dinero.</p>
+            <p><strong>7. Transferencias:</strong> Las transferencias tienen un tiempo de procesamiento de 2 minutos. Verifica bien al destinatario, no son reversibles.</p>
         `;
 
-        // Modal elements
+        // Modals
         const transferMoneyBtn = document.getElementById('transferMoneyBtn');
         const transferModal = document.getElementById('transferModal');
-        const cancelTransferModalBtn = document.getElementById('cancelTransferModalBtn'); // Button to cancel modal
+        const cancelTransferModalBtn = document.getElementById('cancelTransferModalBtn');
         const transferForm = document.getElementById('transferForm');
         const transferRecipientIdInput = document.getElementById('transferRecipientId');
         const recipientNameDisplay = document.getElementById('recipientNameDisplay');
-        const confirmTransferBtn = document.getElementById('confirmTransferBtn'); // New confirmation button in transfer modal
+        const confirmTransferBtn = document.getElementById('confirmTransferBtn');
 
         const depositMoneyBtn = document.getElementById('depositMoneyBtn');
         const depositModal = document.getElementById('depositModal');
@@ -718,27 +706,21 @@
         const cancelWithdraw = document.getElementById('cancelWithdraw');
         const withdrawForm = document.getElementById('withdrawForm');
 
-        // User History Modal Elements
-        const viewHistoryBtn = document.getElementById('viewHistoryBtn');
         const userHistoryModal = document.getElementById('userHistoryModal');
         const userHistoryTableBody = document.getElementById('userHistoryTableBody');
         const closeUserHistoryModalBtn = document.getElementById('closeUserHistoryModalBtn');
 
-        // Admin Full History Modal Elements
         const adminFullHistoryModal = document.getElementById('adminFullHistoryModal');
         const closeAdminFullHistoryModalBtn = document.getElementById('closeAdminFullHistoryModalBtn');
 
-        // Pending Deposits/Withdrawals Modals
-        const pendingDepositsModal = document.getElementById('pendingDepositsModal');
-        const closePendingDepositsModalBtn = document.getElementById('closePendingDepositsModalBtn');
-        const pendingWithdrawalsModal = document.getElementById('pendingWithdrawalsModal');
-        const closePendingWithdrawalsModalBtn = document.getElementById('closePendingWithdrawalsModalBtn');
+        // NEW: Admin Pending Requests Modal elements
+        const adminPendingRequestsModal = document.getElementById('adminPendingRequestsModal');
+        const closeAdminPendingRequestsModalBtn = document.getElementById('closeAdminPendingRequestsModalBtn');
+        const adminPendingRequestsTableBody = document.getElementById('adminPendingRequestsTableBody');
 
-        // FAQ Modal elements
         const faqModal = document.getElementById('faqModal');
         const closeFAQModalBtn = document.getElementById('closeFAQModalBtn');
 
-        // NEW: Online Shopping Modal elements
         const onlineShoppingModal = document.getElementById('onlineShoppingModal');
         const cancelOnlineShopping = document.getElementById('cancelOnlineShopping');
         const onlineShoppingForm = document.getElementById('onlineShoppingForm');
@@ -748,7 +730,6 @@
         const shoppingFeeDisplay = document.getElementById('shoppingFeeDisplay');
         const shoppingTotalDisplay = document.getElementById('shoppingTotalDisplay');
 
-        // NEW: Streaming Payment Modal elements
         const streamingPaymentModal = document.getElementById('streamingPaymentModal');
         const cancelStreamingPayment = document.getElementById('cancelStreamingPayment');
         const streamingPaymentForm = document.getElementById('streamingPaymentForm');
@@ -759,10 +740,13 @@
         const streamingFeeDisplay = document.getElementById('streamingFeeDisplay');
         const streamingTotalDisplay = document.getElementById('streamingTotalDisplay');
 
-        // NEW: User Pending Requests Modal elements
         const userPendingRequestsModal = document.getElementById('userPendingRequestsModal');
         const closeUserPendingRequestsModalBtn = document.getElementById('closeUserPendingRequestsModalBtn');
         const userPendingRequestsTableBody = document.getElementById('userPendingRequestsTableBody');
+
+        const receiptModal = document.getElementById('receiptModal'); // NEW Receipt Modal
+        const receiptContent = document.getElementById('receiptContent'); // NEW Receipt Content
+        const closeReceiptModalBtn = document.getElementById('closeReceiptModalBtn'); // NEW Receipt Close Button
 
 
         // --- Utility Functions ---
@@ -813,6 +797,40 @@
         }
 
         /**
+         * Shows a receipt modal with transaction details.
+         * @param {Object} transactionDetails Object containing details for the receipt.
+         */
+        function showReceipt(transactionDetails) {
+            let content = `<p class="font-bold text-lg mb-2">${transactionDetails.title}</p>`;
+            content += `<p><strong>Fecha:</strong> ${transactionDetails.date}</p>`;
+            content += `<p><strong>Tipo:</strong> ${transactionDetails.type}</p>`;
+            content += `<p><strong>Monto Total:</strong> ${transactionDetails.amount.toFixed(2)} ${transactionDetails.currency}</p>`;
+
+            if (transactionDetails.productAmount) {
+                 content += `<p><strong>Monto Productos:</strong> ${transactionDetails.productAmount.toFixed(2)} ${transactionDetails.productCurrency}</p>`;
+            }
+            if (transactionDetails.feeAmount) {
+                content += `<p><strong>Tarifa (${(COMMISSION_RATE * 100).toFixed(0)}%):</strong> ${transactionDetails.feeAmount.toFixed(2)} ${transactionDetails.feeCurrency}</p>`;
+            }
+            if (transactionDetails.service) {
+                content += `<p><strong>Servicio:</strong> ${transactionDetails.service}</p>`;
+                content += `<p><strong>Cuenta:</strong> ${transactionDetails.accountIdentifier}</p>`;
+            }
+            if (transactionDetails.productLinks) {
+                content += `<p><strong>Enlaces:</strong></p>`;
+                transactionDetails.productLinks.split('\n').forEach(link => {
+                    if (link.trim()) {
+                        content += `<p class="ml-4 text-xs break-all"><a href="${link.trim()}" target="_blank" class="text-blue-500 hover:underline">${link.trim()}</a></p>`;
+                    }
+                });
+            }
+            content += `<p class="mt-4 font-bold">¡Gracias por usar Banco Juvenil!</p>`;
+
+            receiptContent.innerHTML = content;
+            receiptModal.classList.remove('hidden');
+        }
+
+        /**
          * Toggles visibility between sections.
          * @param {HTMLElement} showElement Element to show.
          * @param {HTMLElement} ...hideElements List of elements to hide.
@@ -831,12 +849,12 @@
                 loginTab.classList.add('active');
                 registerTab.classList.remove('active');
                 // Hide all main sections and modals, including new admin modals
-                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, pendingDepositsModal, pendingWithdrawalsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal);
+                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal);
             } else {
                 registerTab.classList.add('active');
                 loginTab.classList.remove('active');
                 // Hide all main sections and modals, including new admin modals
-                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, pendingDepositsModal, pendingWithdrawalsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal);
+                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal);
             }
             hideMessage(); // Hide any previous messages when changing tabs
         }
@@ -947,7 +965,7 @@
                     balanceUSD: 0,
                     balanceDOP: 0,
                     currencyPreference: 'USD',
-                    hasPendingDeposit: false,
+                    hasPendingDeposit: false, // Keep this for specific deposit blocking
                     createdAt: serverTimestamp()
                 });
 
@@ -1125,8 +1143,8 @@
                     showMessage("Error al cargar los datos de tu perfil. Intenta recargar la página.", 'error');
                 });
 
-                // Display dashboard and hide login/register forms and all admin modals
-                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, pendingDepositsModal, pendingWithdrawalsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal);
+                // Display dashboard and hide login/register forms and all modals
+                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal);
 
             } else {
                 // User is signed out
@@ -1221,6 +1239,7 @@
 
         /**
          * Handles transfer form submission.
+         * In a real environment, this SHOULD BE A FIREBASE CLOUD FUNCTION for security.
          */
         transferForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1399,7 +1418,7 @@
 
         /**
          * Handles deposit form submission.
-         * (Admin approval is a key feature here and should be handled by Cloud Functions).
+         * Requests are sent to pending_requests for admin approval.
          */
         depositForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1420,7 +1439,7 @@
             }
 
             try {
-                // Check if user already has a pending deposit
+                // Check if user already has a pending deposit (this specific flag is for deposits only)
                 const userDocRef = doc(db, 'artifacts', appId, 'users', currentUserId);
                 const userDocSnap = await getDoc(userDocRef);
                 if (userDocSnap.exists() && userDocSnap.data().hasPendingDeposit) {
@@ -1430,10 +1449,10 @@
                      return;
                 }
 
-                // Add deposit request to a public 'pending_deposits' collection
-                // Path: artifacts/{appId}/public/data/pending_deposits
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_deposits'), {
-                    userId: currentUserId, // Firebase UID of the user who made the deposit request
+                // Add deposit request to a unified 'pending_requests' collection
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
+                    userId: currentUserId,
+                    type: 'deposit', // Indicate request type
                     serialNumber: serialNumber,
                     amount: amount,
                     currency: currency,
@@ -1449,6 +1468,18 @@
                 showMessage(`Solicitud de depósito de ${amount.toFixed(2)} ${currency} con número de serie ${serialNumber} enviada. Esperando aprobación del banco.`, 'success');
                 closeModal(depositModal);
                 depositForm.reset();
+
+                // Send WhatsApp message to admin
+                const userData = userDocSnap.data();
+                const whatsappMessage = `
+                Nueva solicitud de depósito pendiente:
+                Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
+                Monto: ${amount.toFixed(2)} ${currency}
+                Número de Serie: ${serialNumber}
+                Por favor, revisa y confirma.
+                `;
+                const encodedMessage = encodeURIComponent(whatsappMessage);
+                window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
 
             } catch (error) {
                 console.error("Error al solicitar depósito:", error);
@@ -1475,7 +1506,7 @@
 
         /**
          * Handles withdrawal form submission.
-         * (Admin approval is a key feature here and should be handled by Cloud Functions).
+         * Requests are sent to pending_requests for admin approval.
          */
         withdrawForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1490,33 +1521,48 @@
                 return;
             }
 
-            // Check user's balance for requested amount (fee is calculated later)
+            // Calculate estimated total including fee for display
             let amountInUSD = amount;
             if (currency === 'DOP') {
                 amountInUSD = amount / USD_TO_DOP_RATE;
             }
-            const estimatedFeeInUSD = amountInUSD * 0.04; // Calculate based on requested amount
+            const estimatedFeeInUSD = amountInUSD * WITHDRAWAL_FEE_RATE;
             const totalRequiredForWithdrawalInUSD = amountInUSD + estimatedFeeInUSD;
 
+            // Check if current balance is sufficient for estimation (final check at confirmation)
             if (currentBalanceUSD < totalRequiredForWithdrawalInUSD) {
                 showMessage(`Saldo insuficiente para cubrir el retiro de ${amount.toFixed(2)} ${currency} y la tarifa del 4%. Necesitas $${totalRequiredForWithdrawalInUSD.toFixed(2)} USD.`, 'error');
                 return;
             }
 
             try {
-                // Add withdrawal request to a public 'pending_withdrawals' collection
-                // Path: artifacts/{appId}/public/data/pending_withdrawals
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_withdrawals'), {
+                // Add withdrawal request to a unified 'pending_requests' collection
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
                     userId: currentUserId,
+                    type: 'withdrawal', // Indicate request type
                     amount: amount,
                     currency: currency,
                     timestamp: serverTimestamp(),
-                    status: 'pending' // Status for admin approval
+                    status: 'pending', // Status for admin approval
+                    estimatedFee: estimatedFeeInUSD // Store estimated fee for admin review
                 });
 
                 showMessage(`Solicitud de retiro de ${amount.toFixed(2)} ${currency} enviada. Esperando aprobación del banco. Se aplicará una tarifa del 4% al confirmar.`, 'success');
                 closeModal(withdrawModal);
                 withdrawForm.reset();
+
+                // Send WhatsApp message to admin
+                const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
+                const userData = userDocSnap.data();
+                const whatsappMessage = `
+                Nueva solicitud de retiro pendiente:
+                Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
+                Monto: ${amount.toFixed(2)} ${currency}
+                Tarifa estimada (4%): $${estimatedFeeInUSD.toFixed(2)} USD
+                Por favor, revisa y confirma.
+                `;
+                const encodedMessage = encodeURIComponent(whatsappMessage);
+                window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
 
             } catch (error) {
                 console.error("Error al solicitar retiro:", error);
@@ -1524,345 +1570,597 @@
             }
         });
 
-        // --- Admin Specific Functionality (Moved to Modals) ---
+        // --- Online Shopping Logic ---
+        onlineShoppingBtn.addEventListener('click', () => {
+            onlineShoppingModal.classList.remove('hidden');
+            onlineShoppingForm.reset();
+            shoppingFeeDisplay.textContent = '$0.00 USD';
+            shoppingTotalDisplay.textContent = '$0.00 USD';
+        });
+
+        cancelOnlineShopping.addEventListener('click', () => {
+            closeModal(onlineShoppingModal);
+            onlineShoppingForm.reset();
+        });
+
+        shoppingAmountInput.addEventListener('input', updateOnlineShoppingCalculation);
+        shoppingCurrencyInput.addEventListener('change', updateOnlineShoppingCalculation);
+
+        function updateOnlineShoppingCalculation() {
+            const amount = parseFloat(shoppingAmountInput.value);
+            const currency = shoppingCurrencyInput.value;
+
+            if (isNaN(amount) || amount <= 0) {
+                shoppingFeeDisplay.textContent = `$0.00 USD`;
+                shoppingTotalDisplay.textContent = `$0.00 USD`;
+                return;
+            }
+
+            let amountInUSD = amount;
+            if (currency === 'DOP') {
+                amountInUSD = amount / USD_TO_DOP_RATE;
+            }
+
+            const feeAmount = amountInUSD * COMMISSION_RATE;
+            const totalAmount = amountInUSD + feeAmount; // This is what the user *will pay* after admin confirmation
+
+            shoppingFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
+            shoppingTotalDisplay.textContent = `$${totalAmount.toFixed(2)} USD`;
+        }
+
+        onlineShoppingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+
+            const productAmount = parseFloat(shoppingAmountInput.value);
+            const productCurrency = shoppingCurrencyInput.value;
+            const productLinks = productLinksInput.value.trim();
+
+            if (isNaN(productAmount) || productAmount <= 0) {
+                showMessage('Por favor, ingresa un monto estimado válido para los productos.', 'error');
+                return;
+            }
+            if (!productLinks) {
+                showMessage('Por favor, ingresa al menos un enlace de producto.', 'error');
+                return;
+            }
+
+            let amountInUSD = productAmount;
+            if (productCurrency === 'DOP') {
+                amountInUSD = productAmount / USD_TO_DOP_RATE;
+            }
+
+            const feeAmount = amountInUSD * COMMISSION_RATE;
+            const totalToDeductInUSD = amountInUSD + feeAmount; // This is the total amount the user will pay
+
+            try {
+                // Add online purchase request to 'pending_requests'
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
+                    userId: currentUserId,
+                    type: 'online_purchase',
+                    productAmount: productAmount,
+                    productCurrency: productCurrency,
+                    productLinks: productLinks,
+                    feeAmount: feeAmount, // Store calculated fee
+                    totalAmountToDeduct: totalToDeductInUSD, // Store total to deduct
+                    timestamp: serverTimestamp(),
+                    status: 'pending'
+                });
+
+                showMessage('Solicitud de compra por internet enviada. Esperando aprobación del administrador. El dinero se deducirá al confirmar.', 'info');
+                closeModal(onlineShoppingModal);
+                onlineShoppingForm.reset();
+
+                // Send WhatsApp message to admin
+                const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
+                const userData = userDocSnap.data();
+                const whatsappMessage = `
+                Nueva solicitud de compra online pendiente:
+                Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
+                Monto de productos: ${productAmount.toFixed(2)} ${productCurrency}
+                Tarifa (3%): $${feeAmount.toFixed(2)} USD
+                TOTAL A DEDUCIR: $${totalToDeductInUSD.toFixed(2)} USD (al confirmar)
+                Enlaces de productos:
+                ${productLinks}
+                Por favor, revisa y confirma.
+                `;
+                const encodedMessage = encodeURIComponent(whatsappMessage);
+                window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
+
+            } catch (error) {
+                console.error("Error al solicitar compra online:", error);
+                showMessage('Error al procesar la solicitud de compra online. Por favor, inténtalo de nuevo.', 'error');
+            }
+        });
+
+        // --- Streaming Payment Logic ---
+        streamingPaymentBtn.addEventListener('click', () => {
+            streamingPaymentModal.classList.remove('hidden');
+            streamingPaymentForm.reset();
+            streamingFeeDisplay.textContent = '$0.00 USD';
+            streamingTotalDisplay.textContent = '$0.00 USD';
+        });
+
+        cancelStreamingPayment.addEventListener('click', () => {
+            closeModal(streamingPaymentModal);
+            streamingPaymentForm.reset();
+        });
+
+        streamingAmountInput.addEventListener('input', updateStreamingPaymentCalculation);
+        streamingCurrencyInput.addEventListener('change', updateStreamingPaymentCalculation);
+
+        function updateStreamingPaymentCalculation() {
+            const amount = parseFloat(streamingAmountInput.value);
+            const currency = streamingCurrencyInput.value;
+
+            if (isNaN(amount) || amount <= 0) {
+                streamingFeeDisplay.textContent = `$0.00 USD`;
+                streamingTotalDisplay.textContent = `$0.00 USD`;
+                return;
+            }
+
+            let amountInUSD = amount;
+            if (currency === 'DOP') {
+                amountInUSD = amount / USD_TO_DOP_RATE;
+            }
+
+            const feeAmount = amountInUSD * COMMISSION_RATE;
+            const totalAmount = amountInUSD + feeAmount; // This is what the user *will pay* after admin confirmation
+
+            streamingFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
+            streamingTotalDisplay.textContent = `$${totalAmount.toFixed(2)} USD`;
+        }
+
+        streamingPaymentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+
+            const service = streamingServiceInput.value;
+            const accountIdentifier = streamingAccountIdentifierInput.value.trim();
+            const subscriptionAmount = parseFloat(streamingAmountInput.value);
+            const subscriptionCurrency = streamingCurrencyInput.value;
+
+            if (!service || !accountIdentifier || isNaN(subscriptionAmount) || subscriptionAmount <= 0) {
+                showMessage('Por favor, completa todos los campos para el pago del servicio de streaming.', 'error');
+                return;
+            }
+
+            let amountInUSD = subscriptionAmount;
+            if (subscriptionCurrency === 'DOP') {
+                amountInUSD = subscriptionAmount / USD_TO_DOP_RATE;
+            }
+
+            const feeAmount = amountInUSD * COMMISSION_RATE;
+            const totalToDeductInUSD = amountInUSD + feeAmount; // This is the total amount the user will pay
+
+            try {
+                // Add streaming payment request to 'pending_requests'
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
+                    userId: currentUserId,
+                    type: 'streaming_payment',
+                    service: service,
+                    accountIdentifier: accountIdentifier,
+                    subscriptionAmount: subscriptionAmount,
+                    subscriptionCurrency: subscriptionCurrency,
+                    feeAmount: feeAmount,
+                    totalAmountToDeduct: totalToDeductInUSD,
+                    timestamp: serverTimestamp(),
+                    status: 'pending'
+                });
+
+                showMessage('Solicitud de pago de servicio de streaming enviada. Esperando aprobación del administrador. El dinero se deducirá al confirmar.', 'info');
+                closeModal(streamingPaymentModal);
+                streamingPaymentForm.reset();
+
+                // Send WhatsApp message to admin
+                const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
+                const userData = userDocSnap.data();
+                const whatsappMessage = `
+                Nueva solicitud de pago de streaming pendiente:
+                Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
+                Servicio: ${service}
+                Cuenta: ${accountIdentifier}
+                Monto Suscripción: ${subscriptionAmount.toFixed(2)} ${subscriptionCurrency}
+                Tarifa (3%): $${feeAmount.toFixed(2)} USD
+                TOTAL A DEDUCIR: $${totalToDeductInUSD.toFixed(2)} USD (al confirmar)
+                Por favor, revisa y confirma.
+                `;
+                const encodedMessage = encodeURIComponent(whatsappMessage);
+                window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
+
+            } catch (error) {
+                console.error("Error al solicitar pago de streaming:", error);
+                showMessage('Error al procesar la solicitud de pago de streaming. Por favor, inténtalo de nuevo.', 'error');
+            }
+        });
+
+        // --- Admin Pending Requests Functionality (Unified) ---
+
+        viewAdminPendingRequestsBtn.addEventListener('click', () => {
+            adminPendingRequestsModal.classList.remove('hidden');
+            loadAdminPendingRequests();
+        });
+
+        closeAdminPendingRequestsModalBtn.addEventListener('click', () => {
+            closeModal(adminPendingRequestsModal);
+        });
 
         /**
-         * Loads and displays pending deposits in the dedicated modal.
+         * Loads and displays all pending requests for the admin.
          */
-        function loadPendingDeposits() {
-            console.log("Admin: loadPendingDeposits() called.");
-            const depositsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_deposits');
-            const q = query(depositsCollectionRef, where('status', '==', 'pending'));
+        function loadAdminPendingRequests() {
+            adminPendingRequestsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando solicitudes pendientes...</td></tr>';
+            const pendingRequestsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests');
+            const q = query(pendingRequestsCollectionRef, where('status', '==', 'pending'));
 
             onSnapshot(q, async (snapshot) => {
-                console.log("Admin: onSnapshot for pending deposits triggered.");
-                console.log("Admin: Snapshot size:", snapshot.size);
-
-                pendingDepositsTableBodyModal.innerHTML = ''; // Use the modal's tbody
+                adminPendingRequestsTableBody.innerHTML = '';
                 if (snapshot.empty) {
-                    pendingDepositsTableBodyModal.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">No hay depósitos pendientes.</td></tr>';
-                    console.log("Admin: No pending deposits found in snapshot.");
+                    adminPendingRequestsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay solicitudes pendientes.</td></tr>';
                     return;
                 }
 
                 for (const docEntry of snapshot.docs) {
-                    const deposit = docEntry.data();
-                    const depositId = docEntry.id;
-                    console.log("Admin: Processing pending deposit:", depositId, deposit);
+                    const request = docEntry.data();
+                    const requestId = docEntry.id;
 
-                    const userNameDisplay = await getUserDisplayName(deposit.userId);
-                    const depositDate = (deposit.timestamp && typeof deposit.timestamp.seconds !== 'undefined')
-                        ? new Date(deposit.timestamp.seconds * 1000).toLocaleString()
+                    const userNameDisplay = await getUserDisplayName(request.userId);
+                    const requestDate = (request.timestamp && typeof request.timestamp.seconds !== 'undefined')
+                        ? new Date(request.timestamp.seconds * 1000).toLocaleString()
                         : 'Fecha no disponible';
 
+                    let typeDisplay = '';
+                    let amountDisplay = '';
+                    let currencyDisplay = '';
+                    let detailsDisplay = '';
+                    let totalAmountForAdmin = 0; // The total amount that admin receives (could be different from 'amount' if there's a fee)
+
+                    switch (request.type) {
+                        case 'deposit':
+                            typeDisplay = 'Depósito';
+                            amountDisplay = request.amount.toFixed(2);
+                            currencyDisplay = request.currency;
+                            detailsDisplay = `Serie: ${request.serialNumber}`;
+                            totalAmountForAdmin = request.amount; // Admin is just confirming user's deposit
+                            break;
+                        case 'withdrawal':
+                            typeDisplay = 'Retiro';
+                            amountDisplay = request.amount.toFixed(2);
+                            currencyDisplay = request.currency;
+                            detailsDisplay = `Tarifa est. (4%): $${request.estimatedFee ? request.estimatedFee.toFixed(2) : '0.00'} USD`;
+                            totalAmountForAdmin = request.amount; // Admin facilitates the user's withdrawal, fee is separate
+                            break;
+                        case 'online_purchase':
+                            typeDisplay = 'Compra Online';
+                            amountDisplay = request.totalAmountToDeduct.toFixed(2); // Show total amount to be deducted
+                            currencyDisplay = 'USD'; // Assuming totalToDeduct is in USD
+                            detailsDisplay = `Prod. Cant: ${request.productAmount.toFixed(2)} ${request.productCurrency}, Tarifa (3%): $${request.feeAmount.toFixed(2)} USD. Links: ${request.productLinks.substring(0, 50)}...`;
+                            totalAmountForAdmin = request.totalAmountToDeduct; // Admin receives this total amount
+                            break;
+                        case 'streaming_payment':
+                            typeDisplay = 'Pago Streaming';
+                            amountDisplay = request.totalAmountToDeduct.toFixed(2); // Show total amount to be deducted
+                            currencyDisplay = 'USD'; // Assuming totalToDeduct is in USD
+                            detailsDisplay = `Servicio: ${request.service}, Cuenta: ${request.accountIdentifier}, Tarifa (3%): $${request.feeAmount.toFixed(2)} USD.`;
+                            totalAmountForAdmin = request.totalAmountToDeduct; // Admin receives this total amount
+                            break;
+                        default:
+                            typeDisplay = 'Desconocido';
+                            amountDisplay = request.amount ? request.amount.toFixed(2) : 'N/A';
+                            currencyDisplay = request.currency || 'N/A';
+                            detailsDisplay = 'N/A';
+                            totalAmountForAdmin = 0;
+                    }
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
+                        <td>${requestDate}</td>
+                        <td>${typeDisplay}</td>
                         <td>${userNameDisplay}</td>
-                        <td>${deposit.serialNumber}</td>
-                        <td>${deposit.amount.toFixed(2)} ${deposit.currency}</td>
-                        <td>${depositDate}</td>
+                        <td>${amountDisplay}</td>
+                        <td>${currencyDisplay}</td>
+                        <td>${detailsDisplay}</td>
                         <td>
-                            <button class="btn-success confirm-deposit-btn" data-deposit-id="${depositId}" data-user-id="${deposit.userId}" data-amount="${deposit.amount}" data-currency="${deposit.currency}">Confirmar</button>
-                            <button class="btn-danger reject-deposit-btn" data-deposit-id="${depositId}" data-user-id="${deposit.userId}">Rechazar</button>
+                            <button class="btn-success confirm-request-btn"
+                                data-request-id="${requestId}"
+                                data-user-id="${request.userId}"
+                                data-type="${request.type}"
+                                data-amount="${request.amount}"
+                                data-currency="${request.currency}"
+                                data-serial-number="${request.serialNumber || ''}"
+                                data-product-amount="${request.productAmount || 0}"
+                                data-product-currency="${request.productCurrency || ''}"
+                                data-product-links="${request.productLinks || ''}"
+                                data-service="${request.service || ''}"
+                                data-account-identifier="${request.accountIdentifier || ''}"
+                                data-subscription-amount="${request.subscriptionAmount || 0}"
+                                data-subscription-currency="${request.subscriptionCurrency || ''}"
+                                data-fee-amount="${request.feeAmount || 0}"
+                                data-total-amount-to-deduct="${request.totalAmountToDeduct || 0}"
+                                >Confirmar</button>
+                            <button class="btn-danger reject-request-btn"
+                                data-request-id="${requestId}"
+                                data-user-id="${request.userId}"
+                                data-type="${request.type}"
+                                >Rechazar</button>
                         </td>
                     `;
-                    pendingDepositsTableBodyModal.appendChild(row); // Append to modal's tbody
+                    adminPendingRequestsTableBody.appendChild(row);
                 }
-                console.log(`Admin: Loaded ${snapshot.docs.length} pending deposits.`);
 
-                // Re-attach event listeners each time the table is rebuilt
-                document.querySelectorAll('.confirm-deposit-btn').forEach(button => {
+                // Attach event listeners for dynamic buttons
+                document.querySelectorAll('.confirm-request-btn').forEach(button => {
                     button.onclick = async (event) => {
-                        const depositId = event.target.dataset.depositId;
-                        const userId = event.target.dataset.userId;
-                        const amount = parseFloat(event.target.dataset.amount);
-                        const currency = event.target.dataset.currency;
-                        await confirmDeposit(depositId, userId, amount, currency);
+                        const dataset = event.target.dataset;
+                        await confirmRequest(
+                            dataset.requestId,
+                            dataset.type,
+                            dataset.userId,
+                            parseFloat(dataset.amount),
+                            dataset.currency,
+                            dataset.serialNumber,
+                            parseFloat(dataset.productAmount),
+                            dataset.productCurrency,
+                            dataset.productLinks,
+                            dataset.service,
+                            dataset.accountIdentifier,
+                            parseFloat(dataset.subscriptionAmount),
+                            dataset.subscriptionCurrency,
+                            parseFloat(dataset.feeAmount),
+                            parseFloat(dataset.totalAmountToDeduct)
+                        );
                     };
                 });
-                document.querySelectorAll('.reject-deposit-btn').forEach(button => {
+                document.querySelectorAll('.reject-request-btn').forEach(button => {
                     button.onclick = async (event) => {
-                        const depositId = event.target.dataset.depositId;
-                        const userId = event.target.dataset.userId;
-                        await rejectDeposit(depositId, userId);
+                        const dataset = event.target.dataset;
+                        await rejectRequest(dataset.requestId, dataset.type, dataset.userId);
                     };
                 });
-
-            }, (error) => {
-                console.error("Admin: Error loading pending deposits:", error);
-                pendingDepositsTableBodyModal.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-4">Error al cargar depósitos.</td></tr>`;
             });
         }
 
         /**
-         * Confirms a pending deposit, updating the user's balance.
-         * @param {string} depositId The document ID of the pending deposit.
-         * @param {string} userId The Firebase UID of the user who made the deposit.
-         * @param {number} amount The deposit amount.
-         * @param {string} currency The deposit currency.
+         * Confirms a pending request, handles money transfer, and records transaction.
          */
-        async function confirmDeposit(depositId, userId, amount, currency) {
+        async function confirmRequest(
+            requestId, type, userId, amount, currency, serialNumber,
+            productAmount, productCurrency, productLinks,
+            service, accountIdentifier, subscriptionAmount, subscriptionCurrency,
+            feeAmount, totalAmountToDeduct
+        ) {
             try {
                 const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
-                const depositDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_deposits', depositId);
-
+                const requestDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_requests', requestId);
                 const userDocSnap = await getDoc(userProfileRef);
+
                 if (!userDocSnap.exists()) {
-                    showMessage('Error: Usuario no encontrado para el depósito.', 'error');
+                    showMessage('Error: Usuario no encontrado para la solicitud.', 'error');
                     return;
                 }
                 const userData = userDocSnap.data();
+                let userCurrentBalanceUSD = userData.balanceUSD || 0;
+                let userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
 
-                let newBalanceUSD = userData.balanceUSD || 0;
-                let newBalanceDOP = userData.balanceDOP || 0;
-
-                let depositAmountInUSD = amount;
-                if (currency === 'DOP') {
-                    depositAmountInUSD = amount / USD_TO_DOP_RATE;
+                let adminId = null;
+                const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
+                const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
+                const adminSnapshot = await getDocs(adminQuery);
+                if (!adminSnapshot.empty) {
+                    adminId = adminSnapshot.docs[0].id;
                 }
 
-                newBalanceUSD += depositAmountInUSD;
-                newBalanceDOP = newBalanceUSD * USD_TO_DOP_RATE;
+                // Determine the total amount to be deducted from user and transferred to admin
+                let finalDeductionFromUserUSD = 0;
+                let finalTransferToAdminUSD = 0;
+                let transactionType = type; // Type for the 'transactions' collection
+                let transactionDescription = '';
+                let receiptDetails = {
+                    title: '',
+                    date: new Date().toLocaleString(),
+                    type: '',
+                    amount: 0,
+                    currency: '',
+                    feeAmount: 0,
+                    feeCurrency: 'USD'
+                };
 
+                switch (type) {
+                    case 'deposit':
+                        let depositAmountInUSD = amount;
+                        if (currency === 'DOP') {
+                            depositAmountInUSD = amount / USD_TO_DOP_RATE;
+                        }
+                        userCurrentBalanceUSD += depositAmountInUSD;
+                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
+                        transactionDescription = `Depósito con serie ${serialNumber}`;
+                        receiptDetails = {
+                            title: 'Recibo de Depósito',
+                            type: 'Depósito',
+                            amount: amount,
+                            currency: currency,
+                            description: transactionDescription
+                        };
+                        break;
+                    case 'withdrawal':
+                        let withdrawalAmountInUSD = amount;
+                        if (currency === 'DOP') {
+                            withdrawalAmountInUSD = amount / USD_TO_DOP_RATE;
+                        }
+                        const calculatedFeeInUSD = withdrawalAmountInUSD * WITHDRAWAL_FEE_RATE;
+                        finalDeductionFromUserUSD = withdrawalAmountInUSD + calculatedFeeInUSD;
+
+                        if (userCurrentBalanceUSD < finalDeductionFromUserUSD) {
+                            showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para cubrir el retiro de ${amount.toFixed(2)} ${currency} más la tarifa del 4% ($${calculatedFeeInUSD.toFixed(2)} USD).`, 'error');
+                            return; // Stop processing
+                        }
+                        userCurrentBalanceUSD -= finalDeductionFromUserUSD;
+                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
+                        finalTransferToAdminUSD = calculatedFeeInUSD; // Only fee goes to admin from this transaction
+                        transactionDescription = `Retiro (Tarifa: ${calculatedFeeInUSD.toFixed(2)} USD)`;
+                        receiptDetails = {
+                            title: 'Recibo de Retiro',
+                            type: 'Retiro',
+                            amount: amount,
+                            currency: currency,
+                            feeAmount: calculatedFeeInUSD,
+                            feeCurrency: 'USD',
+                            description: transactionDescription
+                        };
+
+                        // Transfer fee to admin
+                        if (adminId) {
+                            const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
+                            const adminData = (await getDoc(adminProfileRef)).data();
+                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + calculatedFeeInUSD;
+                            await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
+                             await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                                payerId: userId,
+                                receiverId: adminId,
+                                amount: calculatedFeeInUSD,
+                                currency: 'USD',
+                                timestamp: serverTimestamp(),
+                                type: 'withdrawal_fee',
+                                status: 'completed',
+                                originalRequestId: requestId
+                            });
+                        }
+                        break;
+                    case 'online_purchase':
+                        if (userCurrentBalanceUSD < totalAmountToDeduct) {
+                            showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para la compra online.`, 'error');
+                            return; // Stop processing
+                        }
+                        userCurrentBalanceUSD -= totalAmountToDeduct;
+                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
+                        finalTransferToAdminUSD = totalAmountToDeduct; // Entire amount (products + fee) goes to admin
+                        transactionDescription = `Compra online`;
+                        receiptDetails = {
+                            title: 'Recibo de Compra Online',
+                            type: 'Compra Online',
+                            amount: totalAmountToDeduct,
+                            currency: 'USD',
+                            productAmount: productAmount,
+                            productCurrency: productCurrency,
+                            feeAmount: feeAmount,
+                            feeCurrency: 'USD',
+                            productLinks: productLinks,
+                            description: transactionDescription
+                        };
+
+                         // Transfer entire amount to admin
+                        if (adminId) {
+                            const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
+                            const adminData = (await getDoc(adminProfileRef)).data();
+                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + totalAmountToDeduct;
+                            await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
+                        }
+                        break;
+                    case 'streaming_payment':
+                        if (userCurrentBalanceUSD < totalAmountToDeduct) {
+                            showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para el pago de streaming.`, 'error');
+                            return; // Stop processing
+                        }
+                        userCurrentBalanceUSD -= totalAmountToDeduct;
+                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
+                        finalTransferToAdminUSD = totalAmountToDeduct; // Entire amount (subscription + fee) goes to admin
+                        transactionDescription = `Pago de ${service}`;
+                        receiptDetails = {
+                            title: 'Recibo de Pago Streaming',
+                            type: 'Pago Streaming',
+                            amount: totalAmountToDeduct,
+                            currency: 'USD',
+                            service: service,
+                            accountIdentifier: accountIdentifier,
+                            subscriptionAmount: subscriptionAmount,
+                            subscriptionCurrency: subscriptionCurrency,
+                            feeAmount: feeAmount,
+                            feeCurrency: 'USD',
+                            description: transactionDescription
+                        };
+
+                        // Transfer entire amount to admin
+                        if (adminId) {
+                            const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
+                            const adminData = (await getDoc(adminProfileRef)).data();
+                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + totalAmountToDeduct;
+                            await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
+                        }
+                        break;
+                    default:
+                        showMessage('Tipo de solicitud desconocido.', 'error');
+                        return;
+                }
+
+                // Update user's profile with new balance
                 await updateDoc(userProfileRef, {
-                    balanceUSD: newBalanceUSD,
-                    balanceDOP: newBalanceDOP,
-                    hasPendingDeposit: false
+                    balanceUSD: userCurrentBalanceUSD,
+                    balanceDOP: userCurrentBalanceDOP,
+                    ...(type === 'deposit' && { hasPendingDeposit: false }) // Reset hasPendingDeposit only for deposits
                 });
 
-                await updateDoc(depositDocRef, {
+                // Update request status to 'completed'
+                await updateDoc(requestDocRef, {
                     status: 'completed',
                     confirmedAt: serverTimestamp()
                 });
 
-                // Get serial number from the deposit document itself (not from userDocSnap)
-                const depositDataSnap = await getDoc(depositDocRef);
-                const depositSerial = depositDataSnap.exists() ? depositDataSnap.data().serialNumber : 'N/A';
-
+                // Record transaction in main transactions collection
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
                     userId: userId,
-                    amount: amount,
+                    type: transactionType,
+                    amount: amount, // Original requested amount
                     currency: currency,
                     timestamp: serverTimestamp(),
-                    type: 'deposit',
                     status: 'completed',
-                    description: `Depósito con serie ${depositSerial}`
+                    description: transactionDescription,
+                    // Store additional details for specific types
+                    ...(type === 'withdrawal' && { feeAmount: finalTransferToAdminUSD, feeCurrency: 'USD', adminReceiverId: adminId }),
+                    ...(type === 'online_purchase' && { productAmount, productCurrency, productLinks, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId }),
+                    ...(type === 'streaming_payment' && { service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId })
                 });
 
+                showMessage(`Solicitud #${requestId} (${typeDisplay}) confirmada exitosamente.`, 'success');
 
-                showMessage(`Depósito #${depositId} de ${amount.toFixed(2)} ${currency} para ${userData.name} confirmado exitosamente.`, 'success');
+                // Show receipt to the user (only if current user is the affected user)
+                if (currentUserId === userId) {
+                    showReceipt(receiptDetails);
+                }
 
             } catch (error) {
-                console.error("Error confirming deposit:", error);
-                showMessage('Error al confirmar el depósito. Por favor, inténtalo de nuevo.', 'error');
+                console.error(`Error confirmando solicitud ${type} #${requestId}:`, error);
+                showMessage(`Error al confirmar la solicitud ${type}. Por favor, inténtalo de nuevo.`, 'error');
             }
         }
 
         /**
-         * Rejects a pending deposit, deleting it from the list and resetting the user's hasPendingDeposit flag.
-         * @param {string} depositId The document ID of the pending deposit.
-         * @param {string} userId The Firebase UID of the user who made the deposit.
+         * Rejects a pending request.
          */
-        async function rejectDeposit(depositId, userId) {
+        async function rejectRequest(requestId, type, userId) {
             try {
-                const depositDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_deposits', depositId);
-                const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
+                const requestDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_requests', requestId);
 
-                await updateDoc(userProfileRef, {
-                    hasPendingDeposit: false
+                await updateDoc(requestDocRef, {
+                    status: 'rejected',
+                    rejectedAt: serverTimestamp()
                 });
 
-                await deleteDoc(depositDocRef);
-                showMessage(`Depósito #${depositId} rechazado exitosamente.`, 'info');
+                // For deposits, reset the hasPendingDeposit flag so user can request again
+                if (type === 'deposit') {
+                    const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
+                    await updateDoc(userProfileRef, {
+                        hasPendingDeposit: false
+                    });
+                }
+
+                showMessage(`Solicitud #${requestId} (${type}) rechazada exitosamente.`, 'info');
+
             } catch (error) {
-                console.error("Error rejecting deposit:", error);
-                showMessage('Error al rechazar el depósito. Por favor, inténtalo de nuevo.', 'error');
+                console.error(`Error rechazando solicitud ${type} #${requestId}:`, error);
+                showMessage(`Error al rechazar la solicitud ${type}. Por favor, inténtalo de nuevo.`, 'error');
             }
         }
 
-        /**
-         * Loads and displays pending withdrawals in the dedicated modal.
-         */
-        function loadPendingWithdrawals() {
-            console.log("Admin: loadPendingWithdrawals() called.");
-            const withdrawalsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_withdrawals');
-            const q = query(withdrawalsCollectionRef, where('status', '==', 'pending'));
-
-            onSnapshot(q, async (snapshot) => {
-                console.log("Admin: onSnapshot for pending withdrawals triggered.");
-                console.log("Admin: Snapshot size:", snapshot.size);
-
-                pendingWithdrawalsTableBodyModal.innerHTML = ''; // Use the modal's tbody
-                if (snapshot.empty) {
-                    pendingWithdrawalsTableBodyModal.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">No hay retiros pendientes.</td></tr>';
-                    console.log("Admin: No pending withdrawals found in snapshot.");
-                    return;
-                }
-
-                for (const docEntry of snapshot.docs) {
-                    const withdrawal = docEntry.data();
-                    const withdrawalId = docEntry.id;
-                    console.log("Admin: Processing pending withdrawal:", withdrawalId, withdrawal);
-
-                    const userNameDisplay = await getUserDisplayName(withdrawal.userId);
-                    const withdrawalDate = (withdrawal.timestamp && typeof withdrawal.timestamp.seconds !== 'undefined')
-                        ? new Date(withdrawal.timestamp.seconds * 1000).toLocaleString()
-                        : 'Fecha no disponible';
-
-
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${userNameDisplay}</td>
-                        <td>${withdrawal.amount.toFixed(2)} ${withdrawal.currency}</td>
-                        <td>${withdrawalDate}</td>
-                        <td>
-                            <button class="btn-success confirm-withdrawal-btn" data-withdrawal-id="${withdrawalId}" data-user-id="${withdrawal.userId}" data-amount="${withdrawal.amount}" data-currency="${withdrawal.currency}">Confirmar</button>
-                            <button class="btn-danger reject-withdrawal-btn" data-withdrawal-id="${withdrawalId}" data-user-id="${withdrawal.userId}">Rechazar</button>
-                        </td>
-                    `;
-                    pendingWithdrawalsTableBodyModal.appendChild(row); // Append to modal's tbody
-                }
-                console.log(`Admin: Loaded ${snapshot.docs.length} pending withdrawals.`);
-
-                document.querySelectorAll('.confirm-withdrawal-btn').forEach(button => {
-                    button.onclick = async (event) => {
-                        const withdrawalId = event.target.dataset.withdrawalId;
-                        const userId = event.target.dataset.userId;
-                        const amount = parseFloat(event.target.dataset.amount);
-                        const currency = event.target.dataset.currency;
-                        await confirmWithdrawal(withdrawalId, userId, amount, currency);
-                    };
-                });
-                document.querySelectorAll('.reject-withdrawal-btn').forEach(button => {
-                    button.onclick = async (event) => {
-                        const withdrawalId = event.target.dataset.withdrawalId;
-                        const userId = event.target.dataset.userId;
-                        await rejectWithdrawal(withdrawalId, userId);
-                    };
-                });
-            }, (error) => {
-                console.error("Admin: Error loading pending withdrawals:", error);
-                pendingWithdrawalsTableBodyModal.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-4">Error al cargar retiros.</td></tr>`;
-            });
-        }
-
-        /**
-         * Confirms a pending withdrawal, updating the user's balance and transferring fee to admin.
-         * @param {string} withdrawalId The document ID of the pending withdrawal.
-         * @param {string} userId The Firebase UID of the user who made the withdrawal.
-         * @param {number} amount The withdrawal amount.
-         * @param {string} currency The withdrawal currency.
-         */
-        async function confirmWithdrawal(withdrawalId, userId, amount, currency) {
-            try {
-                const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
-                const withdrawalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_withdrawals', withdrawalId);
-
-                const userDocSnap = await getDoc(userProfileRef);
-                if (!userDocSnap.exists()) {
-                    showMessage('Error: Usuario no encontrado para el retiro.', 'error');
-                    return;
-                }
-                const userData = userDocSnap.data();
-
-                let userBalanceUSD = userData.balanceUSD || 0;
-                let userBalanceDOP = userData.balanceDOP || 0;
-
-                let withdrawalAmountInUSD = amount;
-                if (currency === 'DOP') {
-                    withdrawalAmountInUSD = amount / USD_TO_DOP_RATE;
-                }
-
-                // Calculate 4% fee based on the requested withdrawal amount
-                const feePercentage = 0.04;
-                const feeInUSD = withdrawalAmountInUSD * feePercentage;
-
-                // The total amount to deduct from the user's account is the requested amount + the fee.
-                const totalDeductionFromUserInUSD = withdrawalAmountInUSD + feeInUSD;
-
-                // Ensure user has sufficient balance for the requested amount PLUS the fee
-                if (userBalanceUSD < totalDeductionFromUserInUSD) {
-                    showMessage(`Error: Saldo insuficiente ($${userBalanceUSD.toFixed(2)} USD) para cubrir el retiro de ${amount.toFixed(2)} ${currency} más la tarifa del 4% ($${feeInUSD.toFixed(2)} USD).`, 'error');
-                    return;
-                }
-
-                // Deduct the total amount (withdrawal + fee) from user's balance
-                userBalanceUSD -= totalDeductionFromUserInUSD;
-                userBalanceDOP = userBalanceUSD * USD_TO_DOP_RATE;
-
-                await updateDoc(userProfileRef, {
-                    balanceUSD: userBalanceUSD,
-                    balanceDOP: userBalanceDOP
-                });
-
-                // Add the fee to the admin's account
-                const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
-                const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
-                const adminSnapshot = await getDocs(adminQuery);
-
-                let adminId = null;
-                if (!adminSnapshot.empty) {
-                    const adminDoc = adminSnapshot.docs[0];
-                    adminId = adminDoc.id;
-                    const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
-                    const adminData = adminDoc.data();
-
-                    let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeInUSD;
-                    let adminNewBalanceDOP = adminNewBalanceUSD * USD_TO_DOP_RATE;
-
-                    await updateDoc(adminProfileRef, {
-                        balanceUSD: adminNewBalanceUSD,
-                        balanceDOP: adminNewBalanceDOP
-                    });
-
-                    // Record the fee transaction for the admin (optional but good for audit)
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-                        payerId: userId, // User who paid the fee
-                        receiverId: adminId, // Admin who received the fee
-                        amount: feeInUSD,
-                        currency: 'USD',
-                        timestamp: serverTimestamp(),
-                        type: 'withdrawal_fee',
-                        status: 'completed',
-                        originalWithdrawalId: withdrawalId // Link to original withdrawal
-                    });
-
-                } else {
-                    console.warn("Admin account not found for fee collection. Fee not transferred.");
-                    showMessage('Advertencia: Cuenta de administrador no encontrada para cobrar la tarifa de retiro. Contacta soporte.', 'warning');
-                }
-
-                // Update the withdrawal status to 'completed' and record fee details
-                await updateDoc(withdrawalDocRef, {
-                    status: 'completed',
-                    confirmedAt: serverTimestamp(),
-                    feeAmount: feeInUSD,
-                    feeCurrency: 'USD'
-                });
-
-                // Add record to main transactions collection
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-                    userId: userId, // User who initiated withdrawal
-                    amount: amount,
-                    currency: currency,
-                    timestamp: serverTimestamp(),
-                    type: 'withdrawal',
-                    status: 'completed',
-                    description: `Retiro`,
-                    feeAmount: feeInUSD,
-                    feeCurrency: 'USD',
-                    adminReceiverId: adminId // Store admin who received fee
-                });
-
-
-                showMessage(`Retiro #${withdrawalId} de ${amount.toFixed(2)} ${currency} para ${userData.name} confirmado exitosamente. Se cobró una tarifa del 4% ($${feeInUSD.toFixed(2)} USD).`, 'success');
-
-            } catch (error) {
-                console.error("Error confirming withdrawal:", error);
-                showMessage('Error al confirmar el retiro. Por favor, inténtalo de nuevo.', 'error');
-            }
-        }
 
         /**
          * Loads and displays the current user's transaction history.
@@ -1938,12 +2236,12 @@
                         case 'online_purchase':
                             typeDisplay = 'Compra Online';
                             detailsDisplay = `Total productos: ${transaction.productAmount.toFixed(2)} ${transaction.productCurrency}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
-                            amountDisplay = `-${transaction.amount.toFixed(2)} ${transaction.currency}`;
+                            amountDisplay = `-${transaction.amount.toFixed(2)} ${transaction.currency}`; // This is the total deducted
                             break;
                         case 'streaming_payment':
                             typeDisplay = 'Pago Streaming';
                             detailsDisplay = `Servicio: ${transaction.service}, Cuenta: ${transaction.accountIdentifier}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
-                            amountDisplay = `-${transaction.amount.toFixed(2)} ${transaction.currency}`;
+                            amountDisplay = `-${transaction.amount.toFixed(2)} ${transaction.currency}`; // This is the total deducted
                             break;
                     }
 
@@ -2004,6 +2302,8 @@
                     let typeDisplay = transaction.type;
                     let usersInvolved = '';
                     let details = '';
+                    let amountValue = transaction.amount;
+                    let currencyValue = transaction.currency;
 
                     switch (transaction.type) {
                         case 'deposit':
@@ -2028,17 +2328,23 @@
                             const feePayer = await getUserDisplayName(transaction.payerId);
                             const feeReceiver = await getUserDisplayName(transaction.receiverId);
                             usersInvolved = `${feePayer} (paga) -> ${feeReceiver} (recibe)`;
-                            details = `ID Retiro Original: ${transaction.originalWithdrawalId || 'N/A'}`;
+                            details = `ID Solicitud Original: ${transaction.originalRequestId || 'N/A'}`;
+                            amountValue = transaction.amount; // This is the fee amount
+                            currencyValue = 'USD';
                             break;
                         case 'online_purchase':
                             typeDisplay = 'Compra Online';
                             usersInvolved = await getUserDisplayName(transaction.userId);
-                            details = `Links: ${transaction.productLinks.substring(0, 50)}... Total productos: ${transaction.productAmount.toFixed(2)} ${transaction.productCurrency}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
+                            details = `Links: ${transaction.productLinks.substring(0, 50)}... Total prod: ${transaction.productAmount.toFixed(2)} ${transaction.productCurrency}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
+                            amountValue = transaction.totalAmountDeducted; // Show total deducted from user
+                            currencyValue = 'USD';
                             break;
                         case 'streaming_payment':
                             typeDisplay = 'Pago Streaming';
                             usersInvolved = await getUserDisplayName(transaction.userId);
                             details = `Servicio: ${transaction.service}, Cuenta: ${transaction.accountIdentifier}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
+                            amountValue = transaction.totalAmountDeducted; // Show total deducted from user
+                            currencyValue = 'USD';
                             break;
                         default:
                             usersInvolved = transaction.userId || 'N/A'; // Fallback
@@ -2051,8 +2357,8 @@
                         <td>${date}</td>
                         <td>${typeDisplay}</td>
                         <td>${usersInvolved}</td>
-                        <td>${transaction.amount.toFixed(2)}</td>
-                        <td>${transaction.currency}</td>
+                        <td>${amountValue.toFixed(2)}</td>
+                        <td>${currencyValue}</td>
                         <td>${transaction.status}</td>
                         <td>${details}</td>
                     `;
@@ -2066,389 +2372,95 @@
         }
 
         /**
-         * Loads and displays the current user's pending deposits and withdrawals.
+         * Loads and displays the current user's pending deposits and withdrawals, and other pending requests.
          */
         async function loadUserPendingRequests() {
             userPendingRequestsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Cargando solicitudes...</td></tr>';
 
-            const pendingDepositsRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_deposits');
-            const pendingWithdrawalsRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_withdrawals');
+            const pendingRequestsRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests');
+            const userPendingQuery = query(pendingRequestsRef, where('userId', '==', currentUserId), where('status', '==', 'pending'));
 
-            const depositsQuery = query(pendingDepositsRef, where('userId', '==', currentUserId), where('status', '==', 'pending'));
-            const withdrawalsQuery = query(pendingWithdrawalsRef, where('userId', '==', currentUserId), where('status', '==', 'pending'));
+            onSnapshot(userPendingQuery, async (snapshot) => {
+                userPendingRequestsTableBody.innerHTML = ''; // Clear table for new data
+                const allPendingRequests = [];
 
-            onSnapshot(depositsQuery, async (depositsSnapshot) => {
-                onSnapshot(withdrawalsQuery, async (withdrawalsSnapshot) => {
-                    userPendingRequestsTableBody.innerHTML = ''; // Clear table for new data
-                    const allPendingRequests = [];
+                snapshot.forEach(docEntry => {
+                    const data = docEntry.data();
+                    let typeDisplay = '';
+                    let detailDisplay = '';
+                    let amountToDisplay = data.amount;
+                    let currencyToDisplay = data.currency;
 
-                    depositsSnapshot.forEach(docEntry => {
-                        const data = docEntry.data();
-                        allPendingRequests.push({
-                            id: docEntry.id,
-                            type: 'Depósito',
-                            amount: data.amount,
-                            currency: data.currency,
-                            status: data.status,
-                            timestamp: data.timestamp,
-                            detail: `Serie: ${data.serialNumber}`
-                        });
-                    });
-
-                    withdrawalsSnapshot.forEach(docEntry => {
-                        const data = docEntry.data();
-                        allPendingRequests.push({
-                            id: docEntry.id,
-                            type: 'Retiro',
-                            amount: data.amount,
-                            currency: data.currency,
-                            status: data.status,
-                            timestamp: data.timestamp,
-                            detail: `Tarifa (4%): $${(data.amount * 0.04).toFixed(2)} ${data.currency}`
-                        });
-                    });
-
-                    if (allPendingRequests.length === 0) {
-                        userPendingRequestsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">No tienes solicitudes pendientes.</td></tr>';
-                        return;
+                    switch (data.type) {
+                        case 'deposit':
+                            typeDisplay = 'Depósito';
+                            detailDisplay = `Serie: ${data.serialNumber}`;
+                            break;
+                        case 'withdrawal':
+                            typeDisplay = 'Retiro';
+                            detailDisplay = `Tarifa est. (4%): $${data.estimatedFee ? data.estimatedFee.toFixed(2) : '0.00'} USD`;
+                            break;
+                        case 'online_purchase':
+                            typeDisplay = 'Compra Online';
+                            amountToDisplay = data.totalAmountToDeduct; // Show total that will be deducted
+                            currencyToDisplay = 'USD';
+                            detailDisplay = `Total productos: ${data.productAmount.toFixed(2)} ${data.productCurrency}, Tarifa: ${data.feeAmount.toFixed(2)} USD`;
+                            break;
+                        case 'streaming_payment':
+                            typeDisplay = 'Pago Streaming';
+                            amountToDisplay = data.totalAmountToDeduct; // Show total that will be deducted
+                            currencyToDisplay = 'USD';
+                            detailDisplay = `Servicio: ${data.service}, Cuenta: ${data.accountIdentifier}, Tarifa: ${data.feeAmount.toFixed(2)} USD`;
+                            break;
+                        default:
+                            typeDisplay = 'Desconocido';
+                            detailDisplay = 'N/A';
                     }
 
-                    // Sort by timestamp descending
-                    allPendingRequests.sort((a, b) => {
-                        const timestampA = a.timestamp && typeof a.timestamp.seconds !== 'undefined' ? a.timestamp.seconds : 0;
-                        const timestampB = b.timestamp && typeof b.timestamp.seconds !== 'undefined' ? b.timestamp.seconds : 0;
-                        return timestampB - timestampA;
+                    allPendingRequests.push({
+                        id: docEntry.id,
+                        type: typeDisplay,
+                        amount: amountToDisplay,
+                        currency: currencyToDisplay,
+                        status: data.status,
+                        timestamp: data.timestamp,
+                        detail: detailDisplay
                     });
-
-                    for (const request of allPendingRequests) {
-                        const date = (request.timestamp && typeof request.timestamp.seconds !== 'undefined')
-                            ? new Date(request.timestamp.seconds * 1000).toLocaleString()
-                            : 'Fecha no disponible';
-
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${date}</td>
-                            <td>${request.type}</td>
-                            <td>${request.amount.toFixed(2)}</td>
-                            <td>${request.currency}</td>
-                            <td>${request.status === 'pending' ? 'Pendiente' : request.status}</td>
-                            <td>${request.detail}</td>
-                        `;
-                        userPendingRequestsTableBody.appendChild(row);
-                    }
                 });
+
+                if (allPendingRequests.length === 0) {
+                    userPendingRequestsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">No tienes solicitudes pendientes.</td></tr>';
+                    return;
+                }
+
+                // Sort by timestamp descending
+                allPendingRequests.sort((a, b) => {
+                    const timestampA = a.timestamp && typeof a.timestamp.seconds !== 'undefined' ? a.timestamp.seconds : 0;
+                    const timestampB = b.timestamp && typeof b.timestamp.seconds !== 'undefined' ? b.timestamp.seconds : 0;
+                    return timestampB - timestampA;
+                });
+
+                for (const request of allPendingRequests) {
+                    const date = (request.timestamp && typeof request.timestamp.seconds !== 'undefined')
+                        ? new Date(request.timestamp.seconds * 1000).toLocaleString()
+                        : 'Fecha no disponible';
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${date}</td>
+                        <td>${request.type}</td>
+                        <td>${request.amount.toFixed(2)}</td>
+                        <td>${request.currency}</td>
+                        <td>${request.status === 'pending' ? 'Pendiente' : request.status}</td>
+                        <td>${request.detail}</td>
+                    `;
+                    userPendingRequestsTableBody.appendChild(row);
+                }
             }, (error) => {
                 console.error("Error loading user pending requests:", error);
                 userPendingRequestsTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-4">Error al cargar solicitudes pendientes.</td></tr>`;
             });
         }
-
-
-        // --- Online Shopping Logic (NEW) ---
-        onlineShoppingBtn.addEventListener('click', () => {
-            onlineShoppingModal.classList.remove('hidden');
-            onlineShoppingForm.reset();
-            shoppingFeeDisplay.textContent = '$0.00 USD';
-            shoppingTotalDisplay.textContent = '$0.00 USD';
-        });
-
-        cancelOnlineShopping.addEventListener('click', () => {
-            closeModal(onlineShoppingModal);
-            onlineShoppingForm.reset();
-        });
-
-        // Calculate fee and total on input change
-        shoppingAmountInput.addEventListener('input', updateOnlineShoppingCalculation);
-        shoppingCurrencyInput.addEventListener('change', updateOnlineShoppingCalculation);
-
-        function updateOnlineShoppingCalculation() {
-            const amount = parseFloat(shoppingAmountInput.value);
-            const currency = shoppingCurrencyInput.value;
-
-            if (isNaN(amount) || amount <= 0) {
-                shoppingFeeDisplay.textContent = `$0.00 USD`;
-                shoppingTotalDisplay.textContent = `$0.00 USD`;
-                return;
-            }
-
-            let amountInUSD = amount;
-            if (currency === 'DOP') {
-                amountInUSD = amount / USD_TO_DOP_RATE;
-            }
-
-            const feeAmount = amountInUSD * COMMISSION_RATE;
-            const totalAmount = amountInUSD + feeAmount;
-
-            shoppingFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
-            shoppingTotalDisplay.textContent = `$${totalAmount.toFixed(2)} USD`;
-        }
-
-        onlineShoppingForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideMessage();
-
-            const productAmount = parseFloat(shoppingAmountInput.value);
-            const productCurrency = shoppingCurrencyInput.value;
-            const productLinks = productLinksInput.value.trim();
-
-            if (isNaN(productAmount) || productAmount <= 0) {
-                showMessage('Por favor, ingresa un monto estimado válido para los productos.', 'error');
-                return;
-            }
-            if (!productLinks) {
-                showMessage('Por favor, ingresa al menos un enlace de producto.', 'error');
-                return;
-            }
-
-            let amountInUSD = productAmount;
-            if (productCurrency === 'DOP') {
-                amountInUSD = productAmount / USD_TO_DOP_RATE;
-            }
-
-            const feeAmount = amountInUSD * COMMISSION_RATE;
-            const totalToDeductInUSD = amountInUSD + feeAmount;
-
-            if (currentBalanceUSD < totalToDeductInUSD) {
-                showMessage(`Saldo insuficiente para esta compra. Necesitas $${totalToDeductInUSD.toFixed(2)} USD.`, 'error');
-                return;
-            }
-
-            try {
-                // Deduct money from user's balance
-                const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
-                const userDocSnap = await getDoc(userProfileRef);
-                const userData = userDocSnap.data();
-
-                let newUserBalanceUSD = userData.balanceUSD - totalToDeductInUSD;
-                let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
-
-                await updateDoc(userProfileRef, {
-                    balanceUSD: newUserBalanceUSD,
-                    balanceDOP: newUserBalanceDOP
-                });
-
-                // Record transaction
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-                    userId: currentUserId,
-                    type: 'online_purchase',
-                    productAmount: productAmount,
-                    productCurrency: productCurrency,
-                    productLinks: productLinks,
-                    feeAmount: feeAmount,
-                    feeCurrency: 'USD', // Fee is always calculated in USD
-                    amount: totalToDeductInUSD, // Total amount deducted in USD
-                    currency: 'USD', // Currency of the deduction
-                    timestamp: serverTimestamp(),
-                    status: 'completed', // Status is completed since money is deducted
-                    description: `Compra online de ${productAmount.toFixed(2)} ${productCurrency}`
-                });
-
-                // Add the fee to the admin's account
-                const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
-                const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
-                const adminSnapshot = await getDocs(adminQuery);
-
-                if (!adminSnapshot.empty) {
-                    const adminDoc = adminSnapshot.docs[0];
-                    const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminDoc.id);
-                    const adminData = adminDoc.data();
-
-                    let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
-                    let adminNewBalanceDOP = adminNewBalanceUSD * USD_TO_DOP_RATE;
-
-                    await updateDoc(adminProfileRef, {
-                        balanceUSD: adminNewBalanceUSD,
-                        balanceDOP: adminNewBalanceDOP
-                    });
-                     // Record the fee transaction for the admin (optional but good for audit)
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-                        payerId: currentUserId, // User who paid the fee
-                        receiverId: adminDoc.id, // Admin who received the fee
-                        amount: feeAmount,
-                        currency: 'USD',
-                        timestamp: serverTimestamp(),
-                        type: 'online_purchase_fee',
-                        status: 'completed'
-                    });
-                } else {
-                    console.warn("Admin account not found for fee collection.");
-                }
-
-                // Prepare WhatsApp message
-                const whatsappMessage = `
-                Nueva solicitud de compra online:
-                Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
-                Monto de productos: ${productAmount.toFixed(2)} ${productCurrency}
-                Tarifa (3%): $${feeAmount.toFixed(2)} USD
-                TOTAL COBRADO: $${totalToDeductInUSD.toFixed(2)} USD
-                Enlaces de productos:
-                ${productLinks}
-                Por favor, procede con la compra.
-                `;
-                const encodedMessage = encodeURIComponent(whatsappMessage);
-                window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
-
-                showMessage('Compra por internet solicitada y dinero deducido. Se ha abierto tu WhatsApp para enviar los detalles al administrador.', 'success');
-                closeModal(onlineShoppingModal);
-                onlineShoppingForm.reset();
-
-            } catch (error) {
-                console.error("Error al procesar compra online:", error);
-                showMessage('Error al procesar la compra online. Por favor, inténtalo de nuevo.', 'error');
-            }
-        });
-
-        // --- Streaming Payment Logic (NEW) ---
-        streamingPaymentBtn.addEventListener('click', () => {
-            streamingPaymentModal.classList.remove('hidden');
-            streamingPaymentForm.reset();
-            streamingFeeDisplay.textContent = '$0.00 USD';
-            streamingTotalDisplay.textContent = '$0.00 USD';
-        });
-
-        cancelStreamingPayment.addEventListener('click', () => {
-            closeModal(streamingPaymentModal);
-            streamingPaymentForm.reset();
-        });
-
-        // Calculate fee and total on input change
-        streamingAmountInput.addEventListener('input', updateStreamingPaymentCalculation);
-        streamingCurrencyInput.addEventListener('change', updateStreamingPaymentCalculation);
-
-        function updateStreamingPaymentCalculation() {
-            const amount = parseFloat(streamingAmountInput.value);
-            const currency = streamingCurrencyInput.value;
-
-            if (isNaN(amount) || amount <= 0) {
-                streamingFeeDisplay.textContent = `$0.00 USD`;
-                streamingTotalDisplay.textContent = `$0.00 USD`;
-                return;
-            }
-
-            let amountInUSD = amount;
-            if (currency === 'DOP') {
-                amountInUSD = amount / USD_TO_DOP_RATE;
-            }
-
-            const feeAmount = amountInUSD * COMMISSION_RATE;
-            const totalAmount = amountInUSD + feeAmount;
-
-            streamingFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
-            streamingTotalDisplay.textContent = `$${totalAmount.toFixed(2)} USD`;
-        }
-
-        streamingPaymentForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideMessage();
-
-            const service = streamingServiceInput.value;
-            const accountIdentifier = streamingAccountIdentifierInput.value.trim();
-            const subscriptionAmount = parseFloat(streamingAmountInput.value);
-            const subscriptionCurrency = streamingCurrencyInput.value;
-
-            if (!service || !accountIdentifier || isNaN(subscriptionAmount) || subscriptionAmount <= 0) {
-                showMessage('Por favor, completa todos los campos para el pago del servicio de streaming.', 'error');
-                return;
-            }
-
-            let amountInUSD = subscriptionAmount;
-            if (subscriptionCurrency === 'DOP') {
-                amountInUSD = subscriptionAmount / USD_TO_DOP_RATE;
-            }
-
-            const feeAmount = amountInUSD * COMMISSION_RATE;
-            const totalToDeductInUSD = amountInUSD + feeAmount;
-
-            if (currentBalanceUSD < totalToDeductInUSD) {
-                showMessage(`Saldo insuficiente para pagar este servicio. Necesitas $${totalToDeductInUSD.toFixed(2)} USD.`, 'error');
-                return;
-            }
-
-            try {
-                // Deduct money from user's balance
-                const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
-                const userDocSnap = await getDoc(userProfileRef);
-                const userData = userDocSnap.data();
-
-                let newUserBalanceUSD = userData.balanceUSD - totalToDeductInUSD;
-                let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
-
-                await updateDoc(userProfileRef, {
-                    balanceUSD: newUserBalanceUSD,
-                    balanceDOP: newUserBalanceDOP
-                });
-
-                // Record transaction
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-                    userId: currentUserId,
-                    type: 'streaming_payment',
-                    service: service,
-                    accountIdentifier: accountIdentifier,
-                    subscriptionAmount: subscriptionAmount,
-                    subscriptionCurrency: subscriptionCurrency,
-                    feeAmount: feeAmount,
-                    feeCurrency: 'USD',
-                    amount: totalToDeductInUSD, // Total amount deducted in USD
-                    currency: 'USD', // Currency of the deduction
-                    timestamp: serverTimestamp(),
-                    status: 'completed',
-                    description: `Pago de ${service} para cuenta ${accountIdentifier}`
-                });
-
-                // Add the fee to the admin's account
-                const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
-                const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
-                const adminSnapshot = await getDocs(adminQuery);
-
-                if (!adminSnapshot.empty) {
-                    const adminDoc = adminSnapshot.docs[0];
-                    const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminDoc.id);
-                    const adminData = adminDoc.data();
-
-                    let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
-                    let adminNewBalanceDOP = adminNewBalanceUSD * USD_TO_DOP_RATE;
-
-                    await updateDoc(adminProfileRef, {
-                        balanceUSD: adminNewBalanceUSD,
-                        balanceDOP: adminNewBalanceDOP
-                    });
-                     // Record the fee transaction for the admin
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-                        payerId: currentUserId,
-                        receiverId: adminDoc.id,
-                        amount: feeAmount,
-                        currency: 'USD',
-                        timestamp: serverTimestamp(),
-                        type: 'streaming_payment_fee',
-                        status: 'completed'
-                    });
-                } else {
-                    console.warn("Admin account not found for fee collection.");
-                }
-
-                // Prepare WhatsApp message
-                const whatsappMessage = `
-                Nueva solicitud de pago de servicio de streaming:
-                Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
-                Servicio: ${service}
-                Cuenta: ${accountIdentifier}
-                Monto Suscripción: ${subscriptionAmount.toFixed(2)} ${subscriptionCurrency}
-                Tarifa (3%): $${feeAmount.toFixed(2)} USD
-                TOTAL COBRADO: $${totalToDeductInUSD.toFixed(2)} USD
-                Por favor, procede con el pago.
-                `;
-                const encodedMessage = encodeURIComponent(whatsappMessage);
-                window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
-
-                showMessage('Pago de servicio de streaming solicitado y dinero deducido. Se ha abierto tu WhatsApp para enviar los detalles al administrador.', 'success');
-                closeModal(streamingPaymentModal);
-                streamingPaymentForm.reset();
-
-            } catch (error) {
-                console.error("Error al procesar pago de streaming:", error);
-                showMessage('Error al procesar el pago de streaming. Por favor, inténtalo de nuevo.', 'error');
-            }
-        });
 
 
         // --- Event Listeners ---
@@ -2497,21 +2509,13 @@
             closeModal(adminFullHistoryModal);
         });
 
-        // Admin Deposits/Withdrawals Modal buttons
-        viewPendingDepositsBtn.addEventListener('click', () => {
-            pendingDepositsModal.classList.remove('hidden');
-            loadPendingDeposits(); // Load pending deposits
+        // NEW Admin Pending Requests Modal button
+        viewAdminPendingRequestsBtn.addEventListener('click', () => {
+            adminPendingRequestsModal.classList.remove('hidden');
+            loadAdminPendingRequests();
         });
-        closePendingDepositsModalBtn.addEventListener('click', () => {
-            closeModal(pendingDepositsModal);
-        });
-
-        viewPendingWithdrawalsBtn.addEventListener('click', () => {
-            pendingWithdrawalsModal.classList.remove('hidden');
-            loadPendingWithdrawals(); // Load pending withdrawals
-        });
-        closePendingWithdrawalsModalBtn.addEventListener('click', () => {
-            closeModal(pendingWithdrawalsModal);
+        closeAdminPendingRequestsModalBtn.addEventListener('click', () => {
+            closeModal(adminPendingRequestsModal);
         });
 
         // FAQ Modal buttons
@@ -2549,6 +2553,11 @@
         });
         closeUserPendingRequestsModalBtn.addEventListener('click', () => {
             closeModal(userPendingRequestsModal);
+        });
+
+        // Receipt Modal Button
+        closeReceiptModalBtn.addEventListener('click', () => {
+            closeModal(receiptModal);
         });
 
     </script>
