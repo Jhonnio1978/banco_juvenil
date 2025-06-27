@@ -341,7 +341,7 @@
                     </div>
                 </div>
 
-                <!-- Transfer/Deposit/Withdrawal Status Message (for 2-minute transfers or pending deposits) -->
+                <!-- Transfer/Deposit/Withdrawal Status Message (for 10-second transfers or pending deposits) -->
                 <div id="transactionStatusMsg" class="mt-6 p-4 rounded-lg text-sm hidden bg-yellow-100 border border-yellow-200 text-yellow-800" role="status">
                     <p id="transactionStatusText"></p>
                     <button id="cancelOngoingTransferBtn" class="mt-2 btn-secondary hidden">Cancelar Transferencia</button>
@@ -377,7 +377,7 @@
         </div>
     </div>
 
-    <!-- NEW Admin Pending Requests Modal (Unified for deposits, withdrawals, online shopping, streaming) -->
+    <!-- Admin Pending Requests Modal (Unified for deposits, withdrawals, online shopping, streaming) -->
     <div id="adminPendingRequestsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
         <div class="modal-content p-8">
             <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Solicitudes Pendientes (Admin)</h3>
@@ -418,7 +418,7 @@
                 </div>
                 <div>
                     <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cuánto tiempo tardan las transferencias?</h4>
-                    <p class="text-sm">Las transferencias entre cuentas toman aproximadamente 2 minutos en procesarse. Una vez iniciada, no se puede cancelar.</p>
+                    <p class="text-sm">Las transferencias entre cuentas toman aproximadamente 10 segundos en procesarse. Una vez iniciada, no se puede cancelar.</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo funciona el depósito de dinero?</h4>
@@ -553,7 +553,7 @@
         </div>
     </div>
 
-    <!-- Receipt/Invoice Modal for Users (NEW) -->
+    <!-- Receipt/Invoice Modal for Users -->
     <div id="receiptModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
         <div class="modal-content p-8 w-full max-w-md">
             <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Recibo de Transacción</h3>
@@ -655,7 +655,7 @@
         const onlineShoppingBtn = document.getElementById('onlineShoppingBtn'); // Online Shopping Button
         const streamingPaymentBtn = document.getElementById('streamingPaymentBtn'); // Streaming Payment Button
         const viewUserPendingRequestsBtn = document.getElementById('viewUserPendingRequestsBtn'); // User Pending Requests Button
-        const viewAdminPendingRequestsBtn = document.getElementById('viewAdminPendingRequestsBtn'); // NEW Admin Pending Requests Button
+        const viewAdminPendingRequestsBtn = document.getElementById('viewAdminPendingRequestsBtn'); // Admin Pending Requests Button
 
         const adminFullHistoryTableBodyModal = document.getElementById('adminFullHistoryTableBodyModal'); // Admin History (in modal)
 
@@ -683,7 +683,7 @@
             <p class="mb-2"><strong>4. Depósitos:</strong> Todos los depósitos requieren aprobación del banco. No podrás hacer otro depósito si tienes uno pendiente.</p>
             <p class="mb-2"><strong>5. Retiros:</strong> Las solicitudes de retiro también requieren aprobación del banco. Se aplicará una tarifa del 4% a cada retiro.</p>
             <p class="mb-2"><strong>6. Compras y Streaming:</strong> Las solicitudes de compra por internet y pago de servicios de streaming requieren la aprobación del administrador antes de que se deduzca el dinero.</p>
-            <p><strong>7. Transferencias:</strong> Las transferencias tienen un tiempo de procesamiento de 2 minutos. Verifica bien al destinatario, no son reversibles.</p>
+            <p><strong>7. Transferencias:</strong> Las transferencias tienen un tiempo de procesamiento de 10 segundos. Verifica bien al destinatario, no son reversibles.</p>
         `;
 
         // Modals
@@ -713,7 +713,7 @@
         const adminFullHistoryModal = document.getElementById('adminFullHistoryModal');
         const closeAdminFullHistoryModalBtn = document.getElementById('closeAdminFullHistoryModalBtn');
 
-        // NEW: Admin Pending Requests Modal elements
+        // Admin Pending Requests Modal elements
         const adminPendingRequestsModal = document.getElementById('adminPendingRequestsModal');
         const closeAdminPendingRequestsModalBtn = document.getElementById('closeAdminPendingRequestsModalBtn');
         const adminPendingRequestsTableBody = document.getElementById('adminPendingRequestsTableBody');
@@ -744,9 +744,9 @@
         const closeUserPendingRequestsModalBtn = document.getElementById('closeUserPendingRequestsModalBtn');
         const userPendingRequestsTableBody = document.getElementById('userPendingRequestsTableBody');
 
-        const receiptModal = document.getElementById('receiptModal'); // NEW Receipt Modal
-        const receiptContent = document.getElementById('receiptContent'); // NEW Receipt Content
-        const closeReceiptModalBtn = document.getElementById('closeReceiptModalBtn'); // NEW Receipt Close Button
+        const receiptModal = document.getElementById('receiptModal');
+        const receiptContent = document.getElementById('receiptContent');
+        const closeReceiptModalBtn = document.getElementById('closeReceiptModalBtn');
 
 
         // --- Utility Functions ---
@@ -784,7 +784,7 @@
         function showTransactionStatus(msg) {
             transactionStatusText.textContent = msg;
             transactionStatusMsg.classList.remove('hidden');
-            // Show cancel button only if it's an actual transfer in progress (not deposit/withdrawal status)
+            // Show cancel button only if it's an actual transfer in progress
             cancelOngoingTransferBtn.classList.remove('hidden');
         }
 
@@ -848,12 +848,12 @@
             if (activeTabId === 'login') {
                 loginTab.classList.add('active');
                 registerTab.classList.remove('active');
-                // Hide all main sections and modals, including new admin modals
+                // Hide all main sections and modals
                 showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal);
             } else {
                 registerTab.classList.add('active');
                 loginTab.classList.remove('active');
-                // Hide all main sections and modals, including new admin modals
+                // Hide all main sections and modals
                 showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal);
             }
             hideMessage(); // Hide any previous messages when changing tabs
@@ -1267,21 +1267,21 @@
                 return;
             }
 
-            showMessage(`Iniciando transferencia de ${currentTransferAmount.toFixed(2)} ${currentTransferCurrency} a ${currentTransferRecipientDisplayName}... Por favor, espera 2 minutos.`, 'info');
+            showMessage(`Iniciando transferencia de ${currentTransferAmount.toFixed(2)} ${currentTransferCurrency} a ${currentTransferRecipientDisplayName}... Por favor, espera 10 segundos.`, 'info');
             closeModal(transferModal); // Close the modal immediately
-            showTransactionStatus(`Transferencia a ${currentTransferRecipientDisplayName} en proceso... (2 minutos restantes)`);
+            showTransactionStatus(`Transferencia a ${currentTransferRecipientDisplayName} en proceso... (10 segundos restantes)`);
             transferForm.reset(); // Reset form fields
             recipientNameDisplay.textContent = ''; // Clear recipient name display
             confirmTransferBtn.disabled = true; // Disable button after submission
 
-            // --- SIMULACIÓN DE 2 MINUTOS DE ESPERA ---
-            let countdown = 120; // 2 minutes in seconds
+            // --- SIMULACIÓN DE 10 SEGUNDOS DE ESPERA ---
+            let countdown = 10; // 10 seconds
             cancelOngoingTransferBtn.classList.remove('hidden'); // Show cancel button for ongoing transfer
 
             transferInterval = setInterval(() => {
                 countdown--;
                 if (countdown >= 0) {
-                    transactionStatusText.textContent = `Transferencia a ${currentTransferRecipientDisplayName} en proceso... (${Math.floor(countdown / 60)}:${(countdown % 60).toString().padStart(2, '0')} restantes)`;
+                    transactionStatusText.textContent = `Transferencia a ${currentTransferRecipientDisplayName} en proceso... (${countdown} segundos restantes)`;
                 }
 
                 if (countdown <= 0) {
@@ -1770,7 +1770,7 @@
 
             } catch (error) {
                 console.error("Error al solicitar pago de streaming:", error);
-                showMessage('Error al procesar la solicitud de pago de streaming. Por favor, inténtalo de nuevo.', 'error');
+                showMessage('Error al procesar el pago de streaming. Por favor, inténtalo de nuevo.', 'error');
             }
         });
 
@@ -1813,7 +1813,6 @@
                     let amountDisplay = '';
                     let currencyDisplay = '';
                     let detailsDisplay = '';
-                    let totalAmountForAdmin = 0; // The total amount that admin receives (could be different from 'amount' if there's a fee)
 
                     switch (request.type) {
                         case 'deposit':
@@ -1821,35 +1820,30 @@
                             amountDisplay = request.amount.toFixed(2);
                             currencyDisplay = request.currency;
                             detailsDisplay = `Serie: ${request.serialNumber}`;
-                            totalAmountForAdmin = request.amount; // Admin is just confirming user's deposit
                             break;
                         case 'withdrawal':
                             typeDisplay = 'Retiro';
                             amountDisplay = request.amount.toFixed(2);
                             currencyDisplay = request.currency;
                             detailsDisplay = `Tarifa est. (4%): $${request.estimatedFee ? request.estimatedFee.toFixed(2) : '0.00'} USD`;
-                            totalAmountForAdmin = request.amount; // Admin facilitates the user's withdrawal, fee is separate
                             break;
                         case 'online_purchase':
                             typeDisplay = 'Compra Online';
                             amountDisplay = request.totalAmountToDeduct.toFixed(2); // Show total amount to be deducted
                             currencyDisplay = 'USD'; // Assuming totalToDeduct is in USD
                             detailsDisplay = `Prod. Cant: ${request.productAmount.toFixed(2)} ${request.productCurrency}, Tarifa (3%): $${request.feeAmount.toFixed(2)} USD. Links: ${request.productLinks.substring(0, 50)}...`;
-                            totalAmountForAdmin = request.totalAmountToDeduct; // Admin receives this total amount
                             break;
                         case 'streaming_payment':
                             typeDisplay = 'Pago Streaming';
                             amountDisplay = request.totalAmountToDeduct.toFixed(2); // Show total amount to be deducted
                             currencyDisplay = 'USD'; // Assuming totalToDeduct is in USD
                             detailsDisplay = `Servicio: ${request.service}, Cuenta: ${request.accountIdentifier}, Tarifa (3%): $${request.feeAmount.toFixed(2)} USD.`;
-                            totalAmountForAdmin = request.totalAmountToDeduct; // Admin receives this total amount
                             break;
                         default:
                             typeDisplay = 'Desconocido';
                             amountDisplay = request.amount ? request.amount.toFixed(2) : 'N/A';
                             currencyDisplay = request.currency || 'N/A';
                             detailsDisplay = 'N/A';
-                            totalAmountForAdmin = 0;
                     }
 
                     const row = document.createElement('tr');
@@ -1940,7 +1934,6 @@
                 }
                 const userData = userDocSnap.data();
                 let userCurrentBalanceUSD = userData.balanceUSD || 0;
-                let userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
 
                 let adminId = null;
                 const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
@@ -1950,9 +1943,6 @@
                     adminId = adminSnapshot.docs[0].id;
                 }
 
-                // Determine the total amount to be deducted from user and transferred to admin
-                let finalDeductionFromUserUSD = 0;
-                let finalTransferToAdminUSD = 0;
                 let transactionType = type; // Type for the 'transactions' collection
                 let transactionDescription = '';
                 let receiptDetails = {
@@ -1972,7 +1962,6 @@
                             depositAmountInUSD = amount / USD_TO_DOP_RATE;
                         }
                         userCurrentBalanceUSD += depositAmountInUSD;
-                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Depósito con serie ${serialNumber}`;
                         receiptDetails = {
                             title: 'Recibo de Depósito',
@@ -1988,15 +1977,13 @@
                             withdrawalAmountInUSD = amount / USD_TO_DOP_RATE;
                         }
                         const calculatedFeeInUSD = withdrawalAmountInUSD * WITHDRAWAL_FEE_RATE;
-                        finalDeductionFromUserUSD = withdrawalAmountInUSD + calculatedFeeInUSD;
+                        const totalDeductionFromUserForWithdrawal = withdrawalAmountInUSD + calculatedFeeInUSD;
 
-                        if (userCurrentBalanceUSD < finalDeductionFromUserUSD) {
+                        if (userCurrentBalanceUSD < totalDeductionFromUserForWithdrawal) {
                             showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para cubrir el retiro de ${amount.toFixed(2)} ${currency} más la tarifa del 4% ($${calculatedFeeInUSD.toFixed(2)} USD).`, 'error');
                             return; // Stop processing
                         }
-                        userCurrentBalanceUSD -= finalDeductionFromUserUSD;
-                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
-                        finalTransferToAdminUSD = calculatedFeeInUSD; // Only fee goes to admin from this transaction
+                        userCurrentBalanceUSD -= totalDeductionFromUserForWithdrawal;
                         transactionDescription = `Retiro (Tarifa: ${calculatedFeeInUSD.toFixed(2)} USD)`;
                         receiptDetails = {
                             title: 'Recibo de Retiro',
@@ -2032,13 +2019,11 @@
                             return; // Stop processing
                         }
                         userCurrentBalanceUSD -= totalAmountToDeduct;
-                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
-                        finalTransferToAdminUSD = totalAmountToDeduct; // Entire amount (products + fee) goes to admin
                         transactionDescription = `Compra online`;
                         receiptDetails = {
                             title: 'Recibo de Compra Online',
                             type: 'Compra Online',
-                            amount: totalAmountToDeduct,
+                            amount: totalAmountToDeduct, // Total deducted
                             currency: 'USD',
                             productAmount: productAmount,
                             productCurrency: productCurrency,
@@ -2048,7 +2033,7 @@
                             description: transactionDescription
                         };
 
-                         // Transfer entire amount to admin
+                         // Transfer entire amount (products + fee) to admin
                         if (adminId) {
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
@@ -2062,13 +2047,11 @@
                             return; // Stop processing
                         }
                         userCurrentBalanceUSD -= totalAmountToDeduct;
-                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
-                        finalTransferToAdminUSD = totalAmountToDeduct; // Entire amount (subscription + fee) goes to admin
                         transactionDescription = `Pago de ${service}`;
                         receiptDetails = {
                             title: 'Recibo de Pago Streaming',
                             type: 'Pago Streaming',
-                            amount: totalAmountToDeduct,
+                            amount: totalAmountToDeduct, // Total deducted
                             currency: 'USD',
                             service: service,
                             accountIdentifier: accountIdentifier,
@@ -2079,7 +2062,7 @@
                             description: transactionDescription
                         };
 
-                        // Transfer entire amount to admin
+                        // Transfer entire amount (subscription + fee) to admin
                         if (adminId) {
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
@@ -2095,7 +2078,7 @@
                 // Update user's profile with new balance
                 await updateDoc(userProfileRef, {
                     balanceUSD: userCurrentBalanceUSD,
-                    balanceDOP: userCurrentBalanceDOP,
+                    balanceDOP: userCurrentBalanceUSD * USD_TO_DOP_RATE, // Update DOP balance based on new USD
                     ...(type === 'deposit' && { hasPendingDeposit: false }) // Reset hasPendingDeposit only for deposits
                 });
 
@@ -2115,7 +2098,7 @@
                     status: 'completed',
                     description: transactionDescription,
                     // Store additional details for specific types
-                    ...(type === 'withdrawal' && { feeAmount: finalTransferToAdminUSD, feeCurrency: 'USD', adminReceiverId: adminId }),
+                    ...(type === 'withdrawal' && { feeAmount: calculatedFeeInUSD, feeCurrency: 'USD', adminReceiverId: adminId }),
                     ...(type === 'online_purchase' && { productAmount, productCurrency, productLinks, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId }),
                     ...(type === 'streaming_payment' && { service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId })
                 });
@@ -2157,7 +2140,7 @@
 
             } catch (error) {
                 console.error(`Error rechazando solicitud ${type} #${requestId}:`, error);
-                showMessage(`Error al rechazar la solicitud ${type}. Por favor, inténtalo de nuevo.`, 'error');
+                showMessage(`Error al rechazar la solicitud ${type}. Por favor, inténtalo de nuevo.', 'error`);
             }
         }
 
@@ -2236,12 +2219,12 @@
                         case 'online_purchase':
                             typeDisplay = 'Compra Online';
                             detailsDisplay = `Total productos: ${transaction.productAmount.toFixed(2)} ${transaction.productCurrency}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
-                            amountDisplay = `-${transaction.amount.toFixed(2)} ${transaction.currency}`; // This is the total deducted
+                            amountDisplay = `-${transaction.totalAmountDeducted.toFixed(2)} ${transaction.currency}`; // This is the total deducted
                             break;
                         case 'streaming_payment':
                             typeDisplay = 'Pago Streaming';
                             detailsDisplay = `Servicio: ${transaction.service}, Cuenta: ${transaction.accountIdentifier}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
-                            amountDisplay = `-${transaction.amount.toFixed(2)} ${transaction.currency}`; // This is the total deducted
+                            amountDisplay = `-${transaction.totalAmountDeducted.toFixed(2)} ${transaction.currency}`; // This is the total deducted
                             break;
                     }
 
@@ -2509,7 +2492,7 @@
             closeModal(adminFullHistoryModal);
         });
 
-        // NEW Admin Pending Requests Modal button
+        // Admin Pending Requests Modal button (Unified)
         viewAdminPendingRequestsBtn.addEventListener('click', () => {
             adminPendingRequestsModal.classList.remove('hidden');
             loadAdminPendingRequests();
