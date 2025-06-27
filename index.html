@@ -810,7 +810,7 @@
                  content += `<p><strong>Monto Productos:</strong> ${transactionDetails.productAmount.toFixed(2)} ${transactionDetails.productCurrency}</p>`;
             }
             if (transactionDetails.feeAmount) {
-                content += `<p><strong>Tarifa (${(COMMISSION_RATE * 100).toFixed(0)}%):</strong> ${transactionDetails.feeAmount.toFixed(2)} ${transactionDetails.feeCurrency}</p>`;
+                content += `<p><strong>Tarifa (${(COMMISSION_RATE * 100).toFixed(0)}%):</strong> ${transactionDetails.feeAmount.toFixed(2)} ${transaction.feeCurrency}</p>`;
             }
             if (transactionDetails.service) {
                 content += `<p><strong>Servicio:</strong> ${transactionDetails.service}</p>`;
@@ -1967,6 +1967,7 @@
                 };
                 let amountToRecordInTransaction = amount; // Default to original request amount
                 let currencyToRecordInTransaction = currency; // Default to original request currency
+                let typeDisplay = ''; // Initialize typeDisplay here
 
                 switch (type) {
                     case 'deposit':
@@ -1977,6 +1978,7 @@
                         userCurrentBalanceUSD += depositAmountInUSD;
                         userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Depósito con serie ${serialNumber}`;
+                        typeDisplay = 'Depósito'; // Set typeDisplay here
                         receiptDetails = {
                             title: 'Recibo de Depósito',
                             type: 'Depósito',
@@ -2002,6 +2004,7 @@
                         userCurrentBalanceUSD -= totalDeductionFromUserForWithdrawal;
                         userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Retiro (Tarifa: ${calculatedFeeInUSD.toFixed(2)} USD)`;
+                        typeDisplay = 'Retiro'; // Set typeDisplay here
                         receiptDetails = {
                             title: 'Recibo de Retiro',
                             type: 'Retiro',
@@ -2045,6 +2048,7 @@
                         transactionDescription = `Compra online`;
                         amountToRecordInTransaction = totalAmountToDeduct; // Record total deducted from user
                         currencyToRecordInTransaction = 'USD'; // Always USD for this deduction
+                        typeDisplay = 'Compra Online'; // Set typeDisplay here
                         receiptDetails = {
                             title: 'Recibo de Compra Online',
                             type: 'Compra Online',
@@ -2077,15 +2081,16 @@
                             showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para el pago de streaming.`, 'error');
                             return;
                         }
-                        userCurrentBalanceUSD -= totalAmountToDeduct;
+                        userCurrentBalanceUSD -= totalToDeduct;
                         userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Pago de ${service}`;
-                        amountToRecordInTransaction = totalAmountToDeduct; // Record total deducted from user
+                        amountToRecordInTransaction = totalToDeduct; // Record total deducted from user
                         currencyToRecordInTransaction = 'USD'; // Always USD for this deduction
+                        typeDisplay = 'Pago Streaming'; // Set typeDisplay here
                         receiptDetails = {
                             title: 'Recibo de Pago Streaming',
                             type: 'Pago Streaming',
-                            amount: totalAmountToDeduct,
+                            amount: totalToDeduct,
                             currency: 'USD',
                             service: service,
                             accountIdentifier: accountIdentifier,
@@ -2099,10 +2104,10 @@
 
                         // Transfer entire amount (subscription + fee) to admin
                         if (adminId) {
-                            console.log("Transferring total streaming payment amount to admin:", totalAmountToDeduct, "USD");
+                            console.log("Transferring total streaming payment amount to admin:", totalToDeduct, "USD");
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
-                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + totalAmountToDeduct;
+                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + totalToDeduct;
                             await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
                             console.log("Streaming payment amount transferred to admin.");
                         }
@@ -2110,6 +2115,7 @@
                     default:
                         console.error("Error: Unknown request type:", type);
                         showMessage('Tipo de solicitud desconocido.', 'error');
+                        typeDisplay = 'Desconocido'; // Fallback for typeDisplay
                         return;
                 }
 
@@ -2140,7 +2146,7 @@
                     // Store additional details for specific types
                     ...(type === 'withdrawal' && { feeAmount: calculatedFeeInUSD, feeCurrency: 'USD', adminReceiverId: adminId }),
                     ...(type === 'online_purchase' && { productAmount, productCurrency, productLinks, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId }),
-                    ...(type === 'streaming_payment' && { service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId })
+                    ...(type === 'streaming_payment' && { service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalToDeduct, adminReceiverId: adminId })
                 });
                 console.log("Transaction recorded successfully.");
 
