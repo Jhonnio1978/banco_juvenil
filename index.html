@@ -1923,27 +1923,38 @@
             service, accountIdentifier, subscriptionAmount, subscriptionCurrency,
             feeAmount, totalAmountToDeduct
         ) {
+            console.log("Confirming request:", { requestId, type, userId, amount, currency, serialNumber, productAmount, productCurrency, productLinks, service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, totalAmountToDeduct });
             try {
                 const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
                 const requestDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_requests', requestId);
+
+                console.log("Fetching user profile...");
                 const userDocSnap = await getDoc(userProfileRef);
 
                 if (!userDocSnap.exists()) {
+                    console.error("Error: User profile not found for request:", userId);
                     showMessage('Error: Usuario no encontrado para la solicitud.', 'error');
                     return;
                 }
                 const userData = userDocSnap.data();
                 let userCurrentBalanceUSD = userData.balanceUSD || 0;
+                let userCurrentBalanceDOP = userData.balanceDOP || 0;
+
+                console.log("User current balances (before update):", { userCurrentBalanceUSD, userCurrentBalanceDOP });
 
                 let adminId = null;
+                console.log("Searching for admin account...");
                 const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
                 const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
                 const adminSnapshot = await getDocs(adminQuery);
                 if (!adminSnapshot.empty) {
                     adminId = adminSnapshot.docs[0].id;
+                    console.log("Admin ID found:", adminId);
+                } else {
+                    console.warn("Admin account not found. Fees might not be transferred to admin.");
                 }
 
-                let transactionType = type; // Type for the 'transactions' collection
+                let transactionType = type;
                 let transactionDescription = '';
                 let receiptDetails = {
                     title: '',
@@ -1954,6 +1965,8 @@
                     feeAmount: 0,
                     feeCurrency: 'USD'
                 };
+                let amountToRecordInTransaction = amount; // Default to original request amount
+                let currencyToRecordInTransaction = currency; // Default to original request currency
 
                 switch (type) {
                     case 'deposit':
@@ -1962,6 +1975,7 @@
                             depositAmountInUSD = amount / USD_TO_DOP_RATE;
                         }
                         userCurrentBalanceUSD += depositAmountInUSD;
+                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Depósito con serie ${serialNumber}`;
                         receiptDetails = {
                             title: 'Recibo de Depósito',
@@ -1970,6 +1984,7 @@
                             currency: currency,
                             description: transactionDescription
                         };
+                        console.log("Deposit logic applied. New user USD balance:", userCurrentBalanceUSD);
                         break;
                     case 'withdrawal':
                         let withdrawalAmountInUSD = amount;
@@ -1980,10 +1995,12 @@
                         const totalDeductionFromUserForWithdrawal = withdrawalAmountInUSD + calculatedFeeInUSD;
 
                         if (userCurrentBalanceUSD < totalDeductionFromUserForWithdrawal) {
+                            console.error("Error: Insufficient balance for withdrawal.");
                             showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para cubrir el retiro de ${amount.toFixed(2)} ${currency} más la tarifa del 4% ($${calculatedFeeInUSD.toFixed(2)} USD).`, 'error');
-                            return; // Stop processing
+                            return;
                         }
                         userCurrentBalanceUSD -= totalDeductionFromUserForWithdrawal;
+                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Retiro (Tarifa: ${calculatedFeeInUSD.toFixed(2)} USD)`;
                         receiptDetails = {
                             title: 'Recibo de Retiro',
@@ -1994,14 +2011,16 @@
                             feeCurrency: 'USD',
                             description: transactionDescription
                         };
+                        console.log("Withdrawal logic applied. New user USD balance:", userCurrentBalanceUSD);
 
                         // Transfer fee to admin
                         if (adminId) {
+                            console.log("Transferring withdrawal fee to admin:", calculatedFeeInUSD, "USD");
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
                             let adminNewBalanceUSD = (adminData.balanceUSD || 0) + calculatedFeeInUSD;
                             await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
-                             await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
                                 payerId: userId,
                                 receiverId: adminId,
                                 amount: calculatedFeeInUSD,
@@ -2011,19 +2030,25 @@
                                 status: 'completed',
                                 originalRequestId: requestId
                             });
+                            console.log("Withdrawal fee transferred to admin and recorded.");
                         }
                         break;
                     case 'online_purchase':
+                        console.log("Processing online_purchase. totalAmountToDeduct:", totalAmountToDeduct);
                         if (userCurrentBalanceUSD < totalAmountToDeduct) {
+                            console.error("Error: Insufficient balance for online purchase.");
                             showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para la compra online.`, 'error');
-                            return; // Stop processing
+                            return;
                         }
                         userCurrentBalanceUSD -= totalAmountToDeduct;
+                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Compra online`;
+                        amountToRecordInTransaction = totalAmountToDeduct; // Record total deducted from user
+                        currencyToRecordInTransaction = 'USD'; // Always USD for this deduction
                         receiptDetails = {
                             title: 'Recibo de Compra Online',
                             type: 'Compra Online',
-                            amount: totalAmountToDeduct, // Total deducted
+                            amount: totalAmountToDeduct,
                             currency: 'USD',
                             productAmount: productAmount,
                             productCurrency: productCurrency,
@@ -2032,26 +2057,35 @@
                             productLinks: productLinks,
                             description: transactionDescription
                         };
+                        console.log("Online purchase logic applied. New user USD balance:", userCurrentBalanceUSD);
 
                          // Transfer entire amount (products + fee) to admin
                         if (adminId) {
+                            console.log("Transferring total online purchase amount to admin:", totalAmountToDeduct, "USD");
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
                             let adminNewBalanceUSD = (adminData.balanceUSD || 0) + totalAmountToDeduct;
                             await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
+                            // No separate fee transaction for admin for online_purchase/streaming, as the entire deducted amount goes to admin.
+                            console.log("Online purchase amount transferred to admin.");
                         }
                         break;
                     case 'streaming_payment':
+                        console.log("Processing streaming_payment. totalAmountToDeduct:", totalAmountToDeduct);
                         if (userCurrentBalanceUSD < totalAmountToDeduct) {
+                            console.error("Error: Insufficient balance for streaming payment.");
                             showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para el pago de streaming.`, 'error');
-                            return; // Stop processing
+                            return;
                         }
                         userCurrentBalanceUSD -= totalAmountToDeduct;
+                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Pago de ${service}`;
+                        amountToRecordInTransaction = totalAmountToDeduct; // Record total deducted from user
+                        currencyToRecordInTransaction = 'USD'; // Always USD for this deduction
                         receiptDetails = {
                             title: 'Recibo de Pago Streaming',
                             type: 'Pago Streaming',
-                            amount: totalAmountToDeduct, // Total deducted
+                            amount: totalAmountToDeduct,
                             currency: 'USD',
                             service: service,
                             accountIdentifier: accountIdentifier,
@@ -2061,39 +2095,45 @@
                             feeCurrency: 'USD',
                             description: transactionDescription
                         };
+                        console.log("Streaming payment logic applied. New user USD balance:", userCurrentBalanceUSD);
 
                         // Transfer entire amount (subscription + fee) to admin
                         if (adminId) {
+                            console.log("Transferring total streaming payment amount to admin:", totalAmountToDeduct, "USD");
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
                             let adminNewBalanceUSD = (adminData.balanceUSD || 0) + totalAmountToDeduct;
                             await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
+                            console.log("Streaming payment amount transferred to admin.");
                         }
                         break;
                     default:
+                        console.error("Error: Unknown request type:", type);
                         showMessage('Tipo de solicitud desconocido.', 'error');
                         return;
                 }
 
-                // Update user's profile with new balance
+                console.log("Attempting to update user profile...", { balanceUSD: userCurrentBalanceUSD, balanceDOP: userCurrentBalanceDOP, hasPendingDeposit: (type === 'deposit' ? false : userData.hasPendingDeposit) });
                 await updateDoc(userProfileRef, {
                     balanceUSD: userCurrentBalanceUSD,
-                    balanceDOP: userCurrentBalanceUSD * USD_TO_DOP_RATE, // Update DOP balance based on new USD
-                    ...(type === 'deposit' && { hasPendingDeposit: false }) // Reset hasPendingDeposit only for deposits
+                    balanceDOP: userCurrentBalanceDOP,
+                    ...(type === 'deposit' && { hasPendingDeposit: false })
                 });
+                console.log("User profile updated successfully.");
 
-                // Update request status to 'completed'
+                console.log("Attempting to update request status to completed...");
                 await updateDoc(requestDocRef, {
                     status: 'completed',
                     confirmedAt: serverTimestamp()
                 });
+                console.log("Request status updated successfully.");
 
-                // Record transaction in main transactions collection
+                console.log("Attempting to add transaction record...", { userId, type: transactionType, amount: amountToRecordInTransaction, currency: currencyToRecordInTransaction });
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
                     userId: userId,
                     type: transactionType,
-                    amount: amount, // Original requested amount
-                    currency: currency,
+                    amount: amountToRecordInTransaction,
+                    currency: currencyToRecordInTransaction,
                     timestamp: serverTimestamp(),
                     status: 'completed',
                     description: transactionDescription,
@@ -2102,17 +2142,18 @@
                     ...(type === 'online_purchase' && { productAmount, productCurrency, productLinks, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId }),
                     ...(type === 'streaming_payment' && { service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId })
                 });
+                console.log("Transaction recorded successfully.");
 
                 showMessage(`Solicitud #${requestId} (${typeDisplay}) confirmada exitosamente.`, 'success');
 
-                // Show receipt to the user (only if current user is the affected user)
                 if (currentUserId === userId) {
+                    console.log("Showing receipt to current user.");
                     showReceipt(receiptDetails);
                 }
 
             } catch (error) {
-                console.error(`Error confirmando solicitud ${type} #${requestId}:`, error);
-                showMessage(`Error al confirmar la solicitud ${type}. Por favor, inténtalo de nuevo.`, 'error');
+                console.error(`GLOBAL CATCH: Error confirmando solicitud ${type} #${requestId}:`, error);
+                showMessage(`Error al confirmar la solicitud ${type}. Por favor, inténtalo de nuevo. Detalle: ${error.message}`, 'error');
             }
         }
 
@@ -2140,7 +2181,7 @@
 
             } catch (error) {
                 console.error(`Error rechazando solicitud ${type} #${requestId}:`, error);
-                showMessage(`Error al rechazar la solicitud ${type}. Por favor, inténtalo de nuevo.', 'error`);
+                showMessage(`Error al rechazar la solicitud ${type}. Por favor, inténtalo de nuevo. Detalle: ${error.message}`, 'error');
             }
         }
 
