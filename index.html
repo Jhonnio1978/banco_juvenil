@@ -208,8 +208,16 @@
                     <button id="transferMoneyBtn" class="btn-primary w-full">Transferir Dinero</button>
                     <button id="depositMoneyBtn" class="btn-primary w-full">Depositar Dinero</button>
                     <button id="withdrawMoneyBtn" class="btn-primary w-full">Retirar Dinero</button>
-                    <button id="viewHistoryBtn" class="btn-primary w-full bg-blue-600 hover:bg-blue-700">Ver Historial de Movimientos</button> <!-- New History Button -->
-                    <button id="adminPanelBtn" class="btn-primary w-full hidden bg-purple-600 hover:bg-purple-700">Panel de Administración</button>
+                    <button id="viewHistoryBtn" class="btn-primary w-full bg-blue-600 hover:bg-blue-700">Ver Historial de Movimientos</button>
+                    <!-- ADMIN BUTTONS -->
+                    <div id="adminButtonsContainer" class="hidden space-y-4 mt-6">
+                        <h3 class="text-xl font-bold text-gray-700 border-b pb-2 mb-4">Funciones de Administrador</h3>
+                        <p class="text-sm text-gray-600">Contacto del Administrador: <span class="font-bold text-gray-800">829-332-9545</span></p> <!-- Admin Phone Number -->
+                        <button id="viewPendingDepositsBtn" class="btn-primary w-full bg-yellow-600 hover:bg-yellow-700">Ver Depósitos Pendientes (Admin)</button>
+                        <button id="viewPendingWithdrawalsBtn" class="btn-primary w-full bg-orange-600 hover:bg-orange-700">Ver Retiros Pendientes (Admin)</button>
+                        <button id="adminFullHistoryBtn" class="btn-primary w-full bg-green-600 hover:bg-green-700">Ver Historial Completo (Admin)</button>
+                        <button id="viewFAQBtn" class="btn-primary w-full bg-indigo-600 hover:bg-indigo-700">Ver Preguntas Frecuentes (FAQ)</button> <!-- NEW FAQ Button -->
+                    </div>
                     <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-xl shadow transition duration-200 w-full">Cerrar Sesión</button>
                 </div>
 
@@ -295,7 +303,7 @@
                     </div>
                 </div>
 
-                <!-- User History Modal (New) -->
+                <!-- User History Modal -->
                 <div id="userHistoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
                     <div class="modal-content p-8">
                         <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Mi Historial de Movimientos</h3>
@@ -319,7 +327,6 @@
                     </div>
                 </div>
 
-
                 <!-- Transfer/Deposit/Withdrawal Status Message (for 2-minute transfers or pending deposits) -->
                 <div id="transactionStatusMsg" class="mt-6 p-4 rounded-lg text-sm hidden bg-yellow-100 border border-yellow-200 text-yellow-800" role="status">
                     <p id="transactionStatusText"></p>
@@ -327,87 +334,118 @@
                 </div>
 
             </div>
-
-            <!-- Admin Dashboard (Hidden initially) -->
-            <div id="adminSection" class="hidden mt-8 w-full max-w-lg mx-auto">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-4 text-center">Panel de Administración</h2>
-
-                <div class="flex justify-center mb-6 bg-gray-50 rounded-xl p-1">
-                    <button id="adminDepositsTab" class="tab-button active flex-1">Depósitos Pendientes</button>
-                    <button id="adminWithdrawalsTab" class="tab-button flex-1">Retiros Pendientes</button>
-                    <button id="adminFullHistoryTab" class="tab-button flex-1">Historial Completo</button> <!-- New Admin History Tab -->
-                </div>
-
-                <!-- Admin Deposits Section -->
-                <div id="adminDepositsSection">
-                    <h3 class="text-xl font-bold text-gray-700 mb-3">Depósitos Pendientes</h3>
-                    <div class="table-container bg-white rounded-lg shadow mb-8">
-                        <table class="min-w-full">
-                            <thead>
-                                <tr>
-                                    <th>Usuario ID</th>
-                                    <th>Serie</th>
-                                    <th>Monto</th>
-                                    <th>Moneda</th>
-                                    <th>Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pendingDepositsTableBody">
-                                <!-- Deposits will be loaded here -->
-                                <tr><td colspan="5" class="text-center text-gray-500 py-4">No hay depósitos pendientes.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Admin Withdrawals Section -->
-                <div id="adminWithdrawalsSection" class="hidden">
-                    <h3 class="text-xl font-bold text-gray-700 mb-3">Retiros Pendientes</h3>
-                    <div class="table-container bg-white rounded-lg shadow">
-                        <table class="min-w-full">
-                            <thead>
-                                <tr>
-                                    <th>Usuario ID</th>
-                                    <th>Monto</th>
-                                    <th>Moneda</th>
-                                    <th>Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pendingWithdrawalsTableBody">
-                                <!-- Withdrawals will be loaded here -->
-                                <tr><td colspan="4" class="text-center text-gray-500 py-4">No hay retiros pendientes.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Admin Full History Section (New) -->
-                <div id="adminFullHistorySection" class="hidden">
-                    <h3 class="text-xl font-bold text-gray-700 mb-3">Historial Completo de Transacciones</h3>
-                    <div class="table-container bg-white rounded-lg shadow">
-                        <table class="min-w-full">
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Tipo</th>
-                                    <th>Usuario (Remitente/Receptor)</th>
-                                    <th>Monto</th>
-                                    <th>Moneda</th>
-                                    <th>Estado</th>
-                                    <th>Detalles</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminFullHistoryTableBody">
-                                <tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando historial completo...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <button id="backToDashboardBtn" class="btn-primary w-full mt-6">Volver al Panel de Usuario</button>
-            </div>
         </div>
     </div>
+
+    <!-- Admin Full History Modal -->
+    <div id="adminFullHistoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Historial Completo de Transacciones (Admin)</h3>
+            <div class="table-container bg-white rounded-lg shadow">
+                <table class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Usuario (Remitente/Receptor)</th>
+                            <th>Monto</th>
+                            <th>Moneda</th>
+                            <th>Estado</th>
+                            <th>Detalles</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminFullHistoryTableBodyModal">
+                        <tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando historial completo...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <button id="closeAdminFullHistoryModalBtn" class="btn-primary w-full mt-6">Cerrar Historial Completo</button>
+        </div>
+    </div>
+
+    <!-- Pending Deposits Modal -->
+    <div id="pendingDepositsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Depósitos Pendientes</h3>
+            <div class="table-container bg-white rounded-lg shadow">
+                <table class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Usuario ID</th>
+                            <th>Serie</th>
+                            <th>Monto</th>
+                            <th>Moneda</th>
+                            <th>Fecha</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pendingDepositsTableBodyModal">
+                        <tr><td colspan="6" class="text-center text-gray-500 py-4">No hay depósitos pendientes.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <button id="closePendingDepositsModalBtn" class="btn-primary w-full mt-6">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Pending Withdrawals Modal -->
+    <div id="pendingWithdrawalsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Retiros Pendientes</h3>
+            <div class="table-container bg-white rounded-lg shadow">
+                <table class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Usuario ID</th>
+                            <th>Monto</th>
+                            <th>Moneda</th>
+                            <th>Fecha</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pendingWithdrawalsTableBodyModal">
+                        <tr><td colspan="5" class="text-center text-gray-500 py-4">No hay retiros pendientes.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <button id="closePendingWithdrawalsModalBtn" class="btn-primary w-full mt-6">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- NEW: FAQ Modal -->
+    <div id="faqModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Preguntas Frecuentes (FAQ)</h3>
+            <div class="text-left text-gray-700 space-y-4">
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo puedo registrarme?</h4>
+                    <p class="text-sm">Para registrarte, ve a la pestaña "Registrarse" y completa tus datos. Se te asignará un ID de usuario único.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Qué monedas puedo usar?</h4>
+                    <p class="text-sm">Actualmente, el Banco Juvenil maneja Dólares (USD) y Pesos Dominicanos (DOP). Puedes ver y cambiar tu preferencia de moneda en tu dashboard.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cuánto tiempo tardan las transferencias?</h4>
+                    <p class="text-sm">Las transferencias entre cuentas toman aproximadamente 2 minutos en procesarse. Una vez iniciada, no se puede cancelar.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo funciona el depósito de dinero?</h4>
+                    <p class="text-sm">Para depositar dinero, solicitas un depósito con un número de serie único. Esta solicitud debe ser aprobada por un administrador del banco antes de que el dinero se refleje en tu cuenta.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Hay alguna tarifa por retiro?</h4>
+                    <p class="text-sm">Sí, se aplica una tarifa del 4% a todas las solicitudes de retiro para cubrir los costos de procesamiento.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo me contacto con el administrador si tengo un problema?</h4>
+                    <p class="text-sm">Puedes contactar al administrador directamente al número: <span class="font-bold">829-332-9545</span>.</p>
+                </div>
+            </div>
+            <button id="closeFAQModalBtn" class="btn-primary w-full mt-6">Cerrar FAQ</button>
+        </div>
+    </div>
+
 
     <!-- Rules Consent Modal -->
     <div id="rulesConsentModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
@@ -474,7 +512,7 @@
         const loginSection = document.getElementById('loginSection');
         const registerSection = document.getElementById('registerSection');
         const dashboardSection = document.getElementById('dashboardSection');
-        const adminSection = document.getElementById('adminSection'); // Admin Section
+        const adminButtonsContainer = document.getElementById('adminButtonsContainer'); // NEW: Container for admin buttons
 
         const loginForm = document.getElementById('loginForm');
         const loginIdentifierInput = document.getElementById('loginIdentifier');
@@ -489,27 +527,23 @@
         const dashboardDisplayId = document.getElementById('dashboardDisplayId'); // Simplified user ID for display
         const accountBalance = document.getElementById('accountBalance');
         const toggleCurrencyBtn = document.getElementById('toggleCurrency');
-        const adminPanelBtn = document.getElementById('adminPanelBtn'); // Admin Panel button
-        const backToDashboardBtn = document.getElementById('backToDashboardBtn'); // Back button in admin panel
 
-        // Admin Panel Tabs and Sections
-        const adminDepositsTab = document.getElementById('adminDepositsTab');
-        const adminWithdrawalsTab = document.getElementById('adminWithdrawalsTab');
-        const adminFullHistoryTab = document.getElementById('adminFullHistoryTab');
-        const adminDepositsSection = document.getElementById('adminDepositsSection');
-        const adminWithdrawalsSection = document.getElementById('adminWithdrawalsSection');
-        const adminFullHistorySection = document.getElementById('adminFullHistorySection'); // New Admin History Section
+        // Admin Buttons (now directly on dashboard)
+        const adminFullHistoryBtn = document.getElementById('adminFullHistoryBtn');
+        const viewPendingDepositsBtn = document.getElementById('viewPendingDepositsBtn');
+        const viewPendingWithdrawalsBtn = document.getElementById('viewPendingWithdrawalsBtn');
+        const viewFAQBtn = document.getElementById('viewFAQBtn'); // NEW FAQ Button
 
-        const pendingDepositsTableBody = document.getElementById('pendingDepositsTableBody'); // Table for deposits
-        const pendingWithdrawalsTableBody = document.getElementById('pendingWithdrawalsTableBody'); // Table for withdrawals
-        const adminFullHistoryTableBody = document.getElementById('adminFullHistoryTableBody'); // New Admin History Table
+        const pendingDepositsTableBodyModal = document.getElementById('pendingDepositsTableBodyModal'); // Table for deposits (now in modal)
+        const pendingWithdrawalsTableBodyModal = document.getElementById('pendingWithdrawalsTableBodyModal'); // Table for withdrawals (now in modal)
+        const adminFullHistoryTableBodyModal = document.getElementById('adminFullHistoryTableBodyModal'); // Admin History (in modal)
 
         const messageBox = document.getElementById('messageBox');
         const messageText = document.getElementById('messageText');
         const closeMessage = document.getElementById('closeMessage');
         const transactionStatusMsg = document.getElementById('transactionStatusMsg');
         const transactionStatusText = document.getElementById('transactionStatusText');
-        const cancelOngoingTransferBtn = document.getElementById('cancelOngoingTransferBtn'); // New cancel transfer button
+        const cancelOngoingTransferBtn = document.getElementById('cancelOngoingTransferBtn');
 
         // Rules Consent Modal elements
         const rulesConsentModal = document.getElementById('rulesConsentModal');
@@ -555,6 +589,21 @@
         const userHistoryModal = document.getElementById('userHistoryModal');
         const userHistoryTableBody = document.getElementById('userHistoryTableBody');
         const closeUserHistoryModalBtn = document.getElementById('closeUserHistoryModalBtn');
+
+        // Admin Full History Modal Elements
+        const adminFullHistoryModal = document.getElementById('adminFullHistoryModal');
+        const closeAdminFullHistoryModalBtn = document.getElementById('closeAdminFullHistoryModalBtn');
+
+        // Pending Deposits/Withdrawals Modals
+        const pendingDepositsModal = document.getElementById('pendingDepositsModal');
+        const closePendingDepositsModalBtn = document.getElementById('closePendingDepositsModalBtn');
+        const pendingWithdrawalsModal = document.getElementById('pendingWithdrawalsModal');
+        const closePendingWithdrawalsModalBtn = document.getElementById('closePendingWithdrawalsModalBtn');
+
+        // FAQ Modal elements (NEW)
+        const faqModal = document.getElementById('faqModal');
+        const closeFAQModalBtn = document.getElementById('closeFAQModalBtn');
+
 
         // --- Utility Functions ---
 
@@ -621,11 +670,13 @@
             if (activeTabId === 'login') {
                 loginTab.classList.add('active');
                 registerTab.classList.remove('active');
-                showSection(loginSection, registerSection, dashboardSection, adminSection, rulesConsentModal, userHistoryModal); // Hide all modals/sections
+                // Hide all main sections and modals, including new admin modals
+                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, pendingDepositsModal, pendingWithdrawalsModal, faqModal);
             } else {
                 registerTab.classList.add('active');
                 loginTab.classList.remove('active');
-                showSection(registerSection, loginSection, dashboardSection, adminSection, rulesConsentModal, userHistoryModal); // Hide all modals/sections
+                // Hide all main sections and modals, including new admin modals
+                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, pendingDepositsModal, pendingWithdrawalsModal, faqModal);
             }
             hideMessage(); // Hide any previous messages when changing tabs
         }
@@ -656,6 +707,8 @@
          */
         async function getUserDisplayName(userId) {
             // Check if userId matches the Firebase UID of the admin email
+            // This query is slightly inefficient, but for a prototype, it's fine.
+            // For production, you might store admin's UID in a config or cache it.
             const adminQuery = query(collection(db, 'artifacts', appId, 'users'), where('email', '==', ADMIN_EMAIL));
             const adminSnapshot = await getDocs(adminQuery);
             if (!adminSnapshot.empty && adminSnapshot.docs[0].id === userId) {
@@ -897,11 +950,11 @@
                             depositMoneyBtn.textContent = 'Depositar Dinero';
                         }
 
-                        // Show admin panel button if current user is admin
+                        // Show admin specific buttons if current user is admin
                         if (currentUser.email === ADMIN_EMAIL) {
-                            adminPanelBtn.classList.remove('hidden');
+                            adminButtonsContainer.classList.remove('hidden'); // Show container for admin buttons
                         } else {
-                            adminPanelBtn.classList.add('hidden');
+                            adminButtonsContainer.classList.add('hidden'); // Hide for non-admin
                         }
 
                     } else {
@@ -914,8 +967,8 @@
                     showMessage("Error al cargar los datos de tu perfil. Intenta recargar la página.", 'error');
                 });
 
-                // Display dashboard and hide login/register forms
-                showSection(dashboardSection, loginSection, registerSection, adminSection, rulesConsentModal, userHistoryModal); // Ensure all modals are hidden
+                // Display dashboard and hide login/register forms and all admin modals
+                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, pendingDepositsModal, pendingWithdrawalsModal, faqModal);
 
             } else {
                 // User is signed out
@@ -1313,85 +1366,54 @@
             }
         });
 
-        // --- Admin Panel Functionality ---
+        // --- Admin Specific Functionality (Moved to Modals) ---
 
         /**
-         * Toggles visibility between admin panel sections.
-         * @param {HTMLElement} showElement Element to show.
-         * @param {HTMLElement} ...hideElements List of elements to hide.
-         */
-        function showAdminSection(showElement, ...hideElements) {
-            showElement.classList.remove('hidden');
-            hideElements.forEach(el => el.classList.add('hidden'));
-        }
-
-        /**
-         * Activates an admin panel tab.
-         * @param {HTMLElement} activeTabButton The button to set as active.
-         * @param {HTMLElement} activeTabContent The content section to show.
-         */
-        function activateAdminTab(activeTabButton, activeTabContent) {
-            // Remove active class from all tab buttons
-            adminDepositsTab.classList.remove('active');
-            adminWithdrawalsTab.classList.remove('active');
-            adminFullHistoryTab.classList.remove('active');
-
-            // Add active class to the clicked tab button
-            activeTabButton.classList.add('active');
-
-            // Show the corresponding content section and hide others
-            showAdminSection(activeTabContent, adminDepositsSection, adminWithdrawalsSection, adminFullHistorySection);
-
-            // Load data based on the activated tab
-            if (activeTabButton === adminDepositsTab) {
-                loadPendingDeposits();
-            } else if (activeTabButton === adminWithdrawalsTab) {
-                loadPendingWithdrawals();
-            } else if (activeTabButton === adminFullHistoryTab) {
-                loadAdminFullHistory();
-            }
-        }
-
-
-        /**
-         * Loads and displays pending deposits in the admin panel table.
+         * Loads and displays pending deposits in the dedicated modal.
          */
         function loadPendingDeposits() {
-            console.log("Loading pending deposits..."); // Debug log
-            // Path: artifacts/{appId}/public/data/pending_deposits
+            console.log("Admin: loadPendingDeposits() called.");
             const depositsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_deposits');
             const q = query(depositsCollectionRef, where('status', '==', 'pending'));
 
-            onSnapshot(q, async (snapshot) => { // Made async to use await for fetching user names
-                pendingDepositsTableBody.innerHTML = ''; // Clear current table
+            onSnapshot(q, async (snapshot) => {
+                console.log("Admin: onSnapshot for pending deposits triggered.");
+                console.log("Admin: Snapshot size:", snapshot.size);
+
+                pendingDepositsTableBodyModal.innerHTML = ''; // Use the modal's tbody
                 if (snapshot.empty) {
-                    pendingDepositsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">No hay depósitos pendientes.</td></tr>';
-                    console.log("No pending deposits found."); // Debug log
+                    pendingDepositsTableBodyModal.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">No hay depósitos pendientes.</td></tr>';
+                    console.log("Admin: No pending deposits found in snapshot.");
                     return;
                 }
 
-                for (const docEntry of snapshot.docs) { // Use for...of with await
+                for (const docEntry of snapshot.docs) {
                     const deposit = docEntry.data();
-                    const depositId = docEntry.id; // Document ID for the pending deposit
+                    const depositId = docEntry.id;
+                    console.log("Admin: Processing pending deposit:", depositId, deposit);
 
                     const userNameDisplay = await getUserDisplayName(deposit.userId);
+                    const depositDate = (deposit.timestamp && typeof deposit.timestamp.seconds !== 'undefined')
+                        ? new Date(deposit.timestamp.seconds * 1000).toLocaleString()
+                        : 'Fecha no disponible';
+
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${userNameDisplay}</td>
                         <td>${deposit.serialNumber}</td>
                         <td>${deposit.amount.toFixed(2)} ${deposit.currency}</td>
-                        <td>${new Date(deposit.timestamp.seconds * 1000).toLocaleString()}</td>
+                        <td>${depositDate}</td>
                         <td>
                             <button class="btn-success confirm-deposit-btn" data-deposit-id="${depositId}" data-user-id="${deposit.userId}" data-amount="${deposit.amount}" data-currency="${deposit.currency}">Confirmar</button>
                             <button class="btn-danger reject-deposit-btn" data-deposit-id="${depositId}" data-user-id="${deposit.userId}">Rechazar</button>
                         </td>
                     `;
-                    pendingDepositsTableBody.appendChild(row);
+                    pendingDepositsTableBodyModal.appendChild(row); // Append to modal's tbody
                 }
-                console.log(`Loaded ${snapshot.docs.length} pending deposits.`); // Debug log
+                console.log(`Admin: Loaded ${snapshot.docs.length} pending deposits.`);
 
-                // Add event listeners to the new buttons
+                // Re-attach event listeners each time the table is rebuilt
                 document.querySelectorAll('.confirm-deposit-btn').forEach(button => {
                     button.onclick = async (event) => {
                         const depositId = event.target.dataset.depositId;
@@ -1404,14 +1426,14 @@
                 document.querySelectorAll('.reject-deposit-btn').forEach(button => {
                     button.onclick = async (event) => {
                         const depositId = event.target.dataset.depositId;
-                        const userId = event.target.dataset.userId; // Pass userId for resetting hasPendingDeposit
+                        const userId = event.target.dataset.userId;
                         await rejectDeposit(depositId, userId);
                     };
                 });
 
             }, (error) => {
-                console.error("Error loading pending deposits:", error);
-                pendingDepositsTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-4">Error al cargar depósitos.</td></tr>`;
+                console.error("Admin: Error loading pending deposits:", error);
+                pendingDepositsTableBodyModal.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-4">Error al cargar depósitos.</td></tr>`;
             });
         }
 
@@ -1424,11 +1446,9 @@
          */
         async function confirmDeposit(depositId, userId, amount, currency) {
             try {
-                // Get references to the user's profile and the pending deposit document
                 const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
                 const depositDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_deposits', depositId);
 
-                // Get user's current data
                 const userDocSnap = await getDoc(userProfileRef);
                 if (!userDocSnap.exists()) {
                     showMessage('Error: Usuario no encontrado para el depósito.', 'error');
@@ -1439,29 +1459,29 @@
                 let newBalanceUSD = userData.balanceUSD || 0;
                 let newBalanceDOP = userData.balanceDOP || 0;
 
-                // Convert deposit amount to USD for internal calculation
                 let depositAmountInUSD = amount;
                 if (currency === 'DOP') {
                     depositAmountInUSD = amount / USD_TO_DOP_RATE;
                 }
 
                 newBalanceUSD += depositAmountInUSD;
-                newBalanceDOP = newBalanceUSD * USD_TO_DOP_RATE; // Update DOP based on new USD balance
+                newBalanceDOP = newBalanceUSD * USD_TO_DOP_RATE;
 
-                // Update user's balance and reset hasPendingDeposit flag
                 await updateDoc(userProfileRef, {
                     balanceUSD: newBalanceUSD,
                     balanceDOP: newBalanceDOP,
-                    hasPendingDeposit: false // Allow user to make new deposits
+                    hasPendingDeposit: false
                 });
 
-                // Update the deposit status to 'completed'
                 await updateDoc(depositDocRef, {
                     status: 'completed',
                     confirmedAt: serverTimestamp()
                 });
 
-                // Add record to main transactions collection
+                // Get serial number from the deposit document itself (not from userDocSnap)
+                const depositDataSnap = await getDoc(depositDocRef);
+                const depositSerial = depositDataSnap.exists() ? depositDataSnap.data().serialNumber : 'N/A';
+
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
                     userId: userId,
                     amount: amount,
@@ -1469,12 +1489,11 @@
                     timestamp: serverTimestamp(),
                     type: 'deposit',
                     status: 'completed',
-                    description: `Depósito con serie ${depositDocSnap.data().serialNumber}`
+                    description: `Depósito con serie ${depositSerial}`
                 });
 
 
                 showMessage(`Depósito #${depositId} de ${amount.toFixed(2)} ${currency} para ${userData.name} confirmado exitosamente.`, 'success');
-                // The `onSnapshot` for pending deposits will automatically update the table
 
             } catch (error) {
                 console.error("Error confirming deposit:", error);
@@ -1492,12 +1511,10 @@
                 const depositDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_deposits', depositId);
                 const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
 
-                // Reset hasPendingDeposit flag for the user
                 await updateDoc(userProfileRef, {
                     hasPendingDeposit: false
                 });
 
-                // Delete the pending deposit document (or change status to 'rejected')
                 await deleteDoc(depositDocRef);
                 showMessage(`Depósito #${depositId} rechazado exitosamente.`, 'info');
             } catch (error) {
@@ -1507,41 +1524,48 @@
         }
 
         /**
-         * Loads and displays pending withdrawals in the admin panel table.
+         * Loads and displays pending withdrawals in the dedicated modal.
          */
         function loadPendingWithdrawals() {
-            console.log("Loading pending withdrawals..."); // Debug log
-            // Path: artifacts/{appId}/public/data/pending_withdrawals
+            console.log("Admin: loadPendingWithdrawals() called.");
             const withdrawalsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_withdrawals');
             const q = query(withdrawalsCollectionRef, where('status', '==', 'pending'));
 
             onSnapshot(q, async (snapshot) => {
-                pendingWithdrawalsTableBody.innerHTML = ''; // Clear current table
+                console.log("Admin: onSnapshot for pending withdrawals triggered.");
+                console.log("Admin: Snapshot size:", snapshot.size);
+
+                pendingWithdrawalsTableBodyModal.innerHTML = ''; // Use the modal's tbody
                 if (snapshot.empty) {
-                    pendingWithdrawalsTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500 py-4">No hay retiros pendientes.</td></tr>';
-                    console.log("No pending withdrawals found."); // Debug log
+                    pendingWithdrawalsTableBodyModal.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">No hay retiros pendientes.</td></tr>';
+                    console.log("Admin: No pending withdrawals found in snapshot.");
                     return;
                 }
 
                 for (const docEntry of snapshot.docs) {
                     const withdrawal = docEntry.data();
                     const withdrawalId = docEntry.id;
+                    console.log("Admin: Processing pending withdrawal:", withdrawalId, withdrawal);
 
                     const userNameDisplay = await getUserDisplayName(withdrawal.userId);
+                    const withdrawalDate = (withdrawal.timestamp && typeof withdrawal.timestamp.seconds !== 'undefined')
+                        ? new Date(withdrawal.timestamp.seconds * 1000).toLocaleString()
+                        : 'Fecha no disponible';
+
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${userNameDisplay}</td>
                         <td>${withdrawal.amount.toFixed(2)} ${withdrawal.currency}</td>
-                        <td>${new Date(withdrawal.timestamp.seconds * 1000).toLocaleString()}</td>
+                        <td>${withdrawalDate}</td>
                         <td>
                             <button class="btn-success confirm-withdrawal-btn" data-withdrawal-id="${withdrawalId}" data-user-id="${withdrawal.userId}" data-amount="${withdrawal.amount}" data-currency="${withdrawal.currency}">Confirmar</button>
                             <button class="btn-danger reject-withdrawal-btn" data-withdrawal-id="${withdrawalId}" data-user-id="${withdrawal.userId}">Rechazar</button>
                         </td>
                     `;
-                    pendingWithdrawalsTableBody.appendChild(row);
+                    pendingWithdrawalsTableBodyModal.appendChild(row); // Append to modal's tbody
                 }
-                console.log(`Loaded ${snapshot.docs.length} pending withdrawals.`); // Debug log
+                console.log(`Admin: Loaded ${snapshot.docs.length} pending withdrawals.`);
 
                 document.querySelectorAll('.confirm-withdrawal-btn').forEach(button => {
                     button.onclick = async (event) => {
@@ -1560,8 +1584,8 @@
                     };
                 });
             }, (error) => {
-                console.error("Error loading pending withdrawals:", error);
-                pendingWithdrawalsTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-red-500 py-4">Error al cargar retiros.</td></tr>`;
+                console.error("Admin: Error loading pending withdrawals:", error);
+                pendingWithdrawalsTableBodyModal.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-4">Error al cargar retiros.</td></tr>`;
             });
         }
 
@@ -1706,36 +1730,23 @@
             userHistoryTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Cargando historial...</td></tr>';
             const transactionsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'transactions');
 
-            // Query for transactions where current user is sender, recipient, or directly involved (deposit/withdrawal)
-            // Note: Firestore doesn't allow OR queries across different fields without indexes.
-            // For a simple app, we can fetch all and filter in memory, or make multiple queries.
-            // Given the small scale of this protoype, filtering in memory is acceptable for now.
             const q = query(transactionsCollectionRef,
-                where('status', '==', 'completed') // Only show completed transactions in history
+                where('status', '==', 'completed')
             );
 
             onSnapshot(q, async (snapshot) => {
-                userHistoryTableBody.innerHTML = ''; // Clear current table
+                userHistoryTableBody.innerHTML = '';
                 const userTransactions = [];
 
                 for (const docEntry of snapshot.docs) {
                     const transaction = { id: docEntry.id, ...docEntry.data() };
 
-                    // Filter transactions relevant to the current user
-                    // A transaction is relevant if:
-                    // 1. It's a deposit or withdrawal and `userId` matches current user.
-                    // 2. It's a transfer where `senderId` or `recipientId` matches current user.
-                    // 3. It's a withdrawal_fee where `payerId` matches current user (they paid the fee).
                     if ((transaction.type === 'deposit' || transaction.type === 'withdrawal') && transaction.userId === currentUserId) {
                         userTransactions.push(transaction);
                     } else if (transaction.type === 'transfer' && (transaction.senderId === currentUserId || transaction.recipientId === currentUserId)) {
                         userTransactions.push(transaction);
-                    } else if (transaction.type === 'withdrawal_fee' && transaction.payerId === currentUserId) {
-                        // User sees fee they paid as part of the withdrawal, not as a separate transaction for themselves.
-                        // Admin would see it as a separate transaction.
-                        // For user history, we already covered the withdrawal itself.
-                        continue; // Skip separate fee transaction for user history view.
                     }
+                    // No need to check for withdrawal_fee for user history directly
                 }
 
                 if (userTransactions.length === 0) {
@@ -1744,13 +1755,20 @@
                 }
 
                 // Sort transactions by timestamp descending (newest first)
-                userTransactions.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+                userTransactions.sort((a, b) => {
+                    const timestampA = a.timestamp && typeof a.timestamp.seconds !== 'undefined' ? a.timestamp.seconds : 0;
+                    const timestampB = b.timestamp && typeof b.timestamp.seconds !== 'undefined' ? b.timestamp.seconds : 0;
+                    return timestampB - timestampA;
+                });
 
                 for (const transaction of userTransactions) {
-                    const date = new Date(transaction.timestamp.seconds * 1000).toLocaleString();
+                    const date = (transaction.timestamp && typeof transaction.timestamp.seconds !== 'undefined')
+                        ? new Date(transaction.timestamp.seconds * 1000).toLocaleString()
+                        : 'Fecha no disponible';
+
                     let typeDisplay = '';
                     let detailsDisplay = '';
-                    let amountDisplay = ''; // Start empty, will be prefixed with + or -
+                    let amountDisplay = '';
 
                     switch (transaction.type) {
                         case 'deposit':
@@ -1796,19 +1814,22 @@
 
 
         /**
-         * Loads and displays the full transaction history for all users in the admin panel.
+         * Loads and displays the full transaction history for all users in the admin modal.
          */
         async function loadAdminFullHistory() {
-            console.log("Loading admin full history..."); // Debug log
-            adminFullHistoryTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando historial completo...</td></tr>';
+            console.log("Admin: loadAdminFullHistory() called.");
+            adminFullHistoryTableBodyModal.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando historial completo...</td></tr>';
             const transactionsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'transactions');
-            const q = query(transactionsCollectionRef, where('status', '==', 'completed')); // Only completed transactions
+            const q = query(transactionsCollectionRef, where('status', '==', 'completed'));
 
             onSnapshot(q, async (snapshot) => {
-                adminFullHistoryTableBody.innerHTML = ''; // Clear current table
+                console.log("Admin: onSnapshot for admin full history triggered.");
+                console.log("Admin: Snapshot size for full history:", snapshot.size);
+
+                adminFullHistoryTableBodyModal.innerHTML = '';
                 if (snapshot.empty) {
-                    adminFullHistoryTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay transacciones en el historial.</td></tr>';
-                    console.log("No transactions found for admin history."); // Debug log
+                    adminFullHistoryTableBodyModal.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay transacciones en el historial.</td></tr>';
+                    console.log("Admin: No transactions found for admin history.");
                     return;
                 }
 
@@ -1818,10 +1839,17 @@
                 }
 
                 // Sort transactions by timestamp descending (newest first)
-                allTransactions.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+                allTransactions.sort((a, b) => {
+                    const timestampA = a.timestamp && typeof a.timestamp.seconds !== 'undefined' ? a.timestamp.seconds : 0;
+                    const timestampB = b.timestamp && typeof b.timestamp.seconds !== 'undefined' ? b.timestamp.seconds : 0;
+                    return timestampB - timestampA;
+                });
 
                 for (const transaction of allTransactions) {
-                    const date = new Date(transaction.timestamp.seconds * 1000).toLocaleString();
+                    const date = (transaction.timestamp && typeof transaction.timestamp.seconds !== 'undefined')
+                        ? new Date(transaction.timestamp.seconds * 1000).toLocaleString()
+                        : 'Fecha no disponible';
+
                     let typeDisplay = transaction.type;
                     let usersInvolved = '';
                     let details = '';
@@ -1867,12 +1895,12 @@
                         <td>${transaction.status}</td>
                         <td>${details}</td>
                     `;
-                    adminFullHistoryTableBody.appendChild(row);
+                    adminFullHistoryTableBodyModal.appendChild(row); // Append to modal's tbody
                 }
-                console.log(`Loaded ${snapshot.docs.length} total transactions for admin history.`); // Debug log
+                console.log(`Admin: Loaded ${snapshot.docs.length} total transactions for admin history.`);
             }, (error) => {
-                console.error("Error loading admin full history:", error);
-                adminFullHistoryTableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error al cargar el historial completo.</td></tr>`;
+                console.error("Admin: Error loading admin full history:", error);
+                adminFullHistoryTableBodyModal.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error al cargar el historial completo.</td></tr>`;
             });
         }
 
@@ -1914,21 +1942,39 @@
             closeModal(userHistoryModal);
         });
 
-
-        // Admin Panel buttons and tab switching
-        adminPanelBtn.addEventListener('click', () => {
-            showSection(adminSection, dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal);
-            // Default to showing pending deposits when admin panel is opened
-            activateAdminTab(adminDepositsTab, adminDepositsSection);
+        // Admin Full History Modal buttons
+        adminFullHistoryBtn.addEventListener('click', () => {
+            adminFullHistoryModal.classList.remove('hidden');
+            loadAdminFullHistory(); // Load full admin history
         });
-        backToDashboardBtn.addEventListener('click', () => {
-            showSection(dashboardSection, adminSection, loginSection, registerSection, rulesConsentModal, userHistoryModal);
+        closeAdminFullHistoryModalBtn.addEventListener('click', () => {
+            closeModal(adminFullHistoryModal);
         });
 
-        // Admin Tab switching
-        adminDepositsTab.addEventListener('click', () => activateAdminTab(adminDepositsTab, adminDepositsSection));
-        adminWithdrawalsTab.addEventListener('click', () => activateAdminTab(adminWithdrawalsTab, adminWithdrawalsSection));
-        adminFullHistoryTab.addEventListener('click', () => activateAdminTab(adminFullHistoryTab, adminFullHistorySection));
+        // NEW Admin Deposits/Withdrawals Modal buttons
+        viewPendingDepositsBtn.addEventListener('click', () => {
+            pendingDepositsModal.classList.remove('hidden');
+            loadPendingDeposits(); // Load pending deposits
+        });
+        closePendingDepositsModalBtn.addEventListener('click', () => {
+            closeModal(pendingDepositsModal);
+        });
+
+        viewPendingWithdrawalsBtn.addEventListener('click', () => {
+            pendingWithdrawalsModal.classList.remove('hidden');
+            loadPendingWithdrawals(); // Load pending withdrawals
+        });
+        closePendingWithdrawalsModalBtn.addEventListener('click', () => {
+            closeModal(pendingWithdrawalsModal);
+        });
+
+        // NEW FAQ Modal buttons
+        viewFAQBtn.addEventListener('click', () => {
+            faqModal.classList.remove('hidden');
+        });
+        closeFAQModalBtn.addEventListener('click', () => {
+            closeModal(faqModal);
+        });
 
     </script>
 </body>
