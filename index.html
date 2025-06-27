@@ -209,15 +209,14 @@
                     <button id="depositMoneyBtn" class="btn-primary w-full">Depositar Dinero</button>
                     <button id="withdrawMoneyBtn" class="btn-primary w-full">Retirar Dinero</button>
                     <button id="viewHistoryBtn" class="btn-primary w-full bg-blue-600 hover:bg-blue-700">Ver Historial de Movimientos</button>
-                    <!-- ADMIN BUTTONS -->
-                    <div id="adminButtonsContainer" class="hidden space-y-4 mt-6">
-                        <h3 class="text-xl font-bold text-gray-700 border-b pb-2 mb-4">Funciones de Administrador</h3>
-                        <p class="text-sm text-gray-600">Contacto del Administrador: <span class="font-bold text-gray-800">829-332-9545</span></p> <!-- Admin Phone Number -->
-                        <button id="viewPendingDepositsBtn" class="btn-primary w-full bg-yellow-600 hover:bg-yellow-700">Ver Depósitos Pendientes (Admin)</button>
-                        <button id="viewPendingWithdrawalsBtn" class="btn-primary w-full bg-orange-600 hover:bg-orange-700">Ver Retiros Pendientes (Admin)</button>
-                        <button id="adminFullHistoryBtn" class="btn-primary w-full bg-green-600 hover:bg-green-700">Ver Historial Completo (Admin)</button>
-                        <button id="viewFAQBtn" class="btn-primary w-full bg-indigo-600 hover:bg-indigo-700">Ver Preguntas Frecuentes (FAQ)</button> <!-- NEW FAQ Button -->
-                    </div>
+                    <!-- Admin specific buttons, initially hidden -->
+                    <button id="viewPendingDepositsBtn" class="btn-primary w-full hidden bg-yellow-600 hover:bg-yellow-700">Ver Depósitos Pendientes (Admin)</button>
+                    <button id="viewPendingWithdrawalsBtn" class="btn-primary w-full hidden bg-orange-600 hover:bg-orange-700">Ver Retiros Pendientes (Admin)</button>
+                    <button id="adminFullHistoryBtn" class="btn-primary w-full hidden bg-green-600 hover:bg-green-700">Ver Historial Completo (Admin)</button>
+                    <button id="viewFAQBtn" class="btn-primary w-full bg-indigo-600 hover:bg-indigo-700">Ver Preguntas Frecuentes (FAQ)</button>
+                    <p class="text-sm text-gray-600 mt-6 pt-4 border-t border-gray-200">
+                        Contacto de Soporte: <a href="https://wa.me/18293329545" target="_blank" class="font-bold text-green-600 hover:underline">829-332-9545 (WhatsApp)</a>
+                    </p>
                     <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-xl shadow transition duration-200 w-full">Cerrar Sesión</button>
                 </div>
 
@@ -412,7 +411,7 @@
         </div>
     </div>
 
-    <!-- NEW: FAQ Modal -->
+    <!-- FAQ Modal -->
     <div id="faqModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
         <div class="modal-content p-8">
             <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Preguntas Frecuentes (FAQ)</h3>
@@ -494,6 +493,7 @@
 
         // Admin email for prototype purposes
         const ADMIN_EMAIL = `admin.jhonnio@${appId}.com`;
+        const ADMIN_PHONE_NUMBER = '18293329545'; // Admin's WhatsApp number
 
         // Transfer specific variables
         let transferInterval = null; // To hold the interval ID for cancellation
@@ -512,7 +512,7 @@
         const loginSection = document.getElementById('loginSection');
         const registerSection = document.getElementById('registerSection');
         const dashboardSection = document.getElementById('dashboardSection');
-        const adminButtonsContainer = document.getElementById('adminButtonsContainer'); // NEW: Container for admin buttons
+        const adminButtonsContainer = document.getElementById('adminButtonsContainer'); // Container for admin buttons
 
         const loginForm = document.getElementById('loginForm');
         const loginIdentifierInput = document.getElementById('loginIdentifier');
@@ -532,7 +532,7 @@
         const adminFullHistoryBtn = document.getElementById('adminFullHistoryBtn');
         const viewPendingDepositsBtn = document.getElementById('viewPendingDepositsBtn');
         const viewPendingWithdrawalsBtn = document.getElementById('viewPendingWithdrawalsBtn');
-        const viewFAQBtn = document.getElementById('viewFAQBtn'); // NEW FAQ Button
+        const viewFAQBtn = document.getElementById('viewFAQBtn'); // FAQ Button
 
         const pendingDepositsTableBodyModal = document.getElementById('pendingDepositsTableBodyModal'); // Table for deposits (now in modal)
         const pendingWithdrawalsTableBodyModal = document.getElementById('pendingWithdrawalsTableBodyModal'); // Table for withdrawals (now in modal)
@@ -600,7 +600,7 @@
         const pendingWithdrawalsModal = document.getElementById('pendingWithdrawalsModal');
         const closePendingWithdrawalsModalBtn = document.getElementById('closePendingWithdrawalsModalBtn');
 
-        // FAQ Modal elements (NEW)
+        // FAQ Modal elements
         const faqModal = document.getElementById('faqModal');
         const closeFAQModalBtn = document.getElementById('closeFAQModalBtn');
 
@@ -707,8 +707,6 @@
          */
         async function getUserDisplayName(userId) {
             // Check if userId matches the Firebase UID of the admin email
-            // This query is slightly inefficient, but for a prototype, it's fine.
-            // For production, you might store admin's UID in a config or cache it.
             const adminQuery = query(collection(db, 'artifacts', appId, 'users'), where('email', '==', ADMIN_EMAIL));
             const adminSnapshot = await getDocs(adminQuery);
             if (!adminSnapshot.empty && adminSnapshot.docs[0].id === userId) {
@@ -1951,7 +1949,7 @@
             closeModal(adminFullHistoryModal);
         });
 
-        // NEW Admin Deposits/Withdrawals Modal buttons
+        // Admin Deposits/Withdrawals Modal buttons
         viewPendingDepositsBtn.addEventListener('click', () => {
             pendingDepositsModal.classList.remove('hidden');
             loadPendingDeposits(); // Load pending deposits
@@ -1968,7 +1966,7 @@
             closeModal(pendingWithdrawalsModal);
         });
 
-        // NEW FAQ Modal buttons
+        // FAQ Modal buttons
         viewFAQBtn.addEventListener('click', () => {
             faqModal.classList.remove('hidden');
         });
