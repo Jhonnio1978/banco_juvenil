@@ -209,13 +209,29 @@
                     <button id="depositMoneyBtn" class="btn-primary w-full">Depositar Dinero</button>
                     <button id="withdrawMoneyBtn" class="btn-primary w-full">Retirar Dinero</button>
                     <button id="viewHistoryBtn" class="btn-primary w-full bg-blue-600 hover:bg-blue-700">Ver Historial de Movimientos</button>
+
+                    <!-- User-specific Pending Requests Button (NEW) -->
+                    <button id="viewUserPendingRequestsBtn" class="btn-primary w-full bg-purple-600 hover:bg-purple-700">Ver Mis Solicitudes Pendientes</button>
+
+                    <!-- NEW: Online Shopping Button -->
+                    <button id="onlineShoppingBtn" class="btn-primary w-full bg-teal-600 hover:bg-teal-700">Comprar por Internet</button>
+                    <!-- NEW: Streaming Service Button -->
+                    <button id="streamingPaymentBtn" class="btn-primary w-full bg-pink-600 hover:bg-pink-700">Pagar Servicio de Streaming</button>
+
                     <!-- Admin specific buttons, initially hidden -->
-                    <button id="viewPendingDepositsBtn" class="btn-primary w-full hidden bg-yellow-600 hover:bg-yellow-700">Ver Depósitos Pendientes (Admin)</button>
-                    <button id="viewPendingWithdrawalsBtn" class="btn-primary w-full hidden bg-orange-600 hover:bg-orange-700">Ver Retiros Pendientes (Admin)</button>
-                    <button id="adminFullHistoryBtn" class="btn-primary w-full hidden bg-green-600 hover:bg-green-700">Ver Historial Completo (Admin)</button>
-                    <button id="viewFAQBtn" class="btn-primary w-full bg-indigo-600 hover:bg-indigo-700">Ver Preguntas Frecuentes (FAQ)</button>
+                    <div id="adminButtonsContainer" class="hidden space-y-4 mt-6 border-t pt-4 border-gray-200">
+                        <h3 class="text-xl font-bold text-gray-700 border-b pb-2 mb-4">Funciones de Administrador</h3>
+                        <button id="viewPendingDepositsBtn" class="btn-primary w-full bg-yellow-600 hover:bg-yellow-700">Ver Depósitos Pendientes (Admin)</button>
+                        <button id="viewPendingWithdrawalsBtn" class="btn-primary w-full bg-orange-600 hover:bg-orange-700">Ver Retiros Pendientes (Admin)</button>
+                        <button id="adminFullHistoryBtn" class="btn-primary w-full bg-green-600 hover:bg-green-700">Ver Historial Completo (Admin)</button>
+                    </div>
+
+                    <!-- FAQ button visible to all logged-in users -->
+                    <button id="viewFAQBtn" class="btn-primary w-full bg-indigo-600 hover:bg-indigo-700 mt-4">Ver Preguntas Frecuentes (FAQ)</button>
+
+                    <!-- Admin Contact info visible to all logged-in users -->
                     <p class="text-sm text-gray-600 mt-6 pt-4 border-t border-gray-200">
-                        Contacto de Soporte: <a href="https://wa.me/18293329545" target="_blank" class="font-bold text-green-600 hover:underline">829-332-9545 (WhatsApp)</a>
+                        Contacto de Soporte (Admin): <a href="https://wa.me/18293329545" target="_blank" class="font-bold text-green-600 hover:underline">829-332-9545 (WhatsApp)</a>
                     </p>
                     <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-xl shadow transition duration-200 w-full">Cerrar Sesión</button>
                 </div>
@@ -440,8 +456,122 @@
                     <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo me contacto con el administrador si tengo un problema?</h4>
                     <p class="text-sm">Puedes contactar al administrador directamente al número: <span class="font-bold">829-332-9545</span>.</p>
                 </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo funciona la compra por internet?</h4>
+                    <p class="text-sm">Puedes solicitar la compra de productos de tiendas como Shein, Alibaba, AliExpress o Temu. Proporciona el monto estimado y los enlaces de los productos. Se te cobrará una tarifa del 3% sobre el total. Una vez confirmado el pago, el administrador recibirá tu solicitud vía WhatsApp para procesar la compra.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo puedo pagar servicios de streaming?</h4>
+                    <p class="text-sm">Puedes pagar tus suscripciones a servicios como Netflix, Disney+, Spotify, etc. Introduce el nombre del servicio, tu usuario/email de cuenta y el monto. Se aplicará una tarifa del 3%. Después de confirmar el pago, el administrador recibirá la información para procesar tu recarga o pago.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Puedo ver mis solicitudes de depósito y retiro pendientes?</h4>
+                    <p class="text-sm">Sí, en tu dashboard puedes hacer clic en "Ver Mis Solicitudes Pendientes" para revisar el estado de tus depósitos y retiros que aún no han sido procesados por el administrador.</p>
+                </div>
             </div>
             <button id="closeFAQModalBtn" class="btn-primary w-full mt-6">Cerrar FAQ</button>
+        </div>
+    </div>
+
+    <!-- NEW: Online Shopping Modal -->
+    <div id="onlineShoppingModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8 w-full max-w-lg">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Compra por Internet</h3>
+            <form id="onlineShoppingForm" class="space-y-4">
+                <div>
+                    <label for="shoppingAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto total estimado de los productos (sin incluir envío/impuestos)</label>
+                    <input type="number" id="shoppingAmount" class="input-field" placeholder="Ej: 50.00" min="0.01" step="0.01" required>
+                </div>
+                <div>
+                    <label for="shoppingCurrency" class="block text-gray-700 text-sm font-semibold mb-2">Moneda</label>
+                    <select id="shoppingCurrency" class="input-field">
+                        <option value="USD">Dólar (USD)</option>
+                        <option value="DOP">Peso Dominicano (DOP)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="productLinks" class="block text-gray-700 text-sm font-semibold mb-2">Pegue aquí los enlaces de los productos (uno por línea)</label>
+                    <textarea id="productLinks" class="input-field h-32" placeholder="https://www.shein.com/item1&#10;https://www.aliexpress.com/item2" required></textarea>
+                </div>
+                <div class="text-right text-sm text-gray-600">
+                    <p>Tarifa (3%): <span id="shoppingFeeDisplay">$0.00 USD</span></p>
+                    <p class="font-bold text-base text-gray-800">Total a Pagar: <span id="shoppingTotalDisplay">$0.00 USD</span></p>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" id="cancelOnlineShopping" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
+                    <button type="submit" id="confirmOnlineShopping" class="btn-primary">Confirmar Compra y Enviar a Admin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW: Streaming Payment Modal -->
+    <div id="streamingPaymentModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8 w-full max-w-sm">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Pagar Servicio de Streaming</h3>
+            <form id="streamingPaymentForm" class="space-y-4">
+                <div>
+                    <label for="streamingService" class="block text-gray-700 text-sm font-semibold mb-2">Servicio de Streaming</label>
+                    <select id="streamingService" class="input-field" required>
+                        <option value="">Seleccione un servicio</option>
+                        <option value="Netflix">Netflix</option>
+                        <option value="Disney+">Disney+</option>
+                        <option value="Spotify">Spotify</option>
+                        <option value="Amazon Prime Video">Amazon Prime Video</option>
+                        <option value="YouTube Premium">YouTube Premium</option>
+                        <option value="HBO Max">HBO Max</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="streamingAccountIdentifier" class="block text-gray-700 text-sm font-semibold mb-2">Email o Usuario de la Cuenta</label>
+                    <input type="text" id="streamingAccountIdentifier" class="input-field" placeholder="tu_email@ejemplo.com o tu_usuario" required>
+                </div>
+                <div>
+                    <label for="streamingAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto de la Suscripción</label>
+                    <input type="number" id="streamingAmount" class="input-field" placeholder="Ej: 15.99" min="0.01" step="0.01" required>
+                </div>
+                <div>
+                    <label for="streamingCurrency" class="block text-gray-700 text-sm font-semibold mb-2">Moneda</label>
+                    <select id="streamingCurrency" class="input-field">
+                        <option value="USD">Dólar (USD)</option>
+                        <option value="DOP">Peso Dominicano (DOP)</option>
+                    </select>
+                </div>
+                <div class="text-right text-sm text-gray-600">
+                    <p>Tarifa (3%): <span id="streamingFeeDisplay">$0.00 USD</span></p>
+                    <p class="font-bold text-base text-gray-800">Total a Pagar: <span id="streamingTotalDisplay">$0.00 USD</span></p>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" id="cancelStreamingPayment" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
+                    <button type="submit" id="confirmStreamingPayment" class="btn-primary">Confirmar Pago y Enviar a Admin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW: User Pending Requests Modal -->
+    <div id="userPendingRequestsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Mis Solicitudes Pendientes</h3>
+            <div class="table-container bg-white rounded-lg shadow">
+                <table class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Monto</th>
+                            <th>Moneda</th>
+                            <th>Estado</th>
+                            <th>Detalle</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userPendingRequestsTableBody">
+                        <tr><td colspan="6" class="text-center text-gray-500 py-4">Cargando solicitudes pendientes...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <button id="closeUserPendingRequestsModalBtn" class="btn-primary w-full mt-6">Cerrar</button>
         </div>
     </div>
 
@@ -490,10 +620,11 @@
 
         // Exchange rate (example, in a real app this would come from an API)
         const USD_TO_DOP_RATE = 58.0; // Example rate
+        const COMMISSION_RATE = 0.03; // 3% commission for online shopping and streaming
 
         // Admin email for prototype purposes
         const ADMIN_EMAIL = `admin.jhonnio@${appId}.com`;
-        const ADMIN_PHONE_NUMBER = '18293329545'; // Admin's WhatsApp number
+        const ADMIN_PHONE_NUMBER_FULL = '18293329545'; // Admin's WhatsApp number with country code
 
         // Transfer specific variables
         let transferInterval = null; // To hold the interval ID for cancellation
@@ -533,6 +664,9 @@
         const viewPendingDepositsBtn = document.getElementById('viewPendingDepositsBtn');
         const viewPendingWithdrawalsBtn = document.getElementById('viewPendingWithdrawalsBtn');
         const viewFAQBtn = document.getElementById('viewFAQBtn'); // FAQ Button
+        const onlineShoppingBtn = document.getElementById('onlineShoppingBtn'); // NEW Online Shopping Button
+        const streamingPaymentBtn = document.getElementById('streamingPaymentBtn'); // NEW Streaming Payment Button
+        const viewUserPendingRequestsBtn = document.getElementById('viewUserPendingRequestsBtn'); // NEW User Pending Requests Button
 
         const pendingDepositsTableBodyModal = document.getElementById('pendingDepositsTableBodyModal'); // Table for deposits (now in modal)
         const pendingWithdrawalsTableBodyModal = document.getElementById('pendingWithdrawalsTableBodyModal'); // Table for withdrawals (now in modal)
@@ -604,6 +738,32 @@
         const faqModal = document.getElementById('faqModal');
         const closeFAQModalBtn = document.getElementById('closeFAQModalBtn');
 
+        // NEW: Online Shopping Modal elements
+        const onlineShoppingModal = document.getElementById('onlineShoppingModal');
+        const cancelOnlineShopping = document.getElementById('cancelOnlineShopping');
+        const onlineShoppingForm = document.getElementById('onlineShoppingForm');
+        const shoppingAmountInput = document.getElementById('shoppingAmount');
+        const shoppingCurrencyInput = document.getElementById('shoppingCurrency');
+        const productLinksInput = document.getElementById('productLinks');
+        const shoppingFeeDisplay = document.getElementById('shoppingFeeDisplay');
+        const shoppingTotalDisplay = document.getElementById('shoppingTotalDisplay');
+
+        // NEW: Streaming Payment Modal elements
+        const streamingPaymentModal = document.getElementById('streamingPaymentModal');
+        const cancelStreamingPayment = document.getElementById('cancelStreamingPayment');
+        const streamingPaymentForm = document.getElementById('streamingPaymentForm');
+        const streamingServiceInput = document.getElementById('streamingService');
+        const streamingAccountIdentifierInput = document.getElementById('streamingAccountIdentifier');
+        const streamingAmountInput = document.getElementById('streamingAmount');
+        const streamingCurrencyInput = document.getElementById('streamingCurrency');
+        const streamingFeeDisplay = document.getElementById('streamingFeeDisplay');
+        const streamingTotalDisplay = document.getElementById('streamingTotalDisplay');
+
+        // NEW: User Pending Requests Modal elements
+        const userPendingRequestsModal = document.getElementById('userPendingRequestsModal');
+        const closeUserPendingRequestsModalBtn = document.getElementById('closeUserPendingRequestsModalBtn');
+        const userPendingRequestsTableBody = document.getElementById('userPendingRequestsTableBody');
+
 
         // --- Utility Functions ---
 
@@ -671,12 +831,12 @@
                 loginTab.classList.add('active');
                 registerTab.classList.remove('active');
                 // Hide all main sections and modals, including new admin modals
-                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, pendingDepositsModal, pendingWithdrawalsModal, faqModal);
+                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, pendingDepositsModal, pendingWithdrawalsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal);
             } else {
                 registerTab.classList.add('active');
                 loginTab.classList.remove('active');
                 // Hide all main sections and modals, including new admin modals
-                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, pendingDepositsModal, pendingWithdrawalsModal, faqModal);
+                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, pendingDepositsModal, pendingWithdrawalsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal);
             }
             hideMessage(); // Hide any previous messages when changing tabs
         }
@@ -966,7 +1126,7 @@
                 });
 
                 // Display dashboard and hide login/register forms and all admin modals
-                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, pendingDepositsModal, pendingWithdrawalsModal, faqModal);
+                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, pendingDepositsModal, pendingWithdrawalsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal);
 
             } else {
                 // User is signed out
@@ -1705,23 +1865,6 @@
         }
 
         /**
-         * Rejects a pending withdrawal, deleting it from the list.
-         * @param {string} withdrawalId The document ID of the pending withdrawal.
-         * @param {string} userId The Firebase UID of the user who made the withdrawal.
-         */
-        async function rejectWithdrawal(withdrawalId, userId) {
-            try {
-                const withdrawalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_withdrawals', withdrawalId);
-                // Optionally, in a real app, you might want to notify the user of rejection
-                await deleteDoc(withdrawalDocRef);
-                showMessage(`Retiro #${withdrawalId} rechazado exitosamente.`, 'info');
-            } catch (error) {
-                console.error("Error rejecting withdrawal:", error);
-                showMessage('Error al rechazar el retiro. Por favor, inténtalo de nuevo.', 'error');
-            }
-        }
-
-        /**
          * Loads and displays the current user's transaction history.
          */
         async function loadUserHistory() {
@@ -1739,12 +1882,12 @@
                 for (const docEntry of snapshot.docs) {
                     const transaction = { id: docEntry.id, ...docEntry.data() };
 
-                    if ((transaction.type === 'deposit' || transaction.type === 'withdrawal') && transaction.userId === currentUserId) {
+                    // Filter for current user's completed transactions
+                    if ((transaction.type === 'deposit' || transaction.type === 'withdrawal' || transaction.type === 'online_purchase' || transaction.type === 'streaming_payment') && transaction.userId === currentUserId) {
                         userTransactions.push(transaction);
                     } else if (transaction.type === 'transfer' && (transaction.senderId === currentUserId || transaction.recipientId === currentUserId)) {
                         userTransactions.push(transaction);
                     }
-                    // No need to check for withdrawal_fee for user history directly
                 }
 
                 if (userTransactions.length === 0) {
@@ -1791,6 +1934,16 @@
                                 detailsDisplay = `De: ${senderDisplayName}`;
                                 amountDisplay = `+${transaction.amount.toFixed(2)} ${transaction.currency}`;
                             }
+                            break;
+                        case 'online_purchase':
+                            typeDisplay = 'Compra Online';
+                            detailsDisplay = `Total productos: ${transaction.productAmount.toFixed(2)} ${transaction.productCurrency}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
+                            amountDisplay = `-${transaction.amount.toFixed(2)} ${transaction.currency}`;
+                            break;
+                        case 'streaming_payment':
+                            typeDisplay = 'Pago Streaming';
+                            detailsDisplay = `Servicio: ${transaction.service}, Cuenta: ${transaction.accountIdentifier}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
+                            amountDisplay = `-${transaction.amount.toFixed(2)} ${transaction.currency}`;
                             break;
                     }
 
@@ -1877,6 +2030,16 @@
                             usersInvolved = `${feePayer} (paga) -> ${feeReceiver} (recibe)`;
                             details = `ID Retiro Original: ${transaction.originalWithdrawalId || 'N/A'}`;
                             break;
+                        case 'online_purchase':
+                            typeDisplay = 'Compra Online';
+                            usersInvolved = await getUserDisplayName(transaction.userId);
+                            details = `Links: ${transaction.productLinks.substring(0, 50)}... Total productos: ${transaction.productAmount.toFixed(2)} ${transaction.productCurrency}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
+                            break;
+                        case 'streaming_payment':
+                            typeDisplay = 'Pago Streaming';
+                            usersInvolved = await getUserDisplayName(transaction.userId);
+                            details = `Servicio: ${transaction.service}, Cuenta: ${transaction.accountIdentifier}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
+                            break;
                         default:
                             usersInvolved = transaction.userId || 'N/A'; // Fallback
                             details = 'N/A';
@@ -1901,6 +2064,391 @@
                 adminFullHistoryTableBodyModal.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error al cargar el historial completo.</td></tr>`;
             });
         }
+
+        /**
+         * Loads and displays the current user's pending deposits and withdrawals.
+         */
+        async function loadUserPendingRequests() {
+            userPendingRequestsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Cargando solicitudes...</td></tr>';
+
+            const pendingDepositsRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_deposits');
+            const pendingWithdrawalsRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_withdrawals');
+
+            const depositsQuery = query(pendingDepositsRef, where('userId', '==', currentUserId), where('status', '==', 'pending'));
+            const withdrawalsQuery = query(pendingWithdrawalsRef, where('userId', '==', currentUserId), where('status', '==', 'pending'));
+
+            onSnapshot(depositsQuery, async (depositsSnapshot) => {
+                onSnapshot(withdrawalsQuery, async (withdrawalsSnapshot) => {
+                    userPendingRequestsTableBody.innerHTML = ''; // Clear table for new data
+                    const allPendingRequests = [];
+
+                    depositsSnapshot.forEach(docEntry => {
+                        const data = docEntry.data();
+                        allPendingRequests.push({
+                            id: docEntry.id,
+                            type: 'Depósito',
+                            amount: data.amount,
+                            currency: data.currency,
+                            status: data.status,
+                            timestamp: data.timestamp,
+                            detail: `Serie: ${data.serialNumber}`
+                        });
+                    });
+
+                    withdrawalsSnapshot.forEach(docEntry => {
+                        const data = docEntry.data();
+                        allPendingRequests.push({
+                            id: docEntry.id,
+                            type: 'Retiro',
+                            amount: data.amount,
+                            currency: data.currency,
+                            status: data.status,
+                            timestamp: data.timestamp,
+                            detail: `Tarifa (4%): $${(data.amount * 0.04).toFixed(2)} ${data.currency}`
+                        });
+                    });
+
+                    if (allPendingRequests.length === 0) {
+                        userPendingRequestsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">No tienes solicitudes pendientes.</td></tr>';
+                        return;
+                    }
+
+                    // Sort by timestamp descending
+                    allPendingRequests.sort((a, b) => {
+                        const timestampA = a.timestamp && typeof a.timestamp.seconds !== 'undefined' ? a.timestamp.seconds : 0;
+                        const timestampB = b.timestamp && typeof b.timestamp.seconds !== 'undefined' ? b.timestamp.seconds : 0;
+                        return timestampB - timestampA;
+                    });
+
+                    for (const request of allPendingRequests) {
+                        const date = (request.timestamp && typeof request.timestamp.seconds !== 'undefined')
+                            ? new Date(request.timestamp.seconds * 1000).toLocaleString()
+                            : 'Fecha no disponible';
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${date}</td>
+                            <td>${request.type}</td>
+                            <td>${request.amount.toFixed(2)}</td>
+                            <td>${request.currency}</td>
+                            <td>${request.status === 'pending' ? 'Pendiente' : request.status}</td>
+                            <td>${request.detail}</td>
+                        `;
+                        userPendingRequestsTableBody.appendChild(row);
+                    }
+                });
+            }, (error) => {
+                console.error("Error loading user pending requests:", error);
+                userPendingRequestsTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-4">Error al cargar solicitudes pendientes.</td></tr>`;
+            });
+        }
+
+
+        // --- Online Shopping Logic (NEW) ---
+        onlineShoppingBtn.addEventListener('click', () => {
+            onlineShoppingModal.classList.remove('hidden');
+            onlineShoppingForm.reset();
+            shoppingFeeDisplay.textContent = '$0.00 USD';
+            shoppingTotalDisplay.textContent = '$0.00 USD';
+        });
+
+        cancelOnlineShopping.addEventListener('click', () => {
+            closeModal(onlineShoppingModal);
+            onlineShoppingForm.reset();
+        });
+
+        // Calculate fee and total on input change
+        shoppingAmountInput.addEventListener('input', updateOnlineShoppingCalculation);
+        shoppingCurrencyInput.addEventListener('change', updateOnlineShoppingCalculation);
+
+        function updateOnlineShoppingCalculation() {
+            const amount = parseFloat(shoppingAmountInput.value);
+            const currency = shoppingCurrencyInput.value;
+
+            if (isNaN(amount) || amount <= 0) {
+                shoppingFeeDisplay.textContent = `$0.00 USD`;
+                shoppingTotalDisplay.textContent = `$0.00 USD`;
+                return;
+            }
+
+            let amountInUSD = amount;
+            if (currency === 'DOP') {
+                amountInUSD = amount / USD_TO_DOP_RATE;
+            }
+
+            const feeAmount = amountInUSD * COMMISSION_RATE;
+            const totalAmount = amountInUSD + feeAmount;
+
+            shoppingFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
+            shoppingTotalDisplay.textContent = `$${totalAmount.toFixed(2)} USD`;
+        }
+
+        onlineShoppingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+
+            const productAmount = parseFloat(shoppingAmountInput.value);
+            const productCurrency = shoppingCurrencyInput.value;
+            const productLinks = productLinksInput.value.trim();
+
+            if (isNaN(productAmount) || productAmount <= 0) {
+                showMessage('Por favor, ingresa un monto estimado válido para los productos.', 'error');
+                return;
+            }
+            if (!productLinks) {
+                showMessage('Por favor, ingresa al menos un enlace de producto.', 'error');
+                return;
+            }
+
+            let amountInUSD = productAmount;
+            if (productCurrency === 'DOP') {
+                amountInUSD = productAmount / USD_TO_DOP_RATE;
+            }
+
+            const feeAmount = amountInUSD * COMMISSION_RATE;
+            const totalToDeductInUSD = amountInUSD + feeAmount;
+
+            if (currentBalanceUSD < totalToDeductInUSD) {
+                showMessage(`Saldo insuficiente para esta compra. Necesitas $${totalToDeductInUSD.toFixed(2)} USD.`, 'error');
+                return;
+            }
+
+            try {
+                // Deduct money from user's balance
+                const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
+                const userDocSnap = await getDoc(userProfileRef);
+                const userData = userDocSnap.data();
+
+                let newUserBalanceUSD = userData.balanceUSD - totalToDeductInUSD;
+                let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
+
+                await updateDoc(userProfileRef, {
+                    balanceUSD: newUserBalanceUSD,
+                    balanceDOP: newUserBalanceDOP
+                });
+
+                // Record transaction
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                    userId: currentUserId,
+                    type: 'online_purchase',
+                    productAmount: productAmount,
+                    productCurrency: productCurrency,
+                    productLinks: productLinks,
+                    feeAmount: feeAmount,
+                    feeCurrency: 'USD', // Fee is always calculated in USD
+                    amount: totalToDeductInUSD, // Total amount deducted in USD
+                    currency: 'USD', // Currency of the deduction
+                    timestamp: serverTimestamp(),
+                    status: 'completed', // Status is completed since money is deducted
+                    description: `Compra online de ${productAmount.toFixed(2)} ${productCurrency}`
+                });
+
+                // Add the fee to the admin's account
+                const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
+                const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
+                const adminSnapshot = await getDocs(adminQuery);
+
+                if (!adminSnapshot.empty) {
+                    const adminDoc = adminSnapshot.docs[0];
+                    const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminDoc.id);
+                    const adminData = adminDoc.data();
+
+                    let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
+                    let adminNewBalanceDOP = adminNewBalanceUSD * USD_TO_DOP_RATE;
+
+                    await updateDoc(adminProfileRef, {
+                        balanceUSD: adminNewBalanceUSD,
+                        balanceDOP: adminNewBalanceDOP
+                    });
+                     // Record the fee transaction for the admin (optional but good for audit)
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                        payerId: currentUserId, // User who paid the fee
+                        receiverId: adminDoc.id, // Admin who received the fee
+                        amount: feeAmount,
+                        currency: 'USD',
+                        timestamp: serverTimestamp(),
+                        type: 'online_purchase_fee',
+                        status: 'completed'
+                    });
+                } else {
+                    console.warn("Admin account not found for fee collection.");
+                }
+
+                // Prepare WhatsApp message
+                const whatsappMessage = `
+                Nueva solicitud de compra online:
+                Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
+                Monto de productos: ${productAmount.toFixed(2)} ${productCurrency}
+                Tarifa (3%): $${feeAmount.toFixed(2)} USD
+                TOTAL COBRADO: $${totalToDeductInUSD.toFixed(2)} USD
+                Enlaces de productos:
+                ${productLinks}
+                Por favor, procede con la compra.
+                `;
+                const encodedMessage = encodeURIComponent(whatsappMessage);
+                window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
+
+                showMessage('Compra por internet solicitada y dinero deducido. Se ha abierto tu WhatsApp para enviar los detalles al administrador.', 'success');
+                closeModal(onlineShoppingModal);
+                onlineShoppingForm.reset();
+
+            } catch (error) {
+                console.error("Error al procesar compra online:", error);
+                showMessage('Error al procesar la compra online. Por favor, inténtalo de nuevo.', 'error');
+            }
+        });
+
+        // --- Streaming Payment Logic (NEW) ---
+        streamingPaymentBtn.addEventListener('click', () => {
+            streamingPaymentModal.classList.remove('hidden');
+            streamingPaymentForm.reset();
+            streamingFeeDisplay.textContent = '$0.00 USD';
+            streamingTotalDisplay.textContent = '$0.00 USD';
+        });
+
+        cancelStreamingPayment.addEventListener('click', () => {
+            closeModal(streamingPaymentModal);
+            streamingPaymentForm.reset();
+        });
+
+        // Calculate fee and total on input change
+        streamingAmountInput.addEventListener('input', updateStreamingPaymentCalculation);
+        streamingCurrencyInput.addEventListener('change', updateStreamingPaymentCalculation);
+
+        function updateStreamingPaymentCalculation() {
+            const amount = parseFloat(streamingAmountInput.value);
+            const currency = streamingCurrencyInput.value;
+
+            if (isNaN(amount) || amount <= 0) {
+                streamingFeeDisplay.textContent = `$0.00 USD`;
+                streamingTotalDisplay.textContent = `$0.00 USD`;
+                return;
+            }
+
+            let amountInUSD = amount;
+            if (currency === 'DOP') {
+                amountInUSD = amount / USD_TO_DOP_RATE;
+            }
+
+            const feeAmount = amountInUSD * COMMISSION_RATE;
+            const totalAmount = amountInUSD + feeAmount;
+
+            streamingFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
+            streamingTotalDisplay.textContent = `$${totalAmount.toFixed(2)} USD`;
+        }
+
+        streamingPaymentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+
+            const service = streamingServiceInput.value;
+            const accountIdentifier = streamingAccountIdentifierInput.value.trim();
+            const subscriptionAmount = parseFloat(streamingAmountInput.value);
+            const subscriptionCurrency = streamingCurrencyInput.value;
+
+            if (!service || !accountIdentifier || isNaN(subscriptionAmount) || subscriptionAmount <= 0) {
+                showMessage('Por favor, completa todos los campos para el pago del servicio de streaming.', 'error');
+                return;
+            }
+
+            let amountInUSD = subscriptionAmount;
+            if (subscriptionCurrency === 'DOP') {
+                amountInUSD = subscriptionAmount / USD_TO_DOP_RATE;
+            }
+
+            const feeAmount = amountInUSD * COMMISSION_RATE;
+            const totalToDeductInUSD = amountInUSD + feeAmount;
+
+            if (currentBalanceUSD < totalToDeductInUSD) {
+                showMessage(`Saldo insuficiente para pagar este servicio. Necesitas $${totalToDeductInUSD.toFixed(2)} USD.`, 'error');
+                return;
+            }
+
+            try {
+                // Deduct money from user's balance
+                const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
+                const userDocSnap = await getDoc(userProfileRef);
+                const userData = userDocSnap.data();
+
+                let newUserBalanceUSD = userData.balanceUSD - totalToDeductInUSD;
+                let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
+
+                await updateDoc(userProfileRef, {
+                    balanceUSD: newUserBalanceUSD,
+                    balanceDOP: newUserBalanceDOP
+                });
+
+                // Record transaction
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                    userId: currentUserId,
+                    type: 'streaming_payment',
+                    service: service,
+                    accountIdentifier: accountIdentifier,
+                    subscriptionAmount: subscriptionAmount,
+                    subscriptionCurrency: subscriptionCurrency,
+                    feeAmount: feeAmount,
+                    feeCurrency: 'USD',
+                    amount: totalToDeductInUSD, // Total amount deducted in USD
+                    currency: 'USD', // Currency of the deduction
+                    timestamp: serverTimestamp(),
+                    status: 'completed',
+                    description: `Pago de ${service} para cuenta ${accountIdentifier}`
+                });
+
+                // Add the fee to the admin's account
+                const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
+                const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
+                const adminSnapshot = await getDocs(adminQuery);
+
+                if (!adminSnapshot.empty) {
+                    const adminDoc = adminSnapshot.docs[0];
+                    const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminDoc.id);
+                    const adminData = adminDoc.data();
+
+                    let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
+                    let adminNewBalanceDOP = adminNewBalanceUSD * USD_TO_DOP_RATE;
+
+                    await updateDoc(adminProfileRef, {
+                        balanceUSD: adminNewBalanceUSD,
+                        balanceDOP: adminNewBalanceDOP
+                    });
+                     // Record the fee transaction for the admin
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                        payerId: currentUserId,
+                        receiverId: adminDoc.id,
+                        amount: feeAmount,
+                        currency: 'USD',
+                        timestamp: serverTimestamp(),
+                        type: 'streaming_payment_fee',
+                        status: 'completed'
+                    });
+                } else {
+                    console.warn("Admin account not found for fee collection.");
+                }
+
+                // Prepare WhatsApp message
+                const whatsappMessage = `
+                Nueva solicitud de pago de servicio de streaming:
+                Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
+                Servicio: ${service}
+                Cuenta: ${accountIdentifier}
+                Monto Suscripción: ${subscriptionAmount.toFixed(2)} ${subscriptionCurrency}
+                Tarifa (3%): $${feeAmount.toFixed(2)} USD
+                TOTAL COBRADO: $${totalToDeductInUSD.toFixed(2)} USD
+                Por favor, procede con el pago.
+                `;
+                const encodedMessage = encodeURIComponent(whatsappMessage);
+                window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
+
+                showMessage('Pago de servicio de streaming solicitado y dinero deducido. Se ha abierto tu WhatsApp para enviar los detalles al administrador.', 'success');
+                closeModal(streamingPaymentModal);
+                streamingPaymentForm.reset();
+
+            } catch (error) {
+                console.error("Error al procesar pago de streaming:", error);
+                showMessage('Error al procesar el pago de streaming. Por favor, inténtalo de nuevo.', 'error');
+            }
+        });
 
 
         // --- Event Listeners ---
@@ -1972,6 +2520,35 @@
         });
         closeFAQModalBtn.addEventListener('click', () => {
             closeModal(faqModal);
+        });
+
+        // Online Shopping Buttons
+        onlineShoppingBtn.addEventListener('click', () => {
+            onlineShoppingModal.classList.remove('hidden');
+            onlineShoppingForm.reset(); // Reset form when opened
+            updateOnlineShoppingCalculation(); // Initial calculation display
+        });
+        cancelOnlineShopping.addEventListener('click', () => {
+            closeModal(onlineShoppingModal);
+        });
+
+        // Streaming Payment Buttons
+        streamingPaymentBtn.addEventListener('click', () => {
+            streamingPaymentModal.classList.remove('hidden');
+            streamingPaymentForm.reset(); // Reset form when opened
+            updateStreamingPaymentCalculation(); // Initial calculation display
+        });
+        cancelStreamingPayment.addEventListener('click', () => {
+            closeModal(streamingPaymentModal);
+        });
+
+        // User Pending Requests Button
+        viewUserPendingRequestsBtn.addEventListener('click', () => {
+            userPendingRequestsModal.classList.remove('hidden');
+            loadUserPendingRequests();
+        });
+        closeUserPendingRequestsModalBtn.addEventListener('click', () => {
+            closeModal(userPendingRequestsModal);
         });
 
     </script>
