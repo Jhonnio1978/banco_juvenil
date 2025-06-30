@@ -117,8 +117,8 @@
         .btn-secondary {
             background-color: #6B7280; /* Gray */
             color: white;
-            border-radius: 0.75rem;
-            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
             font-weight: 600;
             transition: all 0.2s ease-in-out;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -149,17 +149,6 @@
             flex-direction: column;
             overflow: hidden;
             max-height: 90vh; /* Limit height for responsiveness */
-        }
-        .chat-header-modal {
-            background-image: linear-gradient(to right, #4F46E5, #6366F1);
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-            font-weight: 700;
-            font-size: 1.5rem;
-            border-top-left-radius: 1.5rem;
-            border-top-right-radius: 1.5rem;
-            position: relative; /* For close button positioning */
         }
         .chat-header-modal .close-button {
             position: absolute;
@@ -360,8 +349,14 @@
                     <button id="consejoFinancieroBtn" class="btn-primary w-full bg-yellow-500 hover:bg-yellow-600">Consejo Financiero del Día ✨</button>
                     <!-- Interest Calculator Button -->
                     <button id="calculadoraInteresesBtn" class="btn-primary w-full bg-orange-500 hover:bg-orange-600">Calculadora de Intereses ✨</button>
-                    <!-- NEW: Edit Profile Button -->
+                    <!-- Edit Profile Button -->
                     <button id="editProfileBtn" class="btn-primary w-full bg-gray-500 hover:bg-gray-600">Editar Perfil</button>
+                    <!-- NEW: Change Password Button -->
+                    <button id="changePasswordBtn" class="btn-primary w-full bg-blue-700 hover:bg-blue-800">Cambiar Contraseña</button>
+                    <!-- NEW: Security Tips Button -->
+                    <button id="securityTipsBtn" class="btn-primary w-full bg-red-700 hover:bg-red-800">Consejos de Seguridad</button>
+                    <!-- NEW: About Us Button -->
+                    <button id="aboutUsBtn" class="btn-primary w-full bg-green-700 hover:bg-green-800">Acerca de Nosotros</button>
 
 
                     <!-- Admin specific buttons, initially hidden -->
@@ -476,7 +471,7 @@
                                         <th>Detalle</th>
                                         <th>Monto</th>
                                         <th>Moneda</th>
-                                        <th>Recibo</th> <!-- New column for receipt button -->
+                                        <th>Recibo</th>
                                     </tr>
                                 </thead>
                                 <tbody id="userHistoryTableBody">
@@ -848,7 +843,7 @@
         </div>
     </div>
 
-    <!-- NEW: Edit Profile Modal -->
+    <!-- Edit Profile Modal -->
     <div id="editProfileModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
         <div class="modal-content p-8 w-full max-w-sm">
             <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Editar Perfil</h3>
@@ -873,11 +868,88 @@
         </div>
     </div>
 
+    <!-- NEW: Change Password Modal -->
+    <div id="changePasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8 w-full max-w-sm">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Cambiar Contraseña</h3>
+            <form id="changePasswordForm" class="space-y-4">
+                <div>
+                    <label for="currentPassword" class="block text-gray-700 text-sm font-semibold mb-2">Contraseña Actual</label>
+                    <input type="password" id="currentPassword" class="input-field" placeholder="********" required>
+                </div>
+                <div>
+                    <label for="newPassword" class="block text-gray-700 text-sm font-semibold mb-2">Nueva Contraseña</label>
+                    <input type="password" id="newPassword" class="input-field" placeholder="********" required>
+                </div>
+                <div>
+                    <label for="confirmNewPassword" class="block text-gray-700 text-sm font-semibold mb-2">Confirmar Nueva Contraseña</label>
+                    <input type="password" id="confirmNewPassword" class="input-field" placeholder="********" required>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" id="cancelChangePasswordBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
+                    <button type="submit" class="btn-primary">Cambiar Contraseña</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW: Security Tips Modal -->
+    <div id="securityTipsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Consejos de Seguridad 🔒</h3>
+            <div class="text-left text-gray-700 space-y-4">
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">1. Contraseñas Fuertes y Únicas</h4>
+                    <p class="text-sm">Usa contraseñas largas y complejas que combinen letras mayúsculas, minúsculas, números y símbolos. ¡Y lo más importante, no las uses en otros sitios!</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">2. Cuidado con el Phishing</h4>
+                    <p class="text-sm">Nunca hagas clic en enlaces sospechosos ni descargues archivos de correos electrónicos o mensajes de texto no solicitados, incluso si parecen ser de un banco. Siempre verifica la fuente.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">3. Protege tu Información Personal</h4>
+                    <p class="text-sm">No compartas tu ID de usuario, contraseña, números de cuenta o información personal por teléfono, correo electrónico o redes sociales, a menos que estés seguro de la identidad del receptor.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">4. Revisa tus Movimientos Regularmente</h4>
+                    <p class="text-sm">Accede a tu historial de movimientos con frecuencia para detectar cualquier actividad sospechosa o no autorizada. Si ves algo raro, ¡contáctanos de inmediato!</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">5. Mantén tu Dispositivo Seguro</h4>
+                    <p class="text-sm">Usa antivirus, mantén tu sistema operativo y aplicaciones actualizadas, y evita conectarte a redes Wi-Fi públicas no seguras para realizar transacciones bancarias.</p>
+                </div>
+            </div>
+            <button id="closeSecurityTipsBtn" class="btn-primary w-full mt-6">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- NEW: About Us Modal -->
+    <div id="aboutUsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8 w-full max-w-lg">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Acerca del Banco Juvenil 🏦</h3>
+            <div class="text-left text-gray-700 space-y-4">
+                <p>¡Hola, futuro financiero! Somos el Banco Juvenil, una plataforma creada pensando en ti.</p>
+                <p>Nuestra misión es empoderar a los jóvenes como tú para que tomen el control de sus finanzas desde temprana edad. Creemos que aprender sobre dinero no tiene por qué ser aburrido, ¡sino una aventura emocionante!</p>
+                <p>Aquí podrás:</p>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li>Gestionar tus ahorros y gastos de forma sencilla.</li>
+                    <li>Establecer metas de ahorro y ver tu progreso.</li>
+                    <li>Realizar transferencias y pagos de forma segura (con la supervisión de un administrador, claro).</li>
+                    <li>Aprender sobre conceptos financieros con nuestro asistente de IA y consejos diarios.</li>
+                    <li>¡Y mucho más, todo diseñado para ser fácil y divertido!</li>
+                </ul>
+                <p>Estamos comprometidos con tu educación financiera y tu seguridad. ¡Gracias por elegirnos como tu compañero en este viaje!</p>
+                <p class="text-sm text-gray-600 mt-4">Fundado en 2025. Versión 1.0.</p>
+            </div>
+            <button id="closeAboutUsBtn" class="btn-primary w-full mt-6">Cerrar</button>
+        </div>
+    </div>
+
 
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, serverTimestamp, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
         // Your web app's Firebase configuration - provided by the user
@@ -959,7 +1031,10 @@
         const explainTermBtn = document.getElementById('explainTermBtn'); // Explain Financial Term Button
         const consejoFinancieroBtn = document.getElementById('consejoFinancieroBtn'); // Financial Tip Button
         const calculadoraInteresesBtn = document.getElementById('calculadoraInteresesBtn'); // Interest Calculator Button
-        const editProfileBtn = document.getElementById('editProfileBtn'); // NEW: Edit Profile Button
+        const editProfileBtn = document.getElementById('editProfileBtn'); // Edit Profile Button
+        const changePasswordBtn = document.getElementById('changePasswordBtn'); // NEW: Change Password Button
+        const securityTipsBtn = document.getElementById('securityTipsBtn'); // NEW: Security Tips Button
+        const aboutUsBtn = document.getElementById('aboutUsBtn'); // NEW: About Us Button
 
 
         const adminFullHistoryTableBodyModal = document.getElementById('adminFullHistoryTableBodyModal'); // Admin History (in modal)
@@ -1097,13 +1172,29 @@
         const calculateInterestBtn = document.getElementById('calculateInterestBtn');
         const interestExplanationOutput = document.getElementById('interestExplanationOutput');
 
-        // NEW: Edit Profile Modal elements
+        // Edit Profile Modal elements
         const editProfileModal = document.getElementById('editProfileModal');
-        const closeEditProfileBtn = document.getElementById('cancelEditProfileBtn');
+        const cancelEditProfileBtn = document.getElementById('cancelEditProfileBtn');
         const editProfileForm = document.getElementById('editProfileForm');
         const editNameInput = document.getElementById('editName');
         const editSurnameInput = document.getElementById('editSurname');
         const editAgeInput = document.getElementById('editAge');
+
+        // NEW: Change Password Modal elements
+        const changePasswordModal = document.getElementById('changePasswordModal');
+        const cancelChangePasswordBtn = document.getElementById('cancelChangePasswordBtn');
+        const changePasswordForm = document.getElementById('changePasswordForm');
+        const currentPasswordInput = document.getElementById('currentPassword');
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
+
+        // NEW: Security Tips Modal elements
+        const securityTipsModal = document.getElementById('securityTipsModal');
+        const closeSecurityTipsBtn = document.getElementById('closeSecurityTipsBtn');
+
+        // NEW: About Us Modal elements
+        const aboutUsModal = document.getElementById('aboutUsModal');
+        const closeAboutUsBtn = document.getElementById('closeAboutUsBtn');
 
 
         // Initial chat history for AI Chat with a system instruction for its role
@@ -1261,12 +1352,12 @@
                 loginTab.classList.add('active');
                 registerTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal, consejoFinancieroModal, calculadoraInteresesModal, editProfileModal);
+                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal, consejoFinancieroModal, calculadoraInteresesModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal);
             } else {
                 registerTab.classList.add('active');
                 loginTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal, consejoFinancieroModal, calculadoraInteresesModal, editProfileModal);
+                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal, consejoFinancieroModal, calculadoraInteresesModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal);
             }
             hideMessage(); // Hide any previous messages when changing tabs
         }
@@ -1556,7 +1647,7 @@
                 });
 
                 // Display dashboard and hide login/register forms and all modals
-                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal, consejoFinancieroModal, calculadoraInteresesModal, editProfileModal);
+                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal, consejoFinancieroModal, calculadoraInteresesModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal);
 
             } else {
                 // User is signed out
@@ -2180,7 +2271,7 @@
                 Cuenta: ${accountIdentifier}
                 Monto Suscripción: ${subscriptionAmount.toFixed(2)} ${subscriptionCurrency}
                 Tarifa (3%): $${feeAmount.toFixed(2)} USD
-                TOTAL A DEDUCIR: $${totalToDeductInUSD.toFixed(2)} USD (al confirmar)
+                TOTAL A DEDUCIR: $${totalToDeductedInUSD.toFixed(2)} USD (al confirmar)
                 Por favor, revisa y confirma.
                 `;
                 const encodedMessage = encodeURIComponent(whatsappMessage);
@@ -2944,6 +3035,12 @@
                     body: JSON.stringify(payload)
                 });
 
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Error Response:", errorBody);
+                    throw new Error(`API request failed with status ${response.status}: ${errorBody.error.message || 'Unknown error'}`);
+                }
+
                 const result = await response.json();
 
                 if (result.candidates && result.candidates.length > 0 &&
@@ -2953,12 +3050,12 @@
                     addAIChatMessage(aiResponseText, 'ai');
                     aiChatHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
                 } else {
-                    addAIChatMessage("Lo siento, no pude generar una respuesta. Por favor, intenta de nuevo.", 'ai');
+                    addAIChatMessage("Lo siento, no pude generar una respuesta. La IA no proporcionó contenido válido.", 'ai');
                     console.error("Unexpected API response structure:", result);
                 }
             } catch (error) {
-                console.error("Error calling Gemini API:", error);
-                addAIChatMessage("Hubo un error al conectar con el asistente. Por favor, verifica tu conexión o inténtalo más tarde.", 'ai');
+                console.error("Error calling Gemini API for chat:", error);
+                addAIChatMessage("Hubo un error al conectar con el asistente. Por favor, verifica tu conexión o inténtalo más tarde. Detalle: " + error.message, 'ai');
             } finally {
                 hideAILoadingIndicator(); // Hide loading dots
                 aiSendButton.disabled = false; // Re-enable button
@@ -3042,6 +3139,12 @@
                     body: JSON.stringify(payload)
                 });
 
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Error Response:", errorBody);
+                    throw new Error(`API request failed with status ${response.status}: ${errorBody.error.message || 'Unknown error'}`);
+                }
+
                 const result = await response.json();
 
                 if (result.candidates && result.candidates.length > 0 &&
@@ -3057,14 +3160,14 @@
                 } else {
                     generatedPlanText.classList.remove('hidden');
                     generatedPlanText.classList.add('bg-red-100', 'text-red-800');
-                    generatedPlanText.innerHTML = `<p>Lo siento, no pude generar un plan de ahorro. Por favor, intenta de nuevo.</p>`;
+                    generatedPlanText.innerHTML = `<p>Lo siento, no pude generar un plan de ahorro. La IA no proporcionó contenido válido.</p>`;
                     console.error("Unexpected API response structure for savings plan:", result);
                 }
             } catch (error) {
                 console.error("Error calling Gemini API for savings plan:", error);
                 generatedPlanText.classList.remove('hidden');
                 generatedPlanText.classList.add('bg-red-100', 'text-red-800');
-                generatedPlanText.innerHTML = `<p>Hubo un error al generar el plan de ahorro. Por favor, verifica tu conexión o inténtalo más tarde.</p>`;
+                generatedPlanText.innerHTML = `<p>Hubo un error al generar el plan de ahorro. Por favor, verifica tu conexión o inténtalo más tarde. Detalle: ${error.message}</p>`;
             } finally {
                 generatePlanBtn.disabled = false; // Re-enable button
             }
@@ -3111,6 +3214,12 @@
                     body: JSON.stringify(payload)
                 });
 
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Error Response:", errorBody);
+                    throw new Error(`API request failed with status ${response.status}: ${errorBody.error.message || 'Unknown error'}`);
+                }
+
                 const result = await response.json();
 
                 if (result.candidates && result.candidates.length > 0 &&
@@ -3126,14 +3235,14 @@
                 } else {
                     termExplanationOutput.classList.remove('hidden');
                     termExplanationOutput.classList.add('bg-red-100', 'text-red-800');
-                    termExplanationOutput.innerHTML = `<p>Lo siento, no pude generar una explicación para este término. Por favor, intenta de nuevo.</p>`;
+                    termExplanationOutput.innerHTML = `<p>Lo siento, no pude generar una explicación para este término. La IA no proporcionó contenido válido.</p>`;
                     console.error("Unexpected API response structure for term explanation:", result);
                 }
             } catch (error) {
                 console.error("Error calling Gemini API for term explanation:", error);
                 termExplanationOutput.classList.remove('hidden');
                 termExplanationOutput.classList.add('bg-red-100', 'text-red-800');
-                termExplanationOutput.innerHTML = `<p>Hubo un error al generar la explicación. Por favor, verifica tu conexión o inténtalo más tarde.</p>`;
+                termExplanationOutput.innerHTML = `<p>Hubo un error al generar la explicación. Por favor, verifica tu conexión o inténtalo más tarde. Detalle: ${error.message}</p>`;
             } finally {
                 generateExplanationBtn.disabled = false;
             }
@@ -3195,6 +3304,12 @@
                     body: JSON.stringify(payload)
                 });
 
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Error Response:", errorBody);
+                    throw new Error(`API request failed with status ${response.status}: ${errorBody.error.message || 'Unknown error'}`);
+                }
+
                 const result = await response.json();
 
                 if (result.candidates && result.candidates.length > 0 &&
@@ -3210,14 +3325,14 @@
                 } else {
                     historySummaryOutput.classList.remove('hidden');
                     historySummaryOutput.classList.add('bg-red-100', 'text-red-800');
-                    historySummaryOutput.innerHTML = `<p>Lo siento, no pude generar un resumen. Por favor, intenta de nuevo.</p>`;
+                    historySummaryOutput.innerHTML = `<p>Lo siento, no pude generar un resumen. La IA no proporcionó contenido válido.</p>`;
                     console.error("Unexpected API response structure for history summary:", result);
                 }
             } catch (error) {
                 console.error("Error calling Gemini API for history summary:", error);
                 historySummaryOutput.classList.remove('hidden');
                 historySummaryOutput.classList.add('bg-red-100', 'text-red-800');
-                historySummaryOutput.innerHTML = `<p>Hubo un error al generar el resumen. Por favor, verifica tu conexión o inténtalo más tarde.</p>`;
+                historySummaryOutput.innerHTML = `<p>Hubo un error al generar el resumen. Por favor, verifica tu conexión o inténtalo más tarde. Detalle: ${error.message}</p>`;
             } finally {
                 summarizeHistoryBtn.disabled = false;
             }
@@ -3253,6 +3368,12 @@
                     body: JSON.stringify(payload)
                 });
 
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Error Response:", errorBody);
+                    throw new Error(`API request failed with status ${response.status}: ${errorBody.error.message || 'Unknown error'}`);
+                }
+
                 const result = await response.json();
 
                 if (result.candidates && result.candidates.length > 0 &&
@@ -3265,14 +3386,14 @@
                 } else {
                     financialTipOutput.classList.remove('hidden');
                     financialTipOutput.classList.add('bg-red-100', 'text-red-800');
-                    financialTipOutput.innerHTML = `<p>Lo siento, no pude generar un consejo. Por favor, intenta de nuevo.</p>`;
+                    financialTipOutput.innerHTML = `<p>Lo siento, no pude generar un consejo. La IA no proporcionó contenido válido.</p>`;
                     console.error("Unexpected API response structure for financial tip:", result);
                 }
             } catch (error) {
                 console.error("Error calling Gemini API for financial tip:", error);
                 financialTipOutput.classList.remove('hidden');
                 financialTipOutput.classList.add('bg-red-100', 'text-red-800');
-                financialTipOutput.innerHTML = `<p>Hubo un error al generar el consejo. Por favor, verifica tu conexión o inténtalo más tarde.</p>`;
+                financialTipOutput.innerHTML = `<p>Hubo un error al generar el consejo. Por favor, verifica tu conexión o inténtalo más tarde. Detalle: ${error.message}</p>`;
             } finally {
                 getFinancialTipBtn.disabled = false;
             }
@@ -3323,6 +3444,12 @@
                     body: JSON.stringify(payload)
                 });
 
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Error Response:", errorBody);
+                    throw new Error(`API request failed with status ${response.status}: ${errorBody.error.message || 'Unknown error'}`);
+                }
+
                 const result = await response.json();
 
                 if (result.candidates && result.candidates.length > 0 &&
@@ -3343,20 +3470,20 @@
                 } else {
                     interestExplanationOutput.classList.remove('hidden');
                     interestExplanationOutput.classList.add('bg-red-100', 'text-red-800');
-                    interestExplanationOutput.innerHTML = `<p>Lo siento, no pude generar una explicación. Por favor, intenta de nuevo.</p>`;
+                    interestExplanationOutput.innerHTML = `<p>Lo siento, no pude generar una explicación. La IA no proporcionó contenido válido.</p>`;
                     console.error("Unexpected API response structure for interest explanation:", result);
                 }
             } catch (error) {
                 console.error("Error calling Gemini API for interest explanation:", error);
                 interestExplanationOutput.classList.remove('hidden');
                 interestExplanationOutput.classList.add('bg-red-100', 'text-red-800');
-                interestExplanationOutput.innerHTML = `<p>Hubo un error al generar la explicación. Por favor, verifica tu conexión o inténtalo más tarde.</p>`;
+                interestExplanationOutput.innerHTML = `<p>Hubo un error al generar la explicación. Por favor, verifica tu conexión o inténtalo más tarde. Detalle: ${error.message}</p>`;
             } finally {
                 calculateInterestBtn.disabled = false;
             }
         }
 
-        // --- NEW: Edit Profile Functions ---
+        // --- Edit Profile Functions ---
         editProfileBtn.addEventListener('click', async () => {
             if (!currentUser) {
                 showMessage('Debes iniciar sesión para editar tu perfil.', 'error');
@@ -3380,7 +3507,7 @@
             }
         });
 
-        closeEditProfileBtn.addEventListener('click', () => {
+        cancelEditProfileBtn.addEventListener('click', () => {
             closeModal(editProfileModal);
             editProfileForm.reset();
         });
@@ -3411,6 +3538,89 @@
                 console.error("Error updating profile:", error);
                 showMessage('Error al actualizar el perfil. Intenta de nuevo.', 'error');
             }
+        });
+
+        // --- NEW: Change Password Functions ---
+        changePasswordBtn.addEventListener('click', () => {
+            if (!currentUser) {
+                showMessage('Debes iniciar sesión para cambiar tu contraseña.', 'error');
+                return;
+            }
+            changePasswordModal.classList.remove('hidden');
+            changePasswordForm.reset();
+        });
+
+        cancelChangePasswordBtn.addEventListener('click', () => {
+            closeModal(changePasswordModal);
+            changePasswordForm.reset();
+        });
+
+        changePasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+
+            const currentPassword = currentPasswordInput.value;
+            const newPassword = newPasswordInput.value;
+            const confirmNewPassword = confirmNewPasswordInput.value;
+
+            if (!currentPassword || !newPassword || !confirmNewPassword) {
+                showMessage('Por favor, completa todos los campos.', 'error');
+                return;
+            }
+            if (newPassword !== confirmNewPassword) {
+                showMessage('La nueva contraseña y su confirmación no coinciden.', 'error');
+                return;
+            }
+            if (newPassword.length < 6) {
+                showMessage('La nueva contraseña debe tener al menos 6 caracteres.', 'error');
+                return;
+            }
+            if (currentPassword === newPassword) {
+                showMessage('La nueva contraseña no puede ser igual a la actual.', 'error');
+                return;
+            }
+
+            try {
+                // Re-authenticate user with current password
+                const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+                await reauthenticateWithCredential(currentUser, credential);
+
+                // Update password
+                await updatePassword(currentUser, newPassword);
+
+                showMessage('¡Contraseña actualizada exitosamente!', 'success');
+                closeModal(changePasswordModal);
+                changePasswordForm.reset();
+            } catch (error) {
+                console.error("Error changing password:", error);
+                let errorMessage = 'Error al cambiar la contraseña. Por favor, inténtalo de nuevo.';
+                if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                    errorMessage = 'La contraseña actual es incorrecta.';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'La nueva contraseña es demasiado débil. Debe tener al menos 6 caracteres.';
+                } else if (error.code === 'auth/requires-recent-login') {
+                    errorMessage = 'Por favor, inicia sesión de nuevo para cambiar tu contraseña. Por motivos de seguridad.';
+                }
+                showMessage(errorMessage, 'error');
+            }
+        });
+
+        // --- NEW: Security Tips Functions ---
+        securityTipsBtn.addEventListener('click', () => {
+            securityTipsModal.classList.remove('hidden');
+        });
+
+        closeSecurityTipsBtn.addEventListener('click', () => {
+            closeModal(securityTipsModal);
+        });
+
+        // --- NEW: About Us Functions ---
+        aboutUsBtn.addEventListener('click', () => {
+            aboutUsModal.classList.remove('hidden');
+        });
+
+        closeAboutUsBtn.addEventListener('click', () => {
+            closeModal(aboutUsModal);
         });
 
 
@@ -3590,7 +3800,7 @@
             await calculateAndExplainInterest();
         });
 
-        // NEW: Edit Profile Event Listeners
+        // Edit Profile Event Listeners
         editProfileBtn.addEventListener('click', async () => {
             if (!currentUser) {
                 showMessage('Debes iniciar sesión para editar tu perfil.', 'error');
@@ -3614,7 +3824,7 @@
             }
         });
 
-        closeEditProfileBtn.addEventListener('click', () => {
+        cancelEditProfileBtn.addEventListener('click', () => {
             closeModal(editProfileModal);
             editProfileForm.reset();
         });
