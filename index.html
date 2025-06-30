@@ -137,6 +137,138 @@
             max-height: 90vh; /* Max height for scrollable content */
             overflow-y: auto; /* Enable scrolling for long content */
         }
+
+        /* Chatbot specific styles */
+        .chat-modal-content {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            max-height: 90vh; /* Limit height for responsiveness */
+        }
+        .chat-header-modal {
+            background-image: linear-gradient(to right, #4F46E5, #6366F1);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            position: relative; /* For close button positioning */
+        }
+        .chat-header-modal .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .chat-messages-modal {
+            flex-grow: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background-color: #f8fafc; /* Lighter background for messages */
+        }
+        .message-bubble {
+            max-width: 85%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: #DBEAFE; /* Light blue */
+            color: #1E40AF; /* Darker blue text */
+            align-self: flex-end;
+            border-bottom-right-radius: 0.25rem; /* Pointy corner */
+        }
+        .ai-message {
+            background-color: #E0F2F7; /* Light cyan */
+            color: #0E7490; /* Darker cyan text */
+            align-self: flex-start;
+            border-bottom-left-radius: 0.25rem; /* Pointy corner */
+        }
+        .chat-input-area-modal {
+            display: flex;
+            padding: 1.5rem;
+            background-color: #ffffff;
+            border-top: 1px solid #E2E8F0; /* Light border */
+            border-bottom-left-radius: 1.5rem;
+            border-bottom-right-radius: 1.5rem;
+        }
+        .chat-input-modal {
+            flex-grow: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid #D1D5DB;
+            outline: none;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .chat-input-modal:focus {
+            border-color: #6366F1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        .send-button-modal {
+            background-image: linear-gradient(to right, #4F46E5, #6366F1);
+            color: white;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            margin-left: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .send-button-modal:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+        .send-button-modal:disabled {
+            background-image: none;
+            background-color: #9CA3AF; /* Gray out when disabled */
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .loading-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-style: italic;
+            color: #6B7280;
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            background-color: #F3F4F6;
+            align-self: flex-start;
+            max-width: fit-content;
+        }
+        .loading-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #6366F1;
+            border-radius: 50%;
+            animation: bounce 1s infinite ease-in-out;
+        }
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
     </style>
 </head>
 <body>
@@ -217,6 +349,14 @@
                     <button id="onlineShoppingBtn" class="btn-primary w-full bg-teal-600 hover:bg-teal-700">Comprar por Internet</button>
                     <!-- Streaming Service Button -->
                     <button id="streamingPaymentBtn" class="btn-primary w-full bg-pink-600 hover:bg-pink-700">Pagar Servicio de Streaming</button>
+
+                    <!-- NEW: AI Assistant Button -->
+                    <button id="openAIChatBtn" class="btn-primary w-full bg-indigo-500 hover:bg-indigo-600">Abrir Asistente de IA ✨</button>
+                    <!-- NEW: Set Savings Goal Button -->
+                    <button id="setSavingsGoalBtn" class="btn-primary w-full bg-green-500 hover:bg-green-600">Establecer Meta de Ahorro ✨</button>
+                    <!-- NEW: Explain Financial Term Button -->
+                    <button id="explainTermBtn" class="btn-primary w-full bg-purple-500 hover:bg-purple-600">Explicar Término Financiero ✨</button>
+
 
                     <!-- Admin specific buttons, initially hidden -->
                     <div id="adminButtonsContainer" class="hidden space-y-4 mt-6 border-t pt-4 border-gray-200">
@@ -337,7 +477,13 @@
                                 </tbody>
                             </table>
                         </div>
-                        <button id="closeUserHistoryModalBtn" class="btn-primary w-full mt-6">Cerrar Historial</button>
+                        <div id="historySummaryOutput" class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm text-left hidden">
+                            <!-- AI generated summary will be inserted here -->
+                        </div>
+                        <div class="flex justify-between items-center mt-6">
+                            <button id="summarizeHistoryBtn" class="btn-primary bg-blue-500 hover:bg-blue-600">Resumir Movimientos ✨</button>
+                            <button id="closeUserHistoryModalBtn" class="btn-primary">Cerrar Historial</button>
+                        </div>
                     </div>
                 </div>
 
@@ -377,7 +523,7 @@
         </div>
     </div>
 
-    <!-- Admin Pending Requests Modal (Unified for deposits, withdrawals, online shopping, streaming) -->
+    <!-- Admin Pending Requests Modal (Unified) -->
     <div id="adminPendingRequestsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
         <div class="modal-content p-8">
             <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Solicitudes Pendientes (Admin)</h3>
@@ -427,10 +573,6 @@
                 <div>
                     <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Hay alguna tarifa por retiro?</h4>
                     <p class="text-sm">Sí, se aplica una tarifa del 4% a todas las solicitudes de retiro para cubrir los costos de procesamiento.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo me contacto con el administrador si tengo un problema?</h4>
-                    <p class="text-sm">Puedes contactar al administrador directamente al número: <span class="font-bold">829-332-9545</span>.</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo funciona la compra por internet?</h4>
@@ -579,6 +721,83 @@
         </div>
     </div>
 
+    <!-- AI Chat Modal -->
+    <div id="aiChatModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="chat-modal-content">
+            <div class="chat-header-modal">
+                Asistente de IA del Banco Juvenil
+                <button id="closeAIChatModalBtn" class="close-button">&times;</button>
+            </div>
+            <div id="aiChatMessages" class="chat-messages-modal">
+                <!-- Initial message added by JS -->
+            </div>
+            <div class="chat-input-area-modal">
+                <input type="text" id="aiUserInput" class="chat-input-modal" placeholder="Escribe tu pregunta aquí..." autocomplete="off">
+                <button id="aiSendButton" class="send-button-modal">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Savings Goal Modal -->
+    <div id="savingsGoalModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8 w-full max-w-lg">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Establecer Meta de Ahorro ✨</h3>
+            <form id="savingsGoalForm" class="space-y-4">
+                <div>
+                    <label for="goalName" class="block text-gray-700 text-sm font-semibold mb-2">Nombre de la Meta</label>
+                    <input type="text" id="goalName" class="input-field" placeholder="Ej: Nuevo Videojuego" required>
+                </div>
+                <div>
+                    <label for="goalAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto de la Meta</label>
+                    <input type="number" id="goalAmount" class="input-field" placeholder="Ej: 60.00" min="0.01" step="0.01" required>
+                </div>
+                <div>
+                    <label for="goalCurrency" class="block text-gray-700 text-sm font-semibold mb-2">Moneda</label>
+                    <select id="goalCurrency" class="input-field">
+                        <option value="USD">Dólar (USD)</option>
+                        <option value="DOP">Peso Dominicano (DOP)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="targetDate" class="block text-gray-700 text-sm font-semibold mb-2">Fecha Objetivo (Opcional)</label>
+                    <input type="date" id="targetDate" class="input-field">
+                </div>
+                <div class="text-center">
+                    <button type="submit" id="generatePlanBtn" class="btn-primary">Generar Plan de Ahorro ✨</button>
+                </div>
+            </form>
+            <div id="generatedPlanText" class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm text-left hidden">
+                <!-- AI generated plan will be inserted here -->
+            </div>
+            <div class="flex justify-end space-x-4 mt-6">
+                <button type="button" id="closeSavingsGoalModalBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Explain Term Modal -->
+    <div id="explainTermModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8 w-full max-w-lg">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Explicar Término Financiero ✨</h3>
+            <form id="explainTermForm" class="space-y-4">
+                <div>
+                    <label for="financialTermInput" class="block text-gray-700 text-sm font-semibold mb-2">Término a Explicar</label>
+                    <input type="text" id="financialTermInput" class="input-field" placeholder="Ej: Inflación" required>
+                </div>
+                <div class="text-center">
+                    <button type="submit" id="generateExplanationBtn" class="btn-primary">Generar Explicación ✨</button>
+                </div>
+            </form>
+            <div id="termExplanationOutput" class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm text-left hidden">
+                <!-- AI generated explanation will be inserted here -->
+            </div>
+            <div class="flex justify-end space-x-4 mt-6">
+                <button type="button" id="closeExplainTermModalBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
@@ -627,6 +846,9 @@
         // Global map to store user display names to avoid repeated Firestore lookups
         const userDisplayNamesCache = {};
 
+        // Global variable to store user's transaction data for summarization
+        let userTransactionsData = [];
+
         // UI Elements
         const loginTab = document.getElementById('loginTab');
         const registerTab = document.getElementById('registerTab');
@@ -656,6 +878,9 @@
         const streamingPaymentBtn = document.getElementById('streamingPaymentBtn'); // Streaming Payment Button
         const viewUserPendingRequestsBtn = document.getElementById('viewUserPendingRequestsBtn'); // User Pending Requests Button
         const viewAdminPendingRequestsBtn = document.getElementById('viewAdminPendingRequestsBtn'); // Admin Pending Requests Button
+        const openAIChatBtn = document.getElementById('openAIChatBtn'); // AI Assistant Button
+        const setSavingsGoalBtn = document.getElementById('setSavingsGoalBtn'); // Set Savings Goal Button
+        const explainTermBtn = document.getElementById('explainTermBtn'); // NEW: Explain Financial Term Button
 
         const adminFullHistoryTableBodyModal = document.getElementById('adminFullHistoryTableBodyModal'); // Admin History (in modal)
 
@@ -709,6 +934,8 @@
         const userHistoryModal = document.getElementById('userHistoryModal');
         const userHistoryTableBody = document.getElementById('userHistoryTableBody');
         const closeUserHistoryModalBtn = document.getElementById('closeUserHistoryModalBtn');
+        const summarizeHistoryBtn = document.getElementById('summarizeHistoryBtn'); // NEW: Summarize History Button
+        const historySummaryOutput = document.getElementById('historySummaryOutput'); // NEW: History Summary Output
 
         const adminFullHistoryModal = document.getElementById('adminFullHistoryModal');
         const closeAdminFullHistoryModalBtn = document.getElementById('closeAdminFullHistoryModalBtn');
@@ -747,6 +974,39 @@
         const receiptModal = document.getElementById('receiptModal');
         const receiptContent = document.getElementById('receiptContent');
         const closeReceiptModalBtn = document.getElementById('closeReceiptModalBtn');
+
+        // AI Chatbot elements
+        const aiChatModal = document.getElementById('aiChatModal');
+        const closeAIChatModalBtn = document.getElementById('closeAIChatModalBtn');
+        const aiUserInput = document.getElementById('aiUserInput');
+        const aiSendButton = document.getElementById('aiSendButton');
+        const aiChatMessages = document.getElementById('aiChatMessages');
+
+        // Savings Goal elements
+        const savingsGoalModal = document.getElementById('savingsGoalModal');
+        const closeSavingsGoalModalBtn = document.getElementById('closeSavingsGoalModalBtn');
+        const savingsGoalForm = document.getElementById('savingsGoalForm');
+        const goalNameInput = document.getElementById('goalName');
+        const goalAmountInput = document.getElementById('goalAmount');
+        const goalCurrencyInput = document.getElementById('goalCurrency');
+        const targetDateInput = document.getElementById('targetDate');
+        const generatedPlanText = document.getElementById('generatedPlanText');
+        const generatePlanBtn = document.getElementById('generatePlanBtn');
+
+        // NEW: Explain Term elements
+        const explainTermModal = document.getElementById('explainTermModal');
+        const closeExplainTermModalBtn = document.getElementById('closeExplainTermModalBtn');
+        const explainTermForm = document.getElementById('explainTermForm');
+        const financialTermInput = document.getElementById('financialTermInput');
+        const generateExplanationBtn = document.getElementById('generateExplanationBtn');
+        const termExplanationOutput = document.getElementById('termExplanationOutput');
+
+
+        // Initial chat history for AI Chat with a system instruction for its role
+        let aiChatHistory = [
+            { role: "system", parts: [{ text: "Eres un asistente de IA amigable y útil para un banco juvenil. Tu objetivo es responder preguntas sobre finanzas, ahorro, transferencias, depósitos, retiros, compras online, pagos de streaming y otras funcionalidades del banco, de una manera sencilla y comprensible para jóvenes. Usa un tono positivo y motivador. Si te preguntan sobre cosas fuera del ámbito bancario, redirige amablemente al usuario a temas financieros." }] },
+            { role: "model", parts: [{ text: "¡Hola! Soy tu asistente de IA del Banco Juvenil. ¿En qué puedo ayudarte hoy, mi campeón?" }] }
+        ];
 
 
         // --- Utility Functions ---
@@ -810,7 +1070,7 @@
                  content += `<p><strong>Monto Productos:</strong> ${transactionDetails.productAmount.toFixed(2)} ${transactionDetails.productCurrency}</p>`;
             }
             if (transactionDetails.feeAmount) {
-                content += `<p><strong>Tarifa (${(COMMISSION_RATE * 100).toFixed(0)}%):</strong> ${transactionDetails.feeAmount.toFixed(2)} ${transaction.feeCurrency}</p>`;
+                content += `<p><strong>Tarifa (${(COMMISSION_RATE * 100).toFixed(0)}%):</strong> ${transactionDetails.feeAmount.toFixed(2)} ${transactionDetails.feeCurrency}</p>`;
             }
             if (transactionDetails.service) {
                 content += `<p><strong>Servicio:</strong> ${transactionDetails.service}</p>`;
@@ -849,12 +1109,12 @@
                 loginTab.classList.add('active');
                 registerTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal);
+                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal);
             } else {
                 registerTab.classList.add('active');
                 loginTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal);
+                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal);
             }
             hideMessage(); // Hide any previous messages when changing tabs
         }
@@ -1144,7 +1404,7 @@
                 });
 
                 // Display dashboard and hide login/register forms and all modals
-                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal);
+                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal);
 
             } else {
                 // User is signed out
@@ -2081,16 +2341,16 @@
                             showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para el pago de streaming.`, 'error');
                             return;
                         }
-                        userCurrentBalanceUSD -= totalToDeduct;
+                        userCurrentBalanceUSD -= totalAmountToDeduct;
                         userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Pago de ${service}`;
-                        amountToRecordInTransaction = totalToDeduct; // Record total deducted from user
+                        amountToRecordInTransaction = totalAmountToDeduct;
                         currencyToRecordInTransaction = 'USD'; // Always USD for this deduction
                         typeDisplay = 'Pago Streaming'; // Set typeDisplay here
                         receiptDetails = {
                             title: 'Recibo de Pago Streaming',
                             type: 'Pago Streaming',
-                            amount: totalToDeduct,
+                            amount: totalAmountToDeduct,
                             currency: 'USD',
                             service: service,
                             accountIdentifier: accountIdentifier,
@@ -2104,10 +2364,10 @@
 
                         // Transfer entire amount (subscription + fee) to admin
                         if (adminId) {
-                            console.log("Transferring total streaming payment amount to admin:", totalToDeduct, "USD");
+                            console.log("Transferring total streaming payment amount to admin:", totalAmountToDeduct, "USD");
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
-                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + totalToDeduct;
+                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + totalAmountToDeduct;
                             await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
                             console.log("Streaming payment amount transferred to admin.");
                         }
@@ -2146,7 +2406,7 @@
                     // Store additional details for specific types
                     ...(type === 'withdrawal' && { feeAmount: calculatedFeeInUSD, feeCurrency: 'USD', adminReceiverId: adminId }),
                     ...(type === 'online_purchase' && { productAmount, productCurrency, productLinks, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId }),
-                    ...(type === 'streaming_payment' && { service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalToDeduct, adminReceiverId: adminId })
+                    ...(type === 'streaming_payment' && { service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId })
                 });
                 console.log("Transaction recorded successfully.");
 
@@ -2197,6 +2457,9 @@
          */
         async function loadUserHistory() {
             userHistoryTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Cargando historial...</td></tr>';
+            historySummaryOutput.classList.add('hidden'); // Hide previous summary
+            historySummaryOutput.innerHTML = ''; // Clear previous summary text
+
             const transactionsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'transactions');
 
             const q = query(transactionsCollectionRef,
@@ -2205,32 +2468,32 @@
 
             onSnapshot(q, async (snapshot) => {
                 userHistoryTableBody.innerHTML = '';
-                const userTransactions = [];
+                userTransactionsData = []; // Clear previous data
 
                 for (const docEntry of snapshot.docs) {
                     const transaction = { id: docEntry.id, ...docEntry.data() };
 
                     // Filter for current user's completed transactions
                     if ((transaction.type === 'deposit' || transaction.type === 'withdrawal' || transaction.type === 'online_purchase' || transaction.type === 'streaming_payment') && transaction.userId === currentUserId) {
-                        userTransactions.push(transaction);
+                        userTransactionsData.push(transaction);
                     } else if (transaction.type === 'transfer' && (transaction.senderId === currentUserId || transaction.recipientId === currentUserId)) {
-                        userTransactions.push(transaction);
+                        userTransactionsData.push(transaction);
                     }
                 }
 
-                if (userTransactions.length === 0) {
+                if (userTransactionsData.length === 0) {
                     userHistoryTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">No hay movimientos en tu historial.</td></tr>';
                     return;
                 }
 
                 // Sort transactions by timestamp descending (newest first)
-                userTransactions.sort((a, b) => {
+                userTransactionsData.sort((a, b) => {
                     const timestampA = a.timestamp && typeof a.timestamp.seconds !== 'undefined' ? a.timestamp.seconds : 0;
                     const timestampB = b.timestamp && typeof b.timestamp.seconds !== 'undefined' ? b.timestamp.seconds : 0;
                     return timestampB - timestampA;
                 });
 
-                for (const transaction of userTransactions) {
+                for (const transaction of userTransactionsData) {
                     const date = (transaction.timestamp && typeof transaction.timestamp.seconds !== 'undefined')
                         ? new Date(transaction.timestamp.seconds * 1000).toLocaleString()
                         : 'Fecha no disponible';
@@ -2492,6 +2755,347 @@
             });
         }
 
+        // --- AI Chatbot Functions ---
+
+        // Function to add a message to the AI chat display
+        function addAIChatMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message-bubble');
+            if (sender === 'user') {
+                messageDiv.classList.add('user-message');
+            } else {
+                messageDiv.classList.add('ai-message');
+            }
+            messageDiv.textContent = text;
+            aiChatMessages.appendChild(messageDiv);
+            // Scroll to the bottom of the chat
+            aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+        }
+
+        // Function to display a loading indicator in AI chat
+        function showAILoadingIndicator() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'aiLoadingIndicator';
+            loadingDiv.classList.add('loading-indicator');
+            loadingDiv.innerHTML = `
+                <span>Escribiendo</span>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+                <div class="loading-dot"></div>
+            `;
+            aiChatMessages.appendChild(loadingDiv);
+            aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+        }
+
+        // Function to hide the loading indicator in AI chat
+        function hideAILoadingIndicator() {
+            const loadingDiv = document.getElementById('aiLoadingIndicator');
+            if (loadingDiv) {
+                loadingDiv.remove();
+            }
+        }
+
+        // Function to send message to the AI
+        async function sendAIChatMessage() {
+            const prompt = aiUserInput.value.trim();
+            if (prompt === '') return;
+
+            addAIChatMessage(prompt, 'user');
+            aiChatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            aiUserInput.value = '';
+            aiSendButton.disabled = true; // Disable button while AI is thinking
+            showAILoadingIndicator(); // Show loading dots
+
+            try {
+                const payload = { contents: aiChatHistory };
+                const apiKey = ""; // Leave as is, Canvas will provide it at runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const aiResponseText = result.candidates[0].content.parts[0].text;
+                    addAIChatMessage(aiResponseText, 'ai');
+                    aiChatHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
+                } else {
+                    addAIChatMessage("Lo siento, no pude generar una respuesta. Por favor, intenta de nuevo.", 'ai');
+                    console.error("Unexpected API response structure:", result);
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API:", error);
+                addAIChatMessage("Hubo un error al conectar con el asistente. Por favor, verifica tu conexión o inténtalo más tarde.", 'ai');
+            } finally {
+                hideAILoadingIndicator(); // Hide loading dots
+                aiSendButton.disabled = false; // Re-enable button
+                aiUserInput.focus(); // Keep focus on input field
+            }
+        }
+
+        // --- Savings Goal Functions ---
+
+        // Function to display a loading indicator for savings plan
+        function showSavingsPlanLoadingIndicator() {
+            generatedPlanText.classList.remove('hidden');
+            generatedPlanText.innerHTML = `
+                <div class="loading-indicator">
+                    <span>Generando plan</span>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            `;
+        }
+
+        // Function to hide the loading indicator for savings plan
+        function hideSavingsPlanLoadingIndicator() {
+            // This function might not be strictly necessary if we replace content directly
+            // but useful for consistency or if we want to clear it without new content.
+        }
+
+        /**
+         * Generates a savings plan using the Gemini API.
+         */
+        async function generateSavingsPlan() {
+            const goalName = goalNameInput.value.trim();
+            const goalAmount = parseFloat(goalAmountInput.value);
+            const goalCurrency = goalCurrencyInput.value;
+            const targetDate = targetDateInput.value; // YYYY-MM-DD
+
+            if (!goalName || isNaN(goalAmount) || goalAmount <= 0) {
+                generatedPlanText.classList.remove('hidden');
+                generatedPlanText.classList.add('bg-red-100', 'text-red-800');
+                generatedPlanText.innerHTML = `<p>Por favor, ingresa un nombre y un monto válido para tu meta de ahorro.</p>`;
+                return;
+            }
+
+            showSavingsPlanLoadingIndicator();
+            generatePlanBtn.disabled = true; // Disable button while generating
+
+            let prompt = `Soy un joven y quiero ahorrar para "${goalName}" que cuesta ${goalAmount.toFixed(2)} ${goalCurrency}.`;
+
+            if (targetDate) {
+                const today = new Date();
+                const target = new Date(targetDate);
+                const diffTime = Math.abs(target - today);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const diffWeeks = Math.ceil(diffDays / 7);
+                const diffMonths = Math.ceil(diffDays / 30.44); // Average days in a month
+
+                if (diffDays <= 0) {
+                    generatedPlanText.classList.remove('hidden');
+                    generatedPlanText.classList.add('bg-red-100', 'text-red-800');
+                    generatedPlanText.innerHTML = `<p>La fecha objetivo debe ser en el futuro.</p>`;
+                    generatePlanBtn.disabled = false;
+                    return;
+                }
+
+                prompt += ` Quiero alcanzar esta meta para el ${new Date(targetDate).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}.`;
+                prompt += ` Esto me da aproximadamente ${diffWeeks} semanas o ${diffMonths} meses.`;
+                prompt += ` Dame un plan de ahorro realista y motivador, incluyendo cuánto necesito ahorrar semanal o mensualmente, y algunos consejos para lograrlo. Considera que soy un joven y dame consejos prácticos y divertidos.`;
+            } else {
+                prompt += ` No tengo una fecha objetivo específica. Dame un plan de ahorro flexible y algunos consejos para lograrlo, sugiriendo cuánto podría ahorrar semanal o mensualmente para alcanzarla en un tiempo razonable. Considera que soy un joven y dame consejos prácticos y divertidos.`;
+            }
+
+            try {
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                const apiKey = ""; // Leave as is, Canvas will provide it at runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const aiPlanText = result.candidates[0].content.parts[0].text;
+                    generatedPlanText.classList.remove('hidden', 'bg-red-100', 'text-red-800');
+                    generatedPlanText.classList.add('bg-blue-50', 'text-blue-800');
+                    generatedPlanText.innerHTML = `
+                        <h4 class="font-bold text-lg mb-2">¡Tu Plan de Ahorro para "${goalName}"!</h4>
+                        <p>${aiPlanText}</p>
+                    `;
+                } else {
+                    generatedPlanText.classList.remove('hidden');
+                    generatedPlanText.classList.add('bg-red-100', 'text-red-800');
+                    generatedPlanText.innerHTML = `<p>Lo siento, no pude generar un plan de ahorro. Por favor, intenta de nuevo.</p>`;
+                    console.error("Unexpected API response structure for savings plan:", result);
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API for savings plan:", error);
+                generatedPlanText.classList.remove('hidden');
+                generatedPlanText.classList.add('bg-red-100', 'text-red-800');
+                generatedPlanText.innerHTML = `<p>Hubo un error al generar el plan de ahorro. Por favor, verifica tu conexión o inténtalo más tarde.</p>`;
+            } finally {
+                generatePlanBtn.disabled = false; // Re-enable button
+            }
+        }
+
+        // --- NEW: Explain Term Functions ---
+
+        // Function to display a loading indicator for term explanation
+        function showTermExplanationLoadingIndicator() {
+            termExplanationOutput.classList.remove('hidden');
+            termExplanationOutput.innerHTML = `
+                <div class="loading-indicator">
+                    <span>Generando explicación</span>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            `;
+        }
+
+        // Function to generate term explanation using Gemini API
+        async function generateTermExplanation() {
+            const term = financialTermInput.value.trim();
+            if (!term) {
+                termExplanationOutput.classList.remove('hidden');
+                termExplanationOutput.classList.add('bg-red-100', 'text-red-800');
+                termExplanationOutput.innerHTML = `<p>Por favor, ingresa un término financiero para explicar.</p>`;
+                return;
+            }
+
+            showTermExplanationLoadingIndicator();
+            generateExplanationBtn.disabled = true;
+
+            const prompt = `Explica el término financiero "${term}" de forma sencilla para un joven, como si fueras un asesor de un banco juvenil. Sé conciso y usa ejemplos si es posible.`;
+
+            try {
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                const apiKey = ""; // Leave as is, Canvas will provide it at runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const aiExplanationText = result.candidates[0].content.parts[0].text;
+                    termExplanationOutput.classList.remove('hidden', 'bg-red-100', 'text-red-800');
+                    termExplanationOutput.classList.add('bg-blue-50', 'text-blue-800');
+                    termExplanationOutput.innerHTML = `
+                        <h4 class="font-bold text-lg mb-2">Explicación de "${term}":</h4>
+                        <p>${aiExplanationText}</p>
+                    `;
+                } else {
+                    termExplanationOutput.classList.remove('hidden');
+                    termExplanationOutput.classList.add('bg-red-100', 'text-red-800');
+                    termExplanationOutput.innerHTML = `<p>Lo siento, no pude generar una explicación para este término. Por favor, intenta de nuevo.</p>`;
+                    console.error("Unexpected API response structure for term explanation:", result);
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API for term explanation:", error);
+                termExplanationOutput.classList.remove('hidden');
+                termExplanationOutput.classList.add('bg-red-100', 'text-red-800');
+                termExplanationOutput.innerHTML = `<p>Hubo un error al generar la explicación. Por favor, verifica tu conexión o inténtalo más tarde.</p>`;
+            } finally {
+                generateExplanationBtn.disabled = false;
+            }
+        }
+
+        // --- NEW: Summarize History Functions ---
+
+        // Function to display a loading indicator for history summary
+        function showHistorySummaryLoadingIndicator() {
+            historySummaryOutput.classList.remove('hidden');
+            historySummaryOutput.innerHTML = `
+                <div class="loading-indicator">
+                    <span>Analizando movimientos</span>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            `;
+        }
+
+        // Function to summarize user history using Gemini API
+        async function summarizeUserHistory() {
+            if (userTransactionsData.length === 0) {
+                historySummaryOutput.classList.remove('hidden');
+                historySummaryOutput.classList.add('bg-red-100', 'text-red-800');
+                historySummaryOutput.innerHTML = `<p>No hay movimientos en tu historial para resumir.</p>`;
+                return;
+            }
+
+            showHistorySummaryLoadingIndicator();
+            summarizeHistoryBtn.disabled = true;
+
+            // Format transactions for the LLM
+            let formattedTransactions = userTransactionsData.map(t => {
+                const date = (t.timestamp && typeof t.timestamp.seconds !== 'undefined')
+                    ? new Date(t.timestamp.seconds * 1000).toLocaleDateString('es-ES')
+                    : 'Fecha no disponible';
+                let description = t.description || t.type;
+                if (t.type === 'transfer') {
+                    description = t.senderId === currentUserId ? `Transferencia enviada a ${t.recipientId}` : `Transferencia recibida de ${t.senderId}`;
+                } else if (t.type === 'online_purchase') {
+                    description = `Compra online de ${t.productAmount.toFixed(2)} ${t.productCurrency} (total deducido: ${t.totalAmountDeducted.toFixed(2)} USD)`;
+                } else if (t.type === 'streaming_payment') {
+                    description = `Pago de streaming (${t.service}) de ${t.subscriptionAmount.toFixed(2)} ${t.subscriptionCurrency} (total deducido: ${t.totalAmountDeducted.toFixed(2)} USD)`;
+                }
+                return `${date}: ${description} - ${t.amount.toFixed(2)} ${t.currency}`;
+            }).join('\n');
+
+            const prompt = `Aquí está el historial de transacciones de un usuario del Banco Juvenil:\n\n${formattedTransactions}\n\nActúa como un asesor financiero juvenil. Resume sus patrones de gasto e ingreso, y da un consejo financiero personalizado basado en estos movimientos. Sé positivo, motivador y usa un lenguaje fácil de entender para jóvenes.`;
+
+            try {
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                const apiKey = ""; // Leave as is, Canvas will provide it at runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const aiSummaryText = result.candidates[0].content.parts[0].text;
+                    historySummaryOutput.classList.remove('hidden', 'bg-red-100', 'text-red-800');
+                    historySummaryOutput.classList.add('bg-blue-50', 'text-blue-800');
+                    historySummaryOutput.innerHTML = `
+                        <h4 class="font-bold text-lg mb-2">¡Tu Resumen de Movimientos!</h4>
+                        <p>${aiSummaryText}</p>
+                    `;
+                } else {
+                    historySummaryOutput.classList.remove('hidden');
+                    historySummaryOutput.classList.add('bg-red-100', 'text-red-800');
+                    historySummaryOutput.innerHTML = `<p>Lo siento, no pude generar un resumen. Por favor, intenta de nuevo.</p>`;
+                    console.error("Unexpected API response structure for history summary:", result);
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API for history summary:", error);
+                historySummaryOutput.classList.remove('hidden');
+                historySummaryOutput.classList.add('bg-red-100', 'text-red-800');
+                historySummaryOutput.innerHTML = `<p>Hubo un error al generar el resumen. Por favor, verifica tu conexión o inténtalo más tarde.</p>`;
+            } finally {
+                summarizeHistoryBtn.disabled = false;
+            }
+        }
+
 
         // --- Event Listeners ---
         window.onload = () => {
@@ -2589,6 +3193,58 @@
         closeReceiptModalBtn.addEventListener('click', () => {
             closeModal(receiptModal);
         });
+
+        // AI Chatbot Event Listeners
+        openAIChatBtn.addEventListener('click', () => {
+            aiChatModal.classList.remove('hidden');
+            aiUserInput.focus(); // Focus on input when modal opens
+            // Ensure initial AI message is displayed if chat history is just system prompt
+            if (aiChatMessages.children.length <= 1) { // Check if only system prompt or no messages
+                addAIChatMessage("¡Hola! Soy tu asistente de IA del Banco Juvenil. ¿En qué puedo ayudarte hoy, mi campeón?", 'ai');
+            }
+        });
+        closeAIChatModalBtn.addEventListener('click', () => {
+            closeModal(aiChatModal);
+        });
+        aiSendButton.addEventListener('click', sendAIChatMessage);
+        aiUserInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendAIChatMessage();
+            }
+        });
+
+        // Savings Goal Event Listeners
+        setSavingsGoalBtn.addEventListener('click', () => {
+            savingsGoalModal.classList.remove('hidden');
+            savingsGoalForm.reset(); // Clear form when opened
+            generatedPlanText.classList.add('hidden'); // Hide previous plan
+            generatedPlanText.innerHTML = ''; // Clear previous plan text
+        });
+        closeSavingsGoalModalBtn.addEventListener('click', () => {
+            closeModal(savingsGoalModal);
+        });
+        savingsGoalForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await generateSavingsPlan();
+        });
+
+        // NEW: Explain Term Event Listeners
+        explainTermBtn.addEventListener('click', () => {
+            explainTermModal.classList.remove('hidden');
+            explainTermForm.reset(); // Clear form when opened
+            termExplanationOutput.classList.add('hidden'); // Hide previous explanation
+            termExplanationOutput.innerHTML = ''; // Clear previous explanation text
+        });
+        closeExplainTermModalBtn.addEventListener('click', () => {
+            closeModal(explainTermModal);
+        });
+        explainTermForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await generateTermExplanation();
+        });
+
+        // NEW: Summarize History Event Listener
+        summarizeHistoryBtn.addEventListener('click', summarizeUserHistory);
 
     </script>
 </body>
