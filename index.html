@@ -10,135 +10,177 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8; /* Light blue-gray background */
-        }
-        .container {
-            min-height: 100vh;
+            background-color: #e0f2fe; /* Light blue background */
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            min-height: 100vh; /* Ensure container takes full height on small screens */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
         }
         .card {
             background-color: #ffffff;
             border-radius: 1.5rem; /* More rounded corners */
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0px 10px -5px rgba(0, 0, 0, 0.04); /* Deeper shadow */
+            box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.15), 0 0px 12px -6px rgba(0, 0, 0, 0.08); /* Deeper, softer shadow */
+            padding: 2rem;
+            width: 100%;
+            max-width: 480px; /* Increased max-width for better layout */
+            margin: 1.5rem; /* Margin for small screens */
         }
         .btn-primary {
-            background-image: linear-gradient(to right, #4F46E5, #6366F1); /* Gradient for primary buttons */
+            background-image: linear-gradient(to right, #2563eb, #3b82f6); /* Stronger blue gradient */
             color: white;
             border-radius: 0.75rem;
-            padding: 0.75rem 1.5rem;
+            padding: 0.85rem 1.75rem; /* Slightly larger padding */
             font-weight: 600;
             transition: all 0.2s ease-in-out;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            background-image: linear-gradient(to right, #1d4ed8, #2563eb); /* Darker on hover */
         }
         .input-field {
-            padding: 0.75rem 1rem;
+            padding: 0.85rem 1.25rem; /* Slightly larger padding */
             border-radius: 0.75rem;
-            border: 1px solid #D1D5DB; /* Light gray border */
+            border: 1px solid #d1d5db; /* Light gray border */
             width: 100%;
             transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
         .input-field:focus {
             outline: none;
-            border-color: #6366F1; /* Blue border on focus */
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); /* Light blue shadow on focus */
+            border-color: #2563eb; /* Stronger blue border on focus */
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25); /* Blue shadow on focus */
         }
         .tab-button {
-            padding: 0.75rem 1.5rem;
+            padding: 0.85rem 1.75rem;
             border-radius: 0.75rem;
             font-weight: 500;
-            color: #6B7280; /* Gray text */
+            color: #6b7280; /* Gray text */
             transition: all 0.2s ease-in-out;
             cursor: pointer;
+            flex: 1; /* Make tabs take equal width */
+            text-align: center;
         }
         .tab-button.active {
-            background-color: #6366F1;
+            background-color: #2563eb; /* Stronger blue for active */
             color: white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         .tab-button:not(.active):hover {
-            background-color: #F3F4F6; /* Light gray on hover for inactive tabs */
+            background-color: #e5e7eb; /* Lighter gray on hover for inactive tabs */
         }
         .hidden {
             display: none;
         }
         .table-container {
             overflow-x: auto;
+            border-radius: 0.75rem; /* Rounded table container */
+            border: 1px solid #e5e7eb;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 1rem;
+            margin-top: 0; /* Remove top margin as container has padding */
         }
         th, td {
-            padding: 0.75rem;
+            padding: 1rem; /* More padding for table cells */
             text-align: left;
-            border-bottom: 1px solid #E5E7EB; /* Light gray border */
+            border-bottom: 1px solid #e5e7eb; /* Light gray border */
         }
         th {
-            background-color: #F9FAFB; /* Light header background */
+            background-color: #f9fafb; /* Light header background */
             font-weight: 600;
-            color: #4B5563; /* Darker gray text */
+            color: #4b5563; /* Darker gray text */
+        }
+        tr:last-child td {
+            border-bottom: none; /* No border on last row */
         }
         tr:hover {
-            background-color: #F3F4F6; /* Light gray on row hover */
+            background-color: #f3f4f6; /* Light gray on row hover */
         }
         .btn-danger {
-            background-color: #EF4444; /* Red */
+            background-color: #ef4444; /* Red */
             color: white;
             border-radius: 0.5rem;
-            padding: 0.5rem 1rem;
+            padding: 0.6rem 1.2rem;
             font-weight: 600;
             transition: all 0.2s ease-in-out;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .btn-danger:hover {
-            background-color: #DC2626; /* Darker red */
+            background-color: #dc2626; /* Darker red */
             transform: translateY(-1px);
         }
         .btn-success {
-            background-color: #22C55E; /* Green */
+            background-color: #22c55e; /* Green */
             color: white;
             border-radius: 0.5rem;
-            padding: 0.5rem 1rem;
+            padding: 0.6rem 1.2rem;
             font-weight: 600;
             transition: all 0.2s ease-in-out;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .btn-success:hover {
-            background-color: #16A34A; /* Darker green */
+            background-color: #16a34a; /* Darker green */
             transform: translateY(-1px);
         }
         .btn-secondary {
-            background-color: #6B7280; /* Gray */
+            background-color: #6b7280; /* Gray */
             color: white;
             border-radius: 0.5rem;
-            padding: 0.5rem 1rem;
+            padding: 0.6rem 1.2rem;
             font-weight: 600;
             transition: all 0.2s ease-in-out;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-            background-color: #4B5563;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            background-color: #4b5563;
         }
         .modal-content {
             background-color: #ffffff;
             border-radius: 1.5rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 0px 10px -5px rgba(0, 0, 0, 0.04);
-            max-width: 90%; /* Max width for responsiveness */
-            width: 700px; /* Specific width for larger content */
-            max-height: 90vh; /* Max height for scrollable content */
-            overflow-y: auto; /* Enable scrolling for long content */
+            box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.15), 0 0px 12px -6px rgba(0, 0, 0, 0.08);
+            max-width: 90%;
+            width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+        /* Specific modal header for better aesthetics */
+        .modal-header {
+            background-image: linear-gradient(to right, #2563eb, #3b82f6);
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.75rem;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            position: relative;
+            margin: -2rem -2rem 2rem -2rem; /* Pull header outside padding */
+        }
+        .modal-header .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            line-height: 1;
         }
 
-        /* Chatbot specific styles */
+        /* Chatbot specific styles (keeping for commented AI) */
         .chat-modal-content {
             background-color: #ffffff;
             border-radius: 1.5rem;
@@ -148,7 +190,18 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            max-height: 90vh; /* Limit height for responsiveness */
+            max-height: 90vh;
+        }
+        .chat-header-modal {
+            background-image: linear-gradient(to right, #4F46E5, #6366F1);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            position: relative;
         }
         .chat-header-modal .close-button {
             position: absolute;
@@ -168,7 +221,7 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            background-color: #f8fafc; /* Lighter background for messages */
+            background-color: #f8fafc;
         }
         .message-bubble {
             max-width: 85%;
@@ -177,22 +230,22 @@
             word-wrap: break-word;
         }
         .user-message {
-            background-color: #DBEAFE; /* Light blue */
-            color: #1E40AF; /* Darker blue text */
+            background-color: #DBEAFE;
+            color: #1E40AF;
             align-self: flex-end;
-            border-bottom-right-radius: 0.25rem; /* Pointy corner */
+            border-bottom-right-radius: 0.25rem;
         }
         .ai-message {
-            background-color: #E0F2F7; /* Light cyan */
-            color: #0E7490; /* Darker cyan text */
+            background-color: #E0F2F7;
+            color: #0E7490;
             align-self: flex-start;
-            border-bottom-left-radius: 0.25rem; /* Pointy corner */
+            border-bottom-left-radius: 0.25rem;
         }
         .chat-input-area-modal {
             display: flex;
             padding: 1.5rem;
             background-color: #ffffff;
-            border-top: 1px solid #E2E8F0; /* Light border */
+            border-top: 1px solid #E2E8F0;
             border-bottom-left-radius: 1.5rem;
             border-bottom-right-radius: 1.5rem;
         }
@@ -224,7 +277,7 @@
         }
         .send-button-modal:disabled {
             background-image: none;
-            background-color: #9CA3AF; /* Gray out when disabled */
+            background-color: #9CA3AF;
             cursor: not-allowed;
             box-shadow: none;
         }
@@ -261,19 +314,19 @@
     </style>
 </head>
 <body>
-    <div class="container bg-gray-100">
-        <div class="card p-8 md:p-10 w-full max-w-md mx-auto">
-            <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Banco Juvenil</h1>
+    <div class="container">
+        <div class="card">
+            <h1 class="text-4xl font-bold text-center text-gray-800 mb-8">Banco Juvenil</h1>
 
-            <div class="flex justify-center mb-6 bg-gray-50 rounded-xl p-1">
-                <button id="loginTab" class="tab-button active flex-1">Iniciar Sesión</button>
-                <button id="registerTab" class="tab-button flex-1">Registrarse</button>
+            <div class="flex justify-center mb-6 bg-blue-50 rounded-xl p-1">
+                <button id="loginTab" class="tab-button active">Iniciar Sesión</button>
+                <button id="registerTab" class="tab-button">Registrarse</button>
             </div>
 
             <!-- Login Form -->
             <div id="loginSection">
-                <p class="text-center text-gray-600 mb-6">¡Bienvenido de nuevo, campeón!</p>
-                <form id="loginForm" class="space-y-4">
+                <p class="text-center text-gray-600 mb-6 text-lg">¡Bienvenido de nuevo, campeón!</p>
+                <form id="loginForm" class="space-y-5">
                     <div>
                         <label for="loginIdentifier" class="block text-gray-700 text-sm font-semibold mb-2">ID de Usuario (Email o ID único)</label>
                         <input type="text" id="loginIdentifier" class="input-field" placeholder="ej. JU#1234 o tu email" required>
@@ -288,8 +341,8 @@
 
             <!-- Registration Form -->
             <div id="registerSection" class="hidden">
-                <p class="text-center text-gray-600 mb-6">¡Únete a la familia del Banco Juvenil!</p>
-                <form id="registerForm" class="space-y-4">
+                <p class="text-center text-gray-600 mb-6 text-lg">¡Únete a la familia del Banco Juvenil!</p>
+                <form id="registerForm" class="space-y-5">
                     <div>
                         <label for="registerName" class="block text-gray-700 text-sm font-semibold mb-2">Nombre</label>
                         <input type="text" id="registerName" class="input-field" placeholder="Juan" required>
@@ -318,12 +371,20 @@
 
             <!-- User Dashboard (Hidden initially) -->
             <div id="dashboardSection" class="hidden mt-8 text-center">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Bienvenido, <span id="dashboardUserName"></span>!</h2>
-                <p class="text-lg text-gray-700 mb-4">Tu ID de Usuario: <span id="dashboardDisplayId" class="font-mono bg-gray-100 p-2 rounded-md text-sm"></span></p>
-                <div class="mt-6 p-6 bg-blue-50 border border-blue-200 rounded-xl text-blue-800">
+                <div class="flex items-center justify-center mb-4">
+                    <div class="w-16 h-16 bg-blue-200 rounded-full flex items-center justify-center text-blue-800 text-3xl font-bold mr-4">
+                        <span id="profileAvatar">U</span>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-semibold text-gray-800">Bienvenido, <span id="dashboardUserName"></span>!</h2>
+                        <p class="text-lg text-gray-700">Tu ID de Usuario: <span id="dashboardDisplayId" class="font-mono bg-gray-100 p-2 rounded-md text-sm"></span></p>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-6 bg-blue-100 border border-blue-300 rounded-xl text-blue-800">
                     <h3 class="text-xl font-bold mb-2">Saldo Actual:</h3>
-                    <p id="accountBalance" class="text-3xl font-extrabold">$0.00 USD</p>
-                    <button id="toggleCurrency" class="mt-3 text-blue-600 hover:underline">Cambiar a DOP</button>
+                    <p id="accountBalance" class="text-4xl font-extrabold text-blue-700">$0.00 USD</p>
+                    <button id="toggleCurrency" class="mt-3 text-blue-600 hover:underline text-sm">Cambiar a DOP</button>
                 </div>
                 <div class="mt-8 space-y-4">
                     <button id="transferMoneyBtn" class="btn-primary w-full">Transferir Dinero</button>
@@ -339,24 +400,27 @@
                     <!-- Streaming Service Button -->
                     <button id="streamingPaymentBtn" class="btn-primary w-full bg-pink-600 hover:bg-pink-700">Pagar Servicio de Streaming</button>
 
-                    <!-- AI Assistant Button -->
-                    <button id="openAIChatBtn" class="btn-primary w-full bg-indigo-500 hover:bg-indigo-600">Abrir Asistente de IA ✨</button>
-                    <!-- Set Savings Goal Button -->
-                    <button id="setSavingsGoalBtn" class="btn-primary w-full bg-green-500 hover:bg-green-600">Establecer Meta de Ahorro ✨</button>
-                    <!-- Explain Financial Term Button -->
-                    <button id="explainTermBtn" class="btn-primary w-full bg-purple-500 hover:bg-purple-600">Explicar Término Financiero ✨</button>
-                    <!-- Financial Tip Button -->
-                    <button id="consejoFinancieroBtn" class="btn-primary w-full bg-yellow-500 hover:bg-yellow-600">Consejo Financiero del Día ✨</button>
-                    <!-- Interest Calculator Button -->
-                    <button id="calculadoraInteresesBtn" class="btn-primary w-full bg-orange-500 hover:bg-orange-600">Calculadora de Intereses ✨</button>
+                    <!-- AI Assistant Button (COMMENTED OUT) -->
+                    <!-- <button id="openAIChatBtn" class="btn-primary w-full bg-indigo-500 hover:bg-indigo-600">Abrir Asistente de IA ✨</button> -->
+                    <!-- Set Savings Goal Button (COMMENTED OUT) -->
+                    <!-- <button id="setSavingsGoalBtn" class="btn-primary w-full bg-green-500 hover:bg-green-600">Establecer Meta de Ahorro ✨</button> -->
+                    <!-- Explain Financial Term Button (COMMENTED OUT) -->
+                    <!-- <button id="explainTermBtn" class="btn-primary w-full bg-purple-500 hover:bg-purple-600">Explicar Término Financiero ✨</button> -->
+                    <!-- Financial Tip Button (COMMENTED OUT) -->
+                    <!-- <button id="consejoFinancieroBtn" class="btn-primary w-full bg-yellow-500 hover:bg-yellow-600">Consejo Financiero del Día ✨</button> -->
+                    <!-- Interest Calculator Button (COMMENTED OUT) -->
+                    <!-- <button id="calculadoraInteresesBtn" class="btn-primary w-full bg-orange-500 hover:bg-orange-600">Calculadora de Intereses ✨</button> -->
+
                     <!-- Edit Profile Button -->
-                    <button id="editProfileBtn" class="btn-primary w-full bg-gray-500 hover:bg-gray-600">Editar Perfil</button>
+                    <button id="editProfileBtn" class="btn-primary w-full bg-gray-600 hover:bg-gray-700">Editar Perfil</button>
                     <!-- NEW: Change Password Button -->
                     <button id="changePasswordBtn" class="btn-primary w-full bg-blue-700 hover:bg-blue-800">Cambiar Contraseña</button>
                     <!-- NEW: Security Tips Button -->
                     <button id="securityTipsBtn" class="btn-primary w-full bg-red-700 hover:bg-red-800">Consejos de Seguridad</button>
                     <!-- NEW: About Us Button -->
                     <button id="aboutUsBtn" class="btn-primary w-full bg-green-700 hover:bg-green-800">Acerca de Nosotros</button>
+                    <!-- NEW: Contact & Support Button -->
+                    <button id="contactSupportBtn" class="btn-primary w-full bg-indigo-700 hover:bg-indigo-800">Contacto y Soporte</button>
 
 
                     <!-- Admin specific buttons, initially hidden -->
@@ -377,9 +441,12 @@
                 </div>
 
                 <!-- Transfer Money Modal -->
-                <div id="transferModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-                    <div class="modal-content p-8 w-full max-w-sm">
-                        <h3 class="text-2xl font-bold mb-4 text-gray-800">Transferir Dinero</h3>
+                <div id="transferModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+                    <div class="modal-content w-full max-w-sm">
+                        <div class="modal-header">
+                            Transferir Dinero
+                            <button id="cancelTransferModalBtn" class="close-button">&times;</button>
+                        </div>
                         <form id="transferForm" class="space-y-4">
                             <div>
                                 <label for="transferRecipientId" class="block text-gray-700 text-sm font-semibold mb-2">ID de Destinatario (Email o ID único)</label>
@@ -397,8 +464,7 @@
                                     <option value="DOP">Peso Dominicano (DOP)</option>
                                 </select>
                             </div>
-                            <div class="flex justify-end space-x-4">
-                                <button type="button" id="cancelTransferModalBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
+                            <div class="flex justify-end space-x-4 pt-4">
                                 <button type="submit" id="confirmTransferBtn" class="btn-primary" disabled>Confirmar Transferencia</button>
                             </div>
                         </form>
@@ -406,9 +472,12 @@
                 </div>
 
                 <!-- Deposit Money Modal -->
-                <div id="depositModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-                    <div class="modal-content p-8 w-full max-w-sm">
-                        <h3 class="text-2xl font-bold mb-4 text-gray-800">Depositar Dinero</h3>
+                <div id="depositModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+                    <div class="modal-content w-full max-w-sm">
+                        <div class="modal-header">
+                            Depositar Dinero
+                            <button id="cancelDeposit" class="close-button">&times;</button>
+                        </div>
                         <form id="depositForm" class="space-y-4">
                             <div>
                                 <label for="depositSerialNumber" class="block text-gray-700 text-sm font-semibold mb-2">Número de Serie Único (Generado)</label>
@@ -425,8 +494,7 @@
                                     <option value="DOP">Peso Dominicano (DOP)</option>
                                 </select>
                             </div>
-                            <div class="flex justify-end space-x-4">
-                                <button type="button" id="cancelDeposit" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
+                            <div class="flex justify-end space-x-4 pt-4">
                                 <button type="submit" class="btn-primary">Solicitar Depósito</button>
                             </div>
                         </form>
@@ -434,9 +502,12 @@
                 </div>
 
                 <!-- Withdraw Money Modal -->
-                <div id="withdrawModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-                    <div class="modal-content p-8 w-full max-w-sm">
-                        <h3 class="text-2xl font-bold mb-4 text-gray-800">Retirar Dinero</h3>
+                <div id="withdrawModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+                    <div class="modal-content w-full max-w-sm">
+                        <div class="modal-header">
+                            Retirar Dinero
+                            <button id="cancelWithdraw" class="close-button">&times;</button>
+                        </div>
                         <form id="withdrawForm" class="space-y-4">
                             <div>
                                 <label for="withdrawAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto</label>
@@ -450,8 +521,7 @@
                                 </select>
                             </div>
                             <p class="text-sm text-gray-600 mt-2">Se aplicará una tarifa del 4% a este retiro.</p>
-                            <div class="flex justify-end space-x-4">
-                                <button type="button" id="cancelWithdraw" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
+                            <div class="flex justify-end space-x-4 pt-4">
                                 <button type="submit" class="btn-primary">Solicitar Retiro</button>
                             </div>
                         </form>
@@ -459,10 +529,13 @@
                 </div>
 
                 <!-- User History Modal -->
-                <div id="userHistoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-                    <div class="modal-content p-8">
-                        <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Mi Historial de Movimientos</h3>
-                        <div class="table-container bg-white rounded-lg shadow">
+                <div id="userHistoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            Mi Historial de Movimientos
+                            <button id="closeUserHistoryModalBtn" class="close-button">&times;</button>
+                        </div>
+                        <div class="table-container bg-white shadow">
                             <table class="min-w-full">
                                 <thead>
                                     <tr>
@@ -479,12 +552,10 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div id="historySummaryOutput" class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm text-left hidden">
-                            <!-- AI generated summary will be inserted here -->
-                        </div>
-                        <div class="flex justify-between items-center mt-6">
-                            <button id="summarizeHistoryBtn" class="btn-primary bg-blue-500 hover:bg-blue-600">Resumir Movimientos ✨</button>
-                            <button id="closeUserHistoryModalBtn" class="btn-primary">Cerrar Historial</button>
+                        <!-- AI generated summary will be inserted here (COMMENTED OUT) -->
+                        <!-- <div id="historySummaryOutput" class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm text-left hidden"></div> -->
+                        <div class="flex justify-end items-center mt-6">
+                            <!-- <button id="summarizeHistoryBtn" class="btn-primary bg-blue-500 hover:bg-blue-600 mr-4">Resumir Movimientos ✨</button> -->
                         </div>
                     </div>
                 </div>
@@ -500,10 +571,13 @@
     </div>
 
     <!-- Admin Full History Modal -->
-    <div id="adminFullHistoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Historial Completo de Transacciones (Admin)</h3>
-            <div class="table-container bg-white rounded-lg shadow">
+    <div id="adminFullHistoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content">
+            <div class="modal-header">
+                Historial Completo de Transacciones (Admin)
+                <button id="closeAdminFullHistoryModalBtn" class="close-button">&times;</button>
+            </div>
+            <div class="table-container bg-white shadow">
                 <table class="min-w-full">
                     <thead>
                         <tr>
@@ -521,15 +595,17 @@
                     </tbody>
                 </table>
             </div>
-            <button id="closeAdminFullHistoryModalBtn" class="btn-primary w-full mt-6">Cerrar Historial Completo</button>
         </div>
     </div>
 
     <!-- Admin Pending Requests Modal (Unified) -->
-    <div id="adminPendingRequestsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Solicitudes Pendientes (Admin)</h3>
-            <div class="table-container bg-white rounded-lg shadow">
+    <div id="adminPendingRequestsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content">
+            <div class="modal-header">
+                Solicitudes Pendientes (Admin)
+                <button id="closeAdminPendingRequestsModalBtn" class="close-button">&times;</button>
+            </div>
+            <div class="table-container bg-white shadow">
                 <table class="min-w-full">
                     <thead>
                         <tr>
@@ -547,14 +623,16 @@
                     </tbody>
                 </table>
             </div>
-            <button id="closeAdminPendingRequestsModalBtn" class="btn-primary w-full mt-6">Cerrar</button>
         </div>
     </div>
 
     <!-- FAQ Modal -->
-    <div id="faqModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Preguntas Frecuentes (FAQ)</h3>
+    <div id="faqModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content">
+            <div class="modal-header">
+                Preguntas Frecuentes (FAQ)
+                <button id="closeFAQModalBtn" class="close-button">&times;</button>
+            </div>
             <div class="text-left text-gray-700 space-y-4">
                 <div>
                     <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo puedo registrarme?</h4>
@@ -589,14 +667,16 @@
                     <p class="text-sm">Sí, en tu dashboard puedes hacer clic en "Ver Mis Solicitudes Pendientes" para revisar el estado de todas tus solicitudes (depósitos, retiros, compras y pagos de streaming) que aún no han sido procesadas por el administrador.</p>
                 </div>
             </div>
-            <button id="closeFAQModalBtn" class="btn-primary w-full mt-6">Cerrar FAQ</button>
         </div>
     </div>
 
     <!-- Online Shopping Modal -->
-    <div id="onlineShoppingModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8 w-full max-w-lg">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Compra por Internet</h3>
+    <div id="onlineShoppingModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-lg">
+            <div class="modal-header">
+                Compra por Internet
+                <button id="cancelOnlineShopping" class="close-button">&times;</button>
+            </div>
             <form id="onlineShoppingForm" class="space-y-4">
                 <div>
                     <label for="shoppingAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto total estimado de los productos (sin incluir envío/impuestos)</label>
@@ -613,13 +693,26 @@
                     <label for="productLinks" class="block text-gray-700 text-sm font-semibold mb-2">Pegue aquí los enlaces de los productos (uno por línea)</label>
                     <textarea id="productLinks" class="input-field h-32" placeholder="https://www.shein.com/item1&#10;https://www.aliexpress.com/item2" required></textarea>
                 </div>
+                <div>
+                    <label for="shoppingCategory" class="block text-gray-700 text-sm font-semibold mb-2">Categoría de la Compra</label>
+                    <select id="shoppingCategory" class="input-field" required>
+                        <option value="">Seleccione una categoría</option>
+                        <option value="Ropa y Accesorios">Ropa y Accesorios</option>
+                        <option value="Electrónica">Electrónica</option>
+                        <option value="Libros y Papelería">Libros y Papelería</option>
+                        <option value="Juguetes y Juegos">Juguetes y Juegos</option>
+                        <option value="Hogar y Decoración">Hogar y Decoración</option>
+                        <option value="Deportes">Deportes</option>
+                        <option value="Belleza y Cuidado Personal">Belleza y Cuidado Personal</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
                 <div class="text-right text-sm text-gray-600">
                     <p>Tarifa (3%): <span id="shoppingFeeDisplay">$0.00 USD</span></p>
                     <p class="font-bold text-base text-gray-800">Total Solicitado: <span id="shoppingTotalDisplay">$0.00 USD</span></p>
                     <p class="text-xs text-red-500 mt-1">Este monto será deducido de tu cuenta SÓLO después de la aprobación del administrador.</p>
                 </div>
-                <div class="flex justify-end space-x-4">
-                    <button type="button" id="cancelOnlineShopping" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
+                <div class="flex justify-end space-x-4 pt-4">
                     <button type="submit" id="requestOnlineShopping" class="btn-primary">Enviar Solicitud de Compra</button>
                 </div>
             </form>
@@ -627,9 +720,12 @@
     </div>
 
     <!-- Streaming Payment Modal -->
-    <div id="streamingPaymentModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8 w-full max-w-sm">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Pagar Servicio de Streaming</h3>
+    <div id="streamingPaymentModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-sm">
+            <div class="modal-header">
+                Pagar Servicio de Streaming
+                <button id="cancelStreamingPayment" class="close-button">&times;</button>
+            </div>
             <form id="streamingPaymentForm" class="space-y-4">
                 <div>
                     <label for="streamingService" class="block text-gray-700 text-sm font-semibold mb-2">Servicio de Streaming</label>
@@ -659,13 +755,24 @@
                         <option value="DOP">Peso Dominicano (DOP)</option>
                     </select>
                 </div>
+                <div>
+                    <label for="streamingCategory" class="block text-gray-700 text-sm font-semibold mb-2">Categoría del Servicio</label>
+                    <select id="streamingCategory" class="input-field" required>
+                        <option value="">Seleccione una categoría</option>
+                        <option value="Entretenimiento">Entretenimiento</option>
+                        <option value="Música">Música</option>
+                        <option value="Educación">Educación</option>
+                        <option value="Noticias">Noticias</option>
+                        <option value="Productividad">Productividad</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
                 <div class="text-right text-sm text-gray-600">
                     <p>Tarifa (3%): <span id="streamingFeeDisplay">$0.00 USD</span></p>
                     <p class="font-bold text-base text-gray-800">Total Solicitado: <span id="streamingTotalDisplay">$0.00 USD</span></p>
                     <p class="text-xs text-red-500 mt-1">Este monto será deducido de tu cuenta SÓLO después de la aprobación del administrador.</p>
                 </div>
-                <div class="flex justify-end space-x-4">
-                    <button type="button" id="cancelStreamingPayment" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
+                <div class="flex justify-end space-x-4 pt-4">
                     <button type="submit" id="requestStreamingPayment" class="btn-primary">Enviar Solicitud de Pago</button>
                 </div>
             </form>
@@ -673,10 +780,13 @@
     </div>
 
     <!-- User Pending Requests Modal -->
-    <div id="userPendingRequestsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Mis Solicitudes Pendientes</h3>
-            <div class="table-container bg-white rounded-lg shadow">
+    <div id="userPendingRequestsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content">
+            <div class="modal-header">
+                Mis Solicitudes Pendientes
+                <button id="closeUserPendingRequestsModalBtn" class="close-button">&times;</button>
+            </div>
+            <div class="table-container bg-white shadow">
                 <table class="min-w-full">
                     <thead>
                         <tr>
@@ -693,57 +803,61 @@
                     </tbody>
                 </table>
             </div>
-            <button id="closeUserPendingRequestsModalBtn" class="btn-primary w-full mt-6">Cerrar</button>
         </div>
     </div>
 
     <!-- Receipt/Invoice Modal for Users -->
-    <div id="receiptModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8 w-full max-w-md">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Recibo de Transacción</h3>
+    <div id="receiptModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-md">
+            <div class="modal-header">
+                Recibo de Transacción
+                <button id="closeReceiptModalBtn" class="close-button">&times;</button>
+            </div>
             <div id="receiptContent" class="text-left text-gray-700 space-y-2 text-sm bg-gray-50 p-4 rounded-lg">
                 <!-- Receipt details will be inserted here by JS -->
             </div>
-            <button id="closeReceiptModalBtn" class="btn-primary w-full mt-6">Cerrar Recibo</button>
         </div>
     </div>
 
 
     <!-- Rules Consent Modal -->
-    <div id="rulesConsentModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8 w-full max-w-md">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Reglas del Banco Juvenil</h3>
+    <div id="rulesConsentModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-md">
+            <div class="modal-header">
+                Reglas del Banco Juvenil
+                <button id="rejectRulesBtn" class="close-button">&times;</button>
+            </div>
             <div id="briefRulesTextContainer" class="max-h-60 overflow-y-auto text-gray-700 text-sm mb-6 p-4 border rounded-lg bg-gray-50">
                 <!-- Brief rules will be inserted here by JS -->
             </div>
-            <div class="flex justify-end space-x-4">
-                <button type="button" id="rejectRulesBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Rechazar</button>
+            <div class="flex justify-end space-x-4 pt-4">
                 <button type="button" id="acceptRulesBtn" class="btn-primary">Aceptar Reglas</button>
             </div>
         </div>
     </div>
 
-    <!-- AI Chat Modal -->
-    <div id="aiChatModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+    <!-- AI Chat Modal (COMMENTED OUT) -->
+    <!-- <div id="aiChatModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
         <div class="chat-modal-content">
             <div class="chat-header-modal">
                 Asistente de IA del Banco Juvenil
                 <button id="closeAIChatModalBtn" class="close-button">&times;</button>
             </div>
-            <div id="aiChatMessages" class="chat-messages-modal">
-                <!-- Initial message added by JS -->
-            </div>
+            <div id="aiChatMessages" class="chat-messages-modal"></div>
             <div class="chat-input-area-modal">
                 <input type="text" id="aiUserInput" class="chat-input-modal" placeholder="Escribe tu pregunta aquí..." autocomplete="off">
                 <button id="aiSendButton" class="send-button-modal">Enviar</button>
             </div>
         </div>
-    </div>
+    </div> -->
 
-    <!-- Savings Goal Modal -->
-    <div id="savingsGoalModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8 w-full max-w-lg">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Establecer Meta de Ahorro ✨</h3>
+    <!-- Savings Goal Modal (COMMENTED OUT) -->
+    <!-- <div id="savingsGoalModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-lg">
+            <div class="modal-header">
+                Establecer Meta de Ahorro ✨
+                <button id="closeSavingsGoalModalBtn" class="close-button">&times;</button>
+            </div>
             <form id="savingsGoalForm" class="space-y-4">
                 <div>
                     <label for="goalName" class="block text-gray-700 text-sm font-semibold mb-2">Nombre de la Meta</label>
@@ -764,59 +878,57 @@
                     <label for="targetDate" class="block text-gray-700 text-sm font-semibold mb-2">Fecha Objetivo (Opcional)</label>
                     <input type="date" id="targetDate" class="input-field">
                 </div>
-                <div class="text-center">
+                <div class="text-center pt-4">
                     <button type="submit" id="generatePlanBtn" class="btn-primary">Generar Plan de Ahorro ✨</button>
                 </div>
             </form>
-            <div id="generatedPlanText" class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm text-left hidden">
-                <!-- AI generated plan will be inserted here -->
-            </div>
-            <div class="flex justify-end space-x-4 mt-6">
-                <button type="button" id="closeSavingsGoalModalBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cerrar</button>
-            </div>
+            <div id="generatedPlanText" class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm text-left hidden"></div>
         </div>
-    </div>
+    </div> -->
 
-    <!-- Explain Term Modal -->
-    <div id="explainTermModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8 w-full max-w-lg">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Explicar Término Financiero ✨</h3>
+    <!-- Explain Term Modal (COMMENTED OUT) -->
+    <!-- <div id="explainTermModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-lg">
+            <div class="modal-header">
+                Explicar Término Financiero ✨
+                <button id="closeExplainTermModalBtn" class="close-button">&times;</button>
+            </div>
             <form id="explainTermForm" class="space-y-4">
                 <div>
                     <label for="financialTermInput" class="block text-gray-700 text-sm font-semibold mb-2">Término a Explicar</label>
                     <input type="text" id="financialTermInput" class="input-field" placeholder="Ej: Inflación" required>
                 </div>
-                <div class="text-center">
+                <div class="text-center pt-4">
                     <button type="submit" id="generateExplanationBtn" class="btn-primary">Generar Explicación ✨</button>
                 </div>
             </form>
-            <div id="termExplanationOutput" class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm text-left hidden">
-                <!-- AI generated explanation will be inserted here -->
-            </div>
-            <div class="flex justify-end space-x-4 mt-6">
-                <button type="button" id="closeExplainTermModalBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cerrar</button>
-            </div>
+            <div id="termExplanationOutput" class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm text-left hidden"></div>
         </div>
-    </div>
+    </div> -->
 
-    <!-- Financial Tip Modal -->
-    <div id="consejoFinancieroModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8 w-full max-w-md">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Consejo Financiero del Día ✨</h3>
+    <!-- Financial Tip Modal (COMMENTED OUT) -->
+    <!-- <div id="consejoFinancieroModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-md">
+            <div class="modal-header">
+                Consejo Financiero del Día ✨
+                <button id="closeConsejoFinancieroModalBtn" class="close-button">&times;</button>
+            </div>
             <div id="financialTipOutput" class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm text-left">
                 <p class="text-center text-gray-600">Haz clic en "Obtener Consejo" para recibir una perla de sabiduría financiera.</p>
             </div>
-            <div class="flex justify-between items-center mt-6">
+            <div class="flex justify-center mt-6">
                 <button id="getFinancialTipBtn" class="btn-primary">Obtener Consejo ✨</button>
-                <button id="closeConsejoFinancieroModalBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cerrar</button>
             </div>
         </div>
-    </div>
+    </div> -->
 
-    <!-- Interest Calculator Modal -->
-    <div id="calculadoraInteresesModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8 w-full max-w-lg">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Calculadora de Intereses ✨</h3>
+    <!-- Interest Calculator Modal (COMMENTED OUT) -->
+    <!-- <div id="calculadoraInteresesModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-lg">
+            <div class="modal-header">
+                Calculadora de Intereses ✨
+                <button id="closeCalculadoraInteresesModalBtn" class="close-button">&times;</button>
+            </div>
             <form id="interestCalculatorForm" class="space-y-4">
                 <div>
                     <label for="principalAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto Principal (Capital)</label>
@@ -830,23 +942,21 @@
                     <label for="timePeriod" class="block text-gray-700 text-sm font-semibold mb-2">Período (Años)</label>
                     <input type="number" id="timePeriod" class="input-field" placeholder="Ej: 3" min="1" step="1" required>
                 </div>
-                <div class="text-center">
+                <div class="text-center pt-4">
                     <button type="submit" id="calculateInterestBtn" class="btn-primary">Calcular y Explicar ✨</button>
                 </div>
             </form>
-            <div id="interestExplanationOutput" class="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg text-orange-800 text-sm text-left hidden">
-                <!-- AI generated explanation will be inserted here -->
-            </div>
-            <div class="flex justify-end space-x-4 mt-6">
-                <button type="button" id="closeCalculadoraInteresesModalBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cerrar</button>
-            </div>
+            <div id="interestExplanationOutput" class="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg text-orange-800 text-sm text-left hidden"></div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Edit Profile Modal -->
-    <div id="editProfileModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8 w-full max-w-sm">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Editar Perfil</h3>
+    <div id="editProfileModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-sm">
+            <div class="modal-header">
+                Editar Perfil
+                <button id="cancelEditProfileBtn" class="close-button">&times;</button>
+            </div>
             <form id="editProfileForm" class="space-y-4">
                 <div>
                     <label for="editName" class="block text-gray-700 text-sm font-semibold mb-2">Nombre</label>
@@ -860,18 +970,20 @@
                     <label for="editAge" class="block text-gray-700 text-sm font-semibold mb-2">Edad</label>
                     <input type="number" id="editAge" class="input-field" min="0" required>
                 </div>
-                <div class="flex justify-end space-x-4">
-                    <button type="button" id="cancelEditProfileBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
+                <div class="flex justify-end space-x-4 pt-4">
                     <button type="submit" class="btn-primary">Guardar Cambios</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- NEW: Change Password Modal -->
-    <div id="changePasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8 w-full max-w-sm">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Cambiar Contraseña</h3>
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-sm">
+            <div class="modal-header">
+                Cambiar Contraseña
+                <button id="cancelChangePasswordBtn" class="close-button">&times;</button>
+            </div>
             <form id="changePasswordForm" class="space-y-4">
                 <div>
                     <label for="currentPassword" class="block text-gray-700 text-sm font-semibold mb-2">Contraseña Actual</label>
@@ -885,18 +997,20 @@
                     <label for="confirmNewPassword" class="block text-gray-700 text-sm font-semibold mb-2">Confirmar Nueva Contraseña</label>
                     <input type="password" id="confirmNewPassword" class="input-field" placeholder="********" required>
                 </div>
-                <div class="flex justify-end space-x-4">
-                    <button type="button" id="cancelChangePasswordBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
+                <div class="flex justify-end space-x-4 pt-4">
                     <button type="submit" class="btn-primary">Cambiar Contraseña</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- NEW: Security Tips Modal -->
-    <div id="securityTipsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Consejos de Seguridad 🔒</h3>
+    <!-- Security Tips Modal -->
+    <div id="securityTipsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content">
+            <div class="modal-header">
+                Consejos de Seguridad 🔒
+                <button id="closeSecurityTipsBtn" class="close-button">&times;</button>
+            </div>
             <div class="text-left text-gray-700 space-y-4">
                 <div>
                     <h4 class="font-semibold text-lg text-gray-800 mb-1">1. Contraseñas Fuertes y Únicas</h4>
@@ -915,18 +1029,20 @@
                     <p class="text-sm">Accede a tu historial de movimientos con frecuencia para detectar cualquier actividad sospechosa o no autorizada. Si ves algo raro, ¡contáctanos de inmediato!</p>
                 </div>
                 <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">5. Mantén tu Dispositivo Seguro</h4>
+                    <h4 class="font-semibold text-lg text-800 mb-1">5. Mantén tu Dispositivo Seguro</h4>
                     <p class="text-sm">Usa antivirus, mantén tu sistema operativo y aplicaciones actualizadas, y evita conectarte a redes Wi-Fi públicas no seguras para realizar transacciones bancarias.</p>
                 </div>
             </div>
-            <button id="closeSecurityTipsBtn" class="btn-primary w-full mt-6">Cerrar</button>
         </div>
     </div>
 
-    <!-- NEW: About Us Modal -->
-    <div id="aboutUsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
-        <div class="modal-content p-8 w-full max-w-lg">
-            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Acerca del Banco Juvenil 🏦</h3>
+    <!-- About Us Modal -->
+    <div id="aboutUsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-lg">
+            <div class="modal-header">
+                Acerca del Banco Juvenil 🏦
+                <button id="closeAboutUsBtn" class="close-button">&times;</button>
+            </div>
             <div class="text-left text-gray-700 space-y-4">
                 <p>¡Hola, futuro financiero! Somos el Banco Juvenil, una plataforma creada pensando en ti.</p>
                 <p>Nuestra misión es empoderar a los jóvenes como tú para que tomen el control de sus finanzas desde temprana edad. Creemos que aprender sobre dinero no tiene por qué ser aburrido, ¡sino una aventura emocionante!</p>
@@ -941,7 +1057,32 @@
                 <p>Estamos comprometidos con tu educación financiera y tu seguridad. ¡Gracias por elegirnos como tu compañero en este viaje!</p>
                 <p class="text-sm text-gray-600 mt-4">Fundado en 2025. Versión 1.0.</p>
             </div>
-            <button id="closeAboutUsBtn" class="btn-primary w-full mt-6">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- NEW: Contact & Support Modal -->
+    <div id="contactSupportModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-md">
+            <div class="modal-header">
+                Contacto y Soporte 📞
+                <button id="closeContactSupportBtn" class="close-button">&times;</button>
+            </div>
+            <div class="text-left text-gray-700 space-y-4">
+                <p>¿Necesitas ayuda o tienes alguna pregunta? ¡Estamos aquí para ti, campeón!</p>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">WhatsApp de Soporte:</h4>
+                    <p class="text-sm"><a href="https://wa.me/18293329545" target="_blank" class="text-green-600 hover:underline font-bold">829-332-9545</a></p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">Correo Electrónico:</h4>
+                    <p class="text-sm"><a href="mailto:soporte@bancojuvenil.com" class="text-blue-600 hover:underline">soporte@bancojuvenil.com</a></p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">Horario de Atención:</h4>
+                    <p class="text-sm">Lunes a Viernes: 9:00 AM - 5:00 PM (Hora local)</p>
+                </div>
+                <p class="text-sm text-gray-600 mt-4">¡No dudes en contactarnos! Tu seguridad y tranquilidad son nuestra prioridad.</p>
+            </div>
         </div>
     </div>
 
@@ -1018,6 +1159,7 @@
         const dashboardDisplayId = document.getElementById('dashboardDisplayId'); // Simplified user ID for display
         const accountBalance = document.getElementById('accountBalance');
         const toggleCurrencyBtn = document.getElementById('toggleCurrency');
+        const profileAvatar = document.getElementById('profileAvatar'); // New: Profile Avatar
 
         // Buttons
         const adminFullHistoryBtn = document.getElementById('adminFullHistoryBtn');
@@ -1026,15 +1168,17 @@
         const streamingPaymentBtn = document.getElementById('streamingPaymentBtn'); // Streaming Payment Button
         const viewUserPendingRequestsBtn = document.getElementById('viewUserPendingRequestsBtn'); // User Pending Requests Button
         const viewAdminPendingRequestsBtn = document.getElementById('viewAdminPendingRequestsBtn'); // Admin Pending Requests Button
-        const openAIChatBtn = document.getElementById('openAIChatBtn'); // AI Assistant Button
-        const setSavingsGoalBtn = document.getElementById('setSavingsGoalBtn'); // Set Savings Goal Button
-        const explainTermBtn = document.getElementById('explainTermBtn'); // Explain Financial Term Button
-        const consejoFinancieroBtn = document.getElementById('consejoFinancieroBtn'); // Financial Tip Button
-        const calculadoraInteresesBtn = document.getElementById('calculadoraInteresesBtn'); // Interest Calculator Button
+        // AI Buttons (COMMENTED OUT)
+        // const openAIChatBtn = document.getElementById('openAIChatBtn');
+        // const setSavingsGoalBtn = document.getElementById('setSavingsGoalBtn');
+        // const explainTermBtn = document.getElementById('explainTermBtn');
+        // const consejoFinancieroBtn = document.getElementById('consejoFinancieroBtn');
+        // const calculadoraInteresesBtn = document.getElementById('calculadoraInteresesBtn');
         const editProfileBtn = document.getElementById('editProfileBtn'); // Edit Profile Button
-        const changePasswordBtn = document.getElementById('changePasswordBtn'); // NEW: Change Password Button
-        const securityTipsBtn = document.getElementById('securityTipsBtn'); // NEW: Security Tips Button
-        const aboutUsBtn = document.getElementById('aboutUsBtn'); // NEW: About Us Button
+        const changePasswordBtn = document.getElementById('changePasswordBtn'); // Change Password Button
+        const securityTipsBtn = document.getElementById('securityTipsBtn'); // Security Tips Button
+        const aboutUsBtn = document.getElementById('aboutUsBtn'); // About Us Button
+        const contactSupportBtn = document.getElementById('contactSupportBtn'); // NEW: Contact & Support Button
 
 
         const adminFullHistoryTableBodyModal = document.getElementById('adminFullHistoryTableBodyModal'); // Admin History (in modal)
@@ -1089,8 +1233,8 @@
         const userHistoryModal = document.getElementById('userHistoryModal');
         const userHistoryTableBody = document.getElementById('userHistoryTableBody');
         const closeUserHistoryModalBtn = document.getElementById('closeUserHistoryModalBtn');
-        const summarizeHistoryBtn = document.getElementById('summarizeHistoryBtn'); // Summarize History Button
-        const historySummaryOutput = document.getElementById('historySummaryOutput'); // History Summary Output
+        // const summarizeHistoryBtn = document.getElementById('summarizeHistoryBtn'); // Summarize History Button (COMMENTED OUT)
+        // const historySummaryOutput = document.getElementById('historySummaryOutput'); // History Summary Output (COMMENTED OUT)
 
         const adminFullHistoryModal = document.getElementById('adminFullHistoryModal');
         const closeAdminFullHistoryModalBtn = document.getElementById('closeAdminFullHistoryModalBtn');
@@ -1109,6 +1253,7 @@
         const shoppingAmountInput = document.getElementById('shoppingAmount');
         const shoppingCurrencyInput = document.getElementById('shoppingCurrency');
         const productLinksInput = document.getElementById('productLinks');
+        const shoppingCategoryInput = document.getElementById('shoppingCategory'); // NEW: Category Input
         const shoppingFeeDisplay = document.getElementById('shoppingFeeDisplay');
         const shoppingTotalDisplay = document.getElementById('shoppingTotalDisplay');
 
@@ -1119,6 +1264,7 @@
         const streamingAccountIdentifierInput = document.getElementById('streamingAccountIdentifier');
         const streamingAmountInput = document.getElementById('streamingAmount');
         const streamingCurrencyInput = document.getElementById('streamingCurrency');
+        const streamingCategoryInput = document.getElementById('streamingCategory'); // NEW: Category Input
         const streamingFeeDisplay = document.getElementById('streamingFeeDisplay');
         const streamingTotalDisplay = document.getElementById('streamingTotalDisplay');
 
@@ -1130,47 +1276,47 @@
         const receiptContent = document.getElementById('receiptContent');
         const closeReceiptModalBtn = document.getElementById('closeReceiptModalBtn');
 
-        // AI Chatbot elements
-        const aiChatModal = document.getElementById('aiChatModal');
-        const closeAIChatModalBtn = document.getElementById('closeAIChatModalBtn');
-        const aiUserInput = document.getElementById('aiUserInput');
-        const aiSendButton = document.getElementById('aiSendButton');
-        const aiChatMessages = document.getElementById('aiChatMessages');
+        // AI Chatbot elements (COMMENTED OUT)
+        // const aiChatModal = document.getElementById('aiChatModal');
+        // const closeAIChatModalBtn = document.getElementById('closeAIChatModalBtn');
+        // const aiUserInput = document.getElementById('aiUserInput');
+        // const aiSendButton = document.getElementById('aiSendButton');
+        // const aiChatMessages = document.getElementById('aiChatMessages');
 
-        // Savings Goal elements
-        const savingsGoalModal = document.getElementById('savingsGoalModal');
-        const closeSavingsGoalModalBtn = document.getElementById('closeSavingsGoalModalBtn');
-        const savingsGoalForm = document.getElementById('savingsGoalForm');
-        const goalNameInput = document.getElementById('goalName');
-        const goalAmountInput = document.getElementById('goalAmount');
-        const goalCurrencyInput = document.getElementById('goalCurrency');
-        const targetDateInput = document.getElementById('targetDate');
-        const generatedPlanText = document.getElementById('generatedPlanText');
-        const generatePlanBtn = document.getElementById('generatePlanBtn');
+        // Savings Goal elements (COMMENTED OUT)
+        // const savingsGoalModal = document.getElementById('savingsGoalModal');
+        // const closeSavingsGoalModalBtn = document.getElementById('closeSavingsGoalModalBtn');
+        // const savingsGoalForm = document.getElementById('savingsGoalForm');
+        // const goalNameInput = document.getElementById('goalName');
+        // const goalAmountInput = document.getElementById('goalAmount');
+        // const goalCurrencyInput = document.getElementById('goalCurrency');
+        // const targetDateInput = document.getElementById('targetDate');
+        // const generatedPlanText = document.getElementById('generatedPlanText');
+        // const generatePlanBtn = document.getElementById('generatePlanBtn');
 
-        // Explain Term elements
-        const explainTermModal = document.getElementById('explainTermModal');
-        const closeExplainTermModalBtn = document.getElementById('closeExplainTermModalBtn');
-        const explainTermForm = document.getElementById('explainTermForm');
-        const financialTermInput = document.getElementById('financialTermInput');
-        const generateExplanationBtn = document.getElementById('generateExplanationBtn');
-        const termExplanationOutput = document.getElementById('termExplanationOutput');
+        // Explain Term elements (COMMENTED OUT)
+        // const explainTermModal = document.getElementById('explainTermModal');
+        // const closeExplainTermModalBtn = document.getElementById('closeExplainTermModalBtn');
+        // const explainTermForm = document.getElementById('explainTermForm');
+        // const financialTermInput = document.getElementById('financialTermInput');
+        // const generateExplanationBtn = document.getElementById('generateExplanationBtn');
+        // const termExplanationOutput = document.getElementById('termExplanationOutput');
 
-        // Financial Tip Modal elements
-        const consejoFinancieroModal = document.getElementById('consejoFinancieroModal');
-        const closeConsejoFinancieroModalBtn = document.getElementById('closeConsejoFinancieroModalBtn');
-        const getFinancialTipBtn = document.getElementById('getFinancialTipBtn');
-        const financialTipOutput = document.getElementById('financialTipOutput');
+        // Financial Tip Modal elements (COMMENTED OUT)
+        // const consejoFinancieroModal = document.getElementById('consejoFinancieroModal');
+        // const closeConsejoFinancieroModalBtn = document.getElementById('closeConsejoFinancieroModalBtn');
+        // const getFinancialTipBtn = document.getElementById('getFinancialTipBtn');
+        // const financialTipOutput = document.getElementById('financialTipOutput');
 
-        // Interest Calculator Modal elements
-        const calculadoraInteresesModal = document.getElementById('calculadoraInteresesModal');
-        const closeCalculadoraInteresesModalBtn = document.getElementById('closeCalculadoraInteresesModalBtn');
-        const interestCalculatorForm = document.getElementById('interestCalculatorForm');
-        const principalAmountInput = document.getElementById('principalAmount');
-        const interestRateInput = document.getElementById('interestRate');
-        const timePeriodInput = document.getElementById('timePeriod');
-        const calculateInterestBtn = document.getElementById('calculateInterestBtn');
-        const interestExplanationOutput = document.getElementById('interestExplanationOutput');
+        // Interest Calculator Modal elements (COMMENTED OUT)
+        // const calculadoraInteresesModal = document.getElementById('calculadoraInteresesModal');
+        // const closeCalculadoraInteresesModalBtn = document.getElementById('closeCalculadoraInteresesModalBtn');
+        // const interestCalculatorForm = document.getElementById('interestCalculatorForm');
+        // const principalAmountInput = document.getElementById('principalAmount');
+        // const interestRateInput = document.getElementById('interestRate');
+        // const timePeriodInput = document.getElementById('timePeriod');
+        // const calculateInterestBtn = document.getElementById('calculateInterestBtn');
+        // const interestExplanationOutput = document.getElementById('interestExplanationOutput');
 
         // Edit Profile Modal elements
         const editProfileModal = document.getElementById('editProfileModal');
@@ -1180,7 +1326,7 @@
         const editSurnameInput = document.getElementById('editSurname');
         const editAgeInput = document.getElementById('editAge');
 
-        // NEW: Change Password Modal elements
+        // Change Password Modal elements
         const changePasswordModal = document.getElementById('changePasswordModal');
         const cancelChangePasswordBtn = document.getElementById('cancelChangePasswordBtn');
         const changePasswordForm = document.getElementById('changePasswordForm');
@@ -1188,20 +1334,26 @@
         const newPasswordInput = document.getElementById('newPassword');
         const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
 
-        // NEW: Security Tips Modal elements
+        // Security Tips Modal elements
         const securityTipsModal = document.getElementById('securityTipsModal');
         const closeSecurityTipsBtn = document.getElementById('closeSecurityTipsBtn');
 
-        // NEW: About Us Modal elements
+        // About Us Modal elements
         const aboutUsModal = document.getElementById('aboutUsModal');
         const closeAboutUsBtn = document.getElementById('closeAboutUsBtn');
 
+        // Contact & Support Modal elements
+        const contactSupportModal = document.getElementById('contactSupportModal');
+        const closeContactSupportBtn = document.getElementById('closeContactSupportBtn');
 
-        // Initial chat history for AI Chat with a system instruction for its role
+
+        // Initial chat history for AI Chat with a system instruction for its role (COMMENTED OUT)
+        /*
         let aiChatHistory = [
             { role: "system", parts: [{ text: "Eres un asistente de IA amigable y útil para un banco juvenil. Tu objetivo es responder cualquier pregunta sobre finanzas personales, ahorro, transferencias, depósitos, retiros, compras online, pagos de streaming, seguridad bancaria, y otras funcionalidades del banco, de una manera sencilla, clara y comprensible para jóvenes. Usa un tono positivo, motivador y educativo. Si te preguntan sobre cosas fuera del ámbito bancario o que no son relevantes para un banco, redirige amablemente al usuario a temas financieros o explica que no puedes ayudar con eso." }] },
             { role: "model", parts: [{ text: "¡Hola! Soy tu asistente de IA del Banco Juvenil. ¿En qué puedo ayudarte hoy, mi campeón?" }] }
         ];
+        */
 
 
         // --- Utility Functions ---
@@ -1271,26 +1423,26 @@
                 const senderName = await getUserDisplayName(transaction.senderId);
                 const recipientName = await getUserDisplayName(transaction.recipientId);
                 typeDisplay = 'Transferencia';
-                amountDisplay = transaction.amount.toFixed(2);
+                amountDisplay = (transaction.amount ?? 0).toFixed(2);
                 currencyDisplay = transaction.currency;
                 otherDetails += `<p><strong>Remitente:</strong> ${senderName}</p>`;
                 otherDetails += `<p><strong>Destinatario:</strong> ${recipientName}</p>`;
             } else if (transaction.type === 'deposit') {
                 typeDisplay = 'Depósito';
-                amountDisplay = transaction.amount.toFixed(2);
+                amountDisplay = (transaction.amount ?? 0).toFixed(2);
                 currencyDisplay = transaction.currency;
                 otherDetails += `<p><strong>Número de Serie:</strong> ${transaction.serialNumber || 'N/A'}</p>`;
             } else if (transaction.type === 'withdrawal') {
                 typeDisplay = 'Retiro';
-                amountDisplay = transaction.amount.toFixed(2);
+                amountDisplay = (transaction.amount ?? 0).toFixed(2);
                 currencyDisplay = transaction.currency;
-                feeDisplay = `Tarifa (4%): $${transaction.feeAmount ? transaction.feeAmount.toFixed(2) : '0.00'} USD`;
+                feeDisplay = `Tarifa (4%): $${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
             } else if (transaction.type === 'online_purchase') {
                 typeDisplay = 'Compra Online';
-                amountDisplay = transaction.totalAmountDeducted.toFixed(2);
+                amountDisplay = (transaction.totalAmountDeducted ?? 0).toFixed(2);
                 currencyDisplay = 'USD';
-                feeDisplay = `Tarifa (3%): $${transaction.feeAmount ? transaction.feeAmount.toFixed(2) : '0.00'} USD`;
-                otherDetails += `<p><strong>Monto Productos:</strong> ${transaction.productAmount.toFixed(2)} ${transaction.productCurrency}</p>`;
+                feeDisplay = `Tarifa (3%): $${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
+                otherDetails += `<p><strong>Monto Productos:</strong> ${(transaction.productAmount ?? 0).toFixed(2)} ${transaction.productCurrency}</p>`;
                 if (transaction.productLinks) {
                     otherDetails += `<p><strong>Enlaces de Productos:</strong></p>`;
                     transaction.productLinks.split('\n').forEach(link => {
@@ -1299,17 +1451,23 @@
                         }
                     });
                 }
+                if (transaction.category) {
+                    otherDetails += `<p><strong>Categoría:</strong> ${transaction.category}</p>`;
+                }
             } else if (transaction.type === 'streaming_payment') {
                 typeDisplay = 'Pago de Streaming';
-                amountDisplay = transaction.totalAmountDeducted.toFixed(2);
+                amountDisplay = (transaction.totalAmountDeducted ?? 0).toFixed(2);
                 currencyDisplay = 'USD';
-                feeDisplay = `Tarifa (3%): $${transaction.feeAmount ? transaction.feeAmount.toFixed(2) : '0.00'} USD`;
+                feeDisplay = `Tarifa (3%): $${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
                 otherDetails += `<p><strong>Servicio:</strong> ${transaction.service || 'N/A'}</p>`;
                 otherDetails += `<p><strong>Cuenta:</strong> ${transaction.accountIdentifier || 'N/A'}</p>`;
-                otherDetails += `<p><strong>Monto Suscripción:</strong> ${transaction.subscriptionAmount.toFixed(2)} ${transaction.subscriptionCurrency}</p>`;
+                otherDetails += `<p><strong>Monto Suscripción:</strong> ${(transaction.subscriptionAmount ?? 0).toFixed(2)} ${transaction.subscriptionCurrency}</p>`;
+                if (transaction.category) {
+                    otherDetails += `<p><strong>Categoría:</strong> ${transaction.category}</p>`;
+                }
             } else if (transaction.type === 'withdrawal_fee') {
                 typeDisplay = 'Tarifa de Retiro Cobrada';
-                amountDisplay = transaction.amount.toFixed(2);
+                amountDisplay = (transaction.amount ?? 0).toFixed(2);
                 currencyDisplay = transaction.currency;
                 const payerName = await getUserDisplayName(transaction.payerId);
                 const receiverName = await getUserDisplayName(transaction.receiverId);
@@ -1352,12 +1510,12 @@
                 loginTab.classList.add('active');
                 registerTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal, consejoFinancieroModal, calculadoraInteresesModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal);
+                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, /*aiChatModal, savingsGoalModal, explainTermModal, consejoFinancieroModal, calculadoraInteresesModal,*/ editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal);
             } else {
                 registerTab.classList.add('active');
                 loginTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal, consejoFinancieroModal, calculadoraInteresesModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal);
+                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, /*aiChatModal, savingsGoalModal, explainTermModal, consejoFinancieroModal, calculadoraInteresesModal,*/ editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal);
             }
             hideMessage(); // Hide any previous messages when changing tabs
         }
@@ -1614,6 +1772,7 @@
                         dashboardUserName.textContent = userData.name || 'Usuario';
                         // Display the user-friendly ID, fallback to Firebase UID if not set
                         dashboardDisplayId.textContent = userData.userDisplayId || userData.userId;
+                        profileAvatar.textContent = (userData.name ? userData.name.substring(0,1) : 'U').toUpperCase(); // Set avatar initial
 
                         currentBalanceUSD = userData.balanceUSD || 0;
                         currentBalanceDOP = userData.balanceDOP || 0;
@@ -1647,7 +1806,7 @@
                 });
 
                 // Display dashboard and hide login/register forms and all modals
-                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal, consejoFinancieroModal, calculadoraInteresesModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal);
+                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, /*aiChatModal, savingsGoalModal, explainTermModal, consejoFinancieroModal, calculadoraInteresesModal,*/ editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal);
 
             } else {
                 // User is signed out
@@ -1655,6 +1814,7 @@
                 currentUserId = null;
                 dashboardUserName.textContent = '';
                 dashboardDisplayId.textContent = ''; // Clear display ID
+                profileAvatar.textContent = 'U'; // Reset avatar
                 accountBalance.textContent = '$0.00 USD';
                 toggleCurrencyBtn.textContent = 'Cambiar a DOP';
                 showCurrencyUSD = true; // Reset currency display preference
@@ -2124,6 +2284,7 @@
             const productAmount = parseFloat(shoppingAmountInput.value);
             const productCurrency = shoppingCurrencyInput.value;
             const productLinks = productLinksInput.value.trim();
+            const shoppingCategory = shoppingCategoryInput.value; // Get category
 
             if (isNaN(productAmount) || productAmount <= 0) {
                 showMessage('Por favor, ingresa un monto estimado válido para los productos.', 'error');
@@ -2133,6 +2294,11 @@
                 showMessage('Por favor, ingresa al menos un enlace de producto.', 'error');
                 return;
             }
+            if (!shoppingCategory) {
+                showMessage('Por favor, selecciona una categoría para la compra.', 'error');
+                return;
+            }
+
 
             let amountInUSD = productAmount;
             if (productCurrency === 'DOP') {
@@ -2152,6 +2318,7 @@
                     productLinks: productLinks,
                     feeAmount: feeAmount, // Store calculated fee
                     totalAmountToDeduct: totalToDeductInUSD, // Store total to deduct
+                    category: shoppingCategory, // Store category
                     timestamp: serverTimestamp(),
                     status: 'pending'
                 });
@@ -2168,7 +2335,8 @@
                 Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
                 Monto de productos: ${productAmount.toFixed(2)} ${productCurrency}
                 Tarifa (3%): $${feeAmount.toFixed(2)} USD
-                TOTAL A DEDUCIR: $${totalToDeductedInUSD.toFixed(2)} USD (al confirmar)
+                TOTAL A DEDUCIR: $${totalToDeductInUSD.toFixed(2)} USD (al confirmar)
+                Categoría: ${shoppingCategory}
                 Enlaces de productos:
                 ${productLinks}
                 Por favor, revisa y confirma.
@@ -2228,9 +2396,14 @@
             const accountIdentifier = streamingAccountIdentifierInput.value.trim();
             const subscriptionAmount = parseFloat(streamingAmountInput.value);
             const subscriptionCurrency = streamingCurrencyInput.value;
+            const streamingCategory = streamingCategoryInput.value; // Get category
 
             if (!service || !accountIdentifier || isNaN(subscriptionAmount) || subscriptionAmount <= 0) {
                 showMessage('Por favor, completa todos los campos para el pago del servicio de streaming.', 'error');
+                return;
+            }
+            if (!streamingCategory) {
+                showMessage('Por favor, selecciona una categoría para el servicio de streaming.', 'error');
                 return;
             }
 
@@ -2253,6 +2426,7 @@
                     subscriptionCurrency: subscriptionCurrency,
                     feeAmount: feeAmount,
                     totalAmountToDeduct: totalToDeductInUSD,
+                    category: streamingCategory, // Store category
                     timestamp: serverTimestamp(),
                     status: 'pending'
                 });
@@ -2271,7 +2445,8 @@
                 Cuenta: ${accountIdentifier}
                 Monto Suscripción: ${subscriptionAmount.toFixed(2)} ${subscriptionCurrency}
                 Tarifa (3%): $${feeAmount.toFixed(2)} USD
-                TOTAL A DEDUCIR: $${totalToDeductedInUSD.toFixed(2)} USD (al confirmar)
+                TOTAL A DEDUCIR: $${totalToDeductInUSD.toFixed(2)} USD (al confirmar)
+                Categoría: ${streamingCategory}
                 Por favor, revisa y confirma.
                 `;
                 const encodedMessage = encodeURIComponent(whatsappMessage);
@@ -2326,31 +2501,31 @@
                     switch (request.type) {
                         case 'deposit':
                             typeDisplay = 'Depósito';
-                            amountDisplay = request.amount.toFixed(2);
+                            amountDisplay = (request.amount ?? 0).toFixed(2);
                             currencyDisplay = request.currency;
                             detailsDisplay = `Serie: ${request.serialNumber}`;
                             break;
                         case 'withdrawal':
                             typeDisplay = 'Retiro';
-                            amountDisplay = request.amount.toFixed(2);
+                            amountDisplay = (request.amount ?? 0).toFixed(2);
                             currencyDisplay = request.currency;
-                            detailsDisplay = `Tarifa est. (4%): $${request.estimatedFee ? request.estimatedFee.toFixed(2) : '0.00'} USD`;
+                            detailsDisplay = `Tarifa est. (4%): $${(request.estimatedFee ?? 0).toFixed(2)} USD`;
                             break;
                         case 'online_purchase':
                             typeDisplay = 'Compra Online';
-                            amountDisplay = request.totalAmountToDeduct.toFixed(2); // Show total amount to be deducted
+                            amountDisplay = (request.totalAmountToDeduct ?? 0).toFixed(2); // Show total amount to be deducted
                             currencyDisplay = 'USD'; // Assuming totalToDeduct is in USD
-                            detailsDisplay = `Prod. Cant: ${request.productAmount.toFixed(2)} ${request.productCurrency}, Tarifa (3%): $${request.feeAmount.toFixed(2)} USD. Links: ${request.productLinks.substring(0, 50)}...`;
+                            detailsDisplay = `Prod. Cant: ${(request.productAmount ?? 0).toFixed(2)} ${request.productCurrency}, Tarifa (3%): $${(request.feeAmount ?? 0).toFixed(2)} USD. Cat: ${request.category || 'N/A'}. Links: ${request.productLinks.substring(0, 50)}...`;
                             break;
                         case 'streaming_payment':
                             typeDisplay = 'Pago Streaming';
-                            amountDisplay = request.totalAmountToDeduct.toFixed(2); // Show total amount to be deducted
+                            amountDisplay = (request.totalAmountToDeduct ?? 0).toFixed(2); // Show total amount to be deducted
                             currencyDisplay = 'USD'; // Assuming totalToDeduct is in USD
-                            detailsDisplay = `Servicio: ${request.service}, Cuenta: ${request.accountIdentifier}, Tarifa (3%): $${request.feeAmount.toFixed(2)} USD.`;
+                            detailsDisplay = `Servicio: ${request.service}, Cuenta: ${request.accountIdentifier}, Tarifa (3%): $${(request.feeAmount ?? 0).toFixed(2)} USD. Cat: ${request.category || 'N/A'}.`;
                             break;
                         default:
                             typeDisplay = 'Desconocido';
-                            amountDisplay = request.amount ? request.amount.toFixed(2) : 'N/A';
+                            amountDisplay = (request.amount ?? 0).toFixed(2);
                             currencyDisplay = request.currency || 'N/A';
                             detailsDisplay = 'N/A';
                     }
@@ -2373,13 +2548,13 @@
                                 data-serial-number="${request.serialNumber || ''}"
                                 data-product-amount="${request.productAmount || 0}"
                                 data-product-currency="${request.productCurrency || ''}"
-                                data-product-links="${request.productLinks || ''}"
                                 data-service="${request.service || ''}"
                                 data-account-identifier="${request.accountIdentifier || ''}"
                                 data-subscription-amount="${request.subscriptionAmount || 0}"
                                 data-subscription-currency="${request.subscriptionCurrency || ''}"
                                 data-fee-amount="${request.feeAmount || 0}"
                                 data-total-amount-to-deduct="${request.totalAmountToDeduct || 0}"
+                                data-category="${request.category || ''}"
                                 >Confirmar</button>
                             <button class="btn-danger reject-request-btn"
                                 data-request-id="${requestId}"
@@ -2410,7 +2585,8 @@
                             parseFloat(dataset.subscriptionAmount),
                             dataset.subscriptionCurrency,
                             parseFloat(dataset.feeAmount),
-                            parseFloat(dataset.totalAmountToDeduct)
+                            parseFloat(dataset.totalAmountToDeduct),
+                            dataset.category
                         );
                     };
                 });
@@ -2430,9 +2606,9 @@
             requestId, type, userId, amount, currency, serialNumber,
             productAmount, productCurrency, productLinks,
             service, accountIdentifier, subscriptionAmount, subscriptionCurrency,
-            feeAmount, totalAmountToDeduct
+            feeAmount, totalAmountToDeduct, category
         ) {
-            console.log("Confirming request:", { requestId, type, userId, amount, currency, serialNumber, productAmount, productCurrency, productLinks, service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, totalAmountToDeduct });
+            console.log("Confirming request:", { requestId, type, userId, amount, currency, serialNumber, productAmount, productCurrency, productLinks, service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, totalAmountToDeduct, category });
             try {
                 const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
                 const requestDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_requests', requestId);
@@ -2605,8 +2781,8 @@
                     description: transactionDescription,
                     // Store additional details for specific types for receipt generation
                     ...(type === 'withdrawal' && { feeAmount: calculatedFeeInUSD, feeCurrency: 'USD', adminReceiverId: adminId }),
-                    ...(type === 'online_purchase' && { productAmount, productCurrency, productLinks, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId }),
-                    ...(type === 'streaming_payment' && { service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId })
+                    ...(type === 'online_purchase' && { productAmount, productCurrency, productLinks, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category }),
+                    ...(type === 'streaming_payment' && { service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category })
                 });
                 console.log("Transaction recorded successfully.");
 
@@ -2658,8 +2834,8 @@
          */
         async function loadUserHistory() {
             userHistoryTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Cargando historial...</td></tr>';
-            historySummaryOutput.classList.add('hidden'); // Hide previous summary
-            historySummaryOutput.innerHTML = ''; // Clear previous summary text
+            // historySummaryOutput.classList.add('hidden'); // COMMENTED OUT
+            // historySummaryOutput.innerHTML = ''; // COMMENTED OUT
 
             const transactionsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'transactions');
 
@@ -2708,35 +2884,35 @@
                         case 'deposit':
                             typeDisplay = 'Depósito';
                             detailsDisplay = `Serie: ${transaction.serialNumber || 'N/A'}`;
-                            amountDisplay = `+${transaction.amount.toFixed(2)} ${transaction.currency}`;
+                            amountDisplay = `+${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency}`;
                             break;
                         case 'withdrawal':
                             typeDisplay = 'Retiro';
-                            detailsDisplay = `Tarifa: ${transaction.feeAmount ? `$${transaction.feeAmount.toFixed(2)} USD` : '0.00'}`;
-                            amountDisplay = `-${transaction.amount.toFixed(2)} ${transaction.currency}`;
+                            detailsDisplay = `Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
+                            amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency}`;
                             break;
                         case 'transfer':
                             if (transaction.senderId === currentUserId) {
                                 typeDisplay = 'Transferencia Enviada';
                                 const recipientDisplayName = await getUserDisplayName(transaction.recipientId);
                                 detailsDisplay = `A: ${recipientDisplayName}`;
-                                amountDisplay = `-${transaction.amount.toFixed(2)} ${transaction.currency}`;
+                                amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency}`;
                             } else if (transaction.recipientId === currentUserId) {
                                 typeDisplay = 'Transferencia Recibida';
                                 const senderDisplayName = await getUserDisplayName(transaction.senderId);
                                 detailsDisplay = `De: ${senderDisplayName}`;
-                                amountDisplay = `+${transaction.amount.toFixed(2)} ${transaction.currency}`;
+                                amountDisplay = `+${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency}`;
                             }
                             break;
                         case 'online_purchase':
                             typeDisplay = 'Compra Online';
-                            detailsDisplay = `Total productos: ${transaction.productAmount.toFixed(2)} ${transaction.productCurrency}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
-                            amountDisplay = `-${transaction.totalAmountDeducted.toFixed(2)} ${transaction.currency}`; // This is the total deducted
+                            detailsDisplay = `Cat: ${transaction.category || 'N/A'}, Total prod: ${(transaction.productAmount ?? 0).toFixed(2)} ${transaction.productCurrency}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
+                            amountDisplay = `-${(transaction.totalAmountDeducted ?? 0).toFixed(2)} ${transaction.currency}`; // This is the total deducted
                             break;
                         case 'streaming_payment':
                             typeDisplay = 'Pago Streaming';
-                            detailsDisplay = `Servicio: ${transaction.service}, Cuenta: ${transaction.accountIdentifier}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
-                            amountDisplay = `-${transaction.totalAmountDeducted.toFixed(2)} ${transaction.currency}`; // This is the total deducted
+                            detailsDisplay = `Servicio: ${transaction.service}, Cat: ${transaction.category || 'N/A'}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
+                            amountDisplay = `-${(transaction.totalAmountDeducted ?? 0).toFixed(2)} ${transaction.currency}`; // This is the total deducted
                             break;
                     }
 
@@ -2821,11 +2997,13 @@
                             typeDisplay = 'Depósito';
                             usersInvolved = await getUserDisplayName(transaction.userId);
                             details = `Serie: ${transaction.serialNumber || 'N/A'}`;
+                            amountValue = (transaction.amount ?? 0);
                             break;
                         case 'withdrawal':
                             typeDisplay = 'Retiro';
                             usersInvolved = await getUserDisplayName(transaction.userId);
-                            details = `Tarifa: $${transaction.feeAmount ? transaction.feeAmount.toFixed(2) : '0.00'} USD`;
+                            details = `Tarifa: $${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
+                            amountValue = (transaction.amount ?? 0);
                             break;
                         case 'transfer':
                             typeDisplay = 'Transferencia';
@@ -2833,6 +3011,7 @@
                             const recipientName = await getUserDisplayName(transaction.recipientId);
                             usersInvolved = `${senderName} (envía) -> ${recipientName} (recibe)`;
                             details = `Descripción: ${transaction.description || 'N/A'}`;
+                            amountValue = (transaction.amount ?? 0);
                             break;
                         case 'withdrawal_fee':
                             typeDisplay = 'Tarifa de Retiro Cobrada';
@@ -2840,26 +3019,28 @@
                             const feeReceiver = await getUserDisplayName(transaction.receiverId);
                             usersInvolved = `${feePayer} (paga) -> ${feeReceiver} (recibe)`;
                             details = `ID Solicitud Original: ${transaction.originalRequestId || 'N/A'}`;
-                            amountValue = transaction.amount; // This is the fee amount
+                            amountValue = (transaction.amount ?? 0); // This is the fee amount
                             currencyValue = 'USD';
                             break;
                         case 'online_purchase':
                             typeDisplay = 'Compra Online';
                             usersInvolved = await getUserDisplayName(transaction.userId);
-                            details = `Links: ${transaction.productLinks ? transaction.productLinks.substring(0, 50) + '...' : 'N/A'}. Total prod: ${transaction.productAmount.toFixed(2)} ${transaction.productCurrency}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
-                            amountValue = transaction.totalAmountDeducted; // Show total deducted from user
+                            details = `Cat: ${transaction.category || 'N/A'}. Links: ${transaction.productLinks ? transaction.productLinks.substring(0, 50) + '...' : 'N/A'}. Total prod: ${(transaction.productAmount ?? 0).toFixed(2)} ${transaction.productCurrency}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
+                            amountValue = (transaction.totalAmountDeducted ?? 0); // Show total deducted from user
                             currencyValue = 'USD';
                             break;
                         case 'streaming_payment':
                             typeDisplay = 'Pago Streaming';
                             usersInvolved = await getUserDisplayName(transaction.userId);
-                            details = `Servicio: ${transaction.service}, Cuenta: ${transaction.accountIdentifier}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
-                            amountValue = transaction.totalAmountDeducted; // Show total deducted from user
+                            details = `Servicio: ${transaction.service}, Cat: ${transaction.category || 'N/A'}, Cuenta: ${transaction.accountIdentifier}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
+                            amountValue = (transaction.totalAmountDeducted ?? 0); // Show total deducted from user
                             currencyValue = 'USD';
                             break;
                         default:
                             usersInvolved = transaction.userId || 'N/A'; // Fallback
                             details = 'N/A';
+                            amountValue = (transaction.amount ?? 0);
+                            currencyValue = transaction.currency || 'N/A';
                     }
 
 
@@ -2906,26 +3087,29 @@
                         case 'deposit':
                             typeDisplay = 'Depósito';
                             detailDisplay = `Serie: ${data.serialNumber}`;
+                            amountToDisplay = (data.amount ?? 0);
                             break;
                         case 'withdrawal':
                             typeDisplay = 'Retiro';
-                            detailDisplay = `Tarifa est. (4%): $${data.estimatedFee ? data.estimatedFee.toFixed(2) : '0.00'} USD`;
+                            detailDisplay = `Tarifa est. (4%): $${(data.estimatedFee ?? 0).toFixed(2)} USD`;
+                            amountToDisplay = (data.amount ?? 0);
                             break;
                         case 'online_purchase':
                             typeDisplay = 'Compra Online';
-                            amountToDisplay = data.totalAmountToDeduct; // Show total that will be deducted
+                            amountToDisplay = (data.totalAmountToDeduct ?? 0); // Show total that will be deducted
                             currencyToDisplay = 'USD';
-                            detailDisplay = `Total productos: ${data.productAmount.toFixed(2)} ${data.productCurrency}, Tarifa: ${data.feeAmount.toFixed(2)} USD`;
+                            detailDisplay = `Cat: ${data.category || 'N/A'}, Total prod: ${(data.productAmount ?? 0).toFixed(2)} ${data.productCurrency}, Tarifa: ${(data.feeAmount ?? 0).toFixed(2)} USD`;
                             break;
                         case 'streaming_payment':
                             typeDisplay = 'Pago Streaming';
-                            amountToDisplay = data.totalAmountToDeduct; // Show total that will be deducted
+                            amountToDisplay = (data.totalAmountToDeduct ?? 0); // Show total that will be deducted
                             currencyToDisplay = 'USD';
-                            detailDisplay = `Servicio: ${data.service}, Cuenta: ${data.accountIdentifier}, Tarifa: ${data.feeAmount.toFixed(2)} USD`;
+                            detailDisplay = `Servicio: ${data.service}, Cat: ${data.category || 'N/A'}, Tarifa: ${(data.feeAmount ?? 0).toFixed(2)} USD`;
                             break;
                         default:
                             typeDisplay = 'Desconocido';
                             detailDisplay = 'N/A';
+                            amountToDisplay = (data.amount ?? 0);
                     }
 
                     allPendingRequests.push({
@@ -2973,8 +3157,8 @@
             });
         }
 
-        // --- AI Chatbot Functions ---
-
+        // --- AI Chatbot Functions (COMMENTED OUT) ---
+        /*
         // Function to add a message to the AI chat display
         function addAIChatMessage(text, sender) {
             const messageDiv = document.createElement('div');
@@ -3062,9 +3246,10 @@
                 aiUserInput.focus(); // Keep focus on input field
             }
         }
+        */
 
-        // --- Savings Goal Functions ---
-
+        // --- Savings Goal Functions (COMMENTED OUT) ---
+        /*
         // Function to display a loading indicator for savings plan
         function showSavingsPlanLoadingIndicator() {
             generatedPlanText.classList.remove('hidden');
@@ -3087,6 +3272,7 @@
         /**
          * Generates a savings plan using the Gemini API.
          */
+        /*
         async function generateSavingsPlan() {
             const goalName = goalNameInput.value.trim();
             const goalAmount = parseFloat(goalAmountInput.value);
@@ -3172,9 +3358,10 @@
                 generatePlanBtn.disabled = false; // Re-enable button
             }
         }
+        */
 
-        // --- Explain Term Functions ---
-
+        // --- Explain Term Functions (COMMENTED OUT) ---
+        /*
         // Function to display a loading indicator for term explanation
         function showTermExplanationLoadingIndicator() {
             termExplanationOutput.classList.remove('hidden');
@@ -3247,9 +3434,10 @@
                 generateExplanationBtn.disabled = false;
             }
         }
+        */
 
-        // --- Summarize History Functions ---
-
+        // --- Summarize History Functions (COMMENTED OUT) ---
+        /*
         // Function to display a loading indicator for history summary
         function showHistorySummaryLoadingIndicator() {
             historySummaryOutput.classList.remove('hidden');
@@ -3337,8 +3525,10 @@
                 summarizeHistoryBtn.disabled = false;
             }
         }
+        */
 
-        // --- Financial Tip Functions ---
+        // --- Financial Tip Functions (COMMENTED OUT) ---
+        /*
         function showFinancialTipLoadingIndicator() {
             financialTipOutput.classList.remove('hidden');
             financialTipOutput.innerHTML = `
@@ -3398,8 +3588,10 @@
                 getFinancialTipBtn.disabled = false;
             }
         }
+        */
 
-        // --- Interest Calculator Functions ---
+        // --- Interest Calculator Functions (COMMENTED OUT) ---
+        /*
         function showInterestExplanationLoadingIndicator() {
             interestExplanationOutput.classList.remove('hidden');
             interestExplanationOutput.innerHTML = `
@@ -3482,6 +3674,7 @@
                 calculateInterestBtn.disabled = false;
             }
         }
+        */
 
         // --- Edit Profile Functions ---
         editProfileBtn.addEventListener('click', async () => {
@@ -3540,7 +3733,7 @@
             }
         });
 
-        // --- NEW: Change Password Functions ---
+        // --- Change Password Functions ---
         changePasswordBtn.addEventListener('click', () => {
             if (!currentUser) {
                 showMessage('Debes iniciar sesión para cambiar tu contraseña.', 'error');
@@ -3605,7 +3798,7 @@
             }
         });
 
-        // --- NEW: Security Tips Functions ---
+        // --- Security Tips Functions ---
         securityTipsBtn.addEventListener('click', () => {
             securityTipsModal.classList.remove('hidden');
         });
@@ -3614,13 +3807,22 @@
             closeModal(securityTipsModal);
         });
 
-        // --- NEW: About Us Functions ---
+        // --- About Us Functions ---
         aboutUsBtn.addEventListener('click', () => {
             aboutUsModal.classList.remove('hidden');
         });
 
         closeAboutUsBtn.addEventListener('click', () => {
             closeModal(aboutUsModal);
+        });
+
+        // --- Contact & Support Functions ---
+        contactSupportBtn.addEventListener('click', () => {
+            contactSupportModal.classList.remove('hidden');
+        });
+
+        closeContactSupportBtn.addEventListener('click', () => {
+            closeModal(contactSupportModal);
         });
 
 
@@ -3719,85 +3921,6 @@
         // Receipt Modal Button
         closeReceiptModalBtn.addEventListener('click', () => {
             closeModal(receiptModal);
-        });
-
-        // AI Chatbot Event Listeners
-        openAIChatBtn.addEventListener('click', () => {
-            aiChatModal.classList.remove('hidden');
-            aiUserInput.focus(); // Focus on input when modal opens
-            // Ensure initial AI message is displayed if chat history is just system prompt
-            if (aiChatMessages.children.length <= 1) { // Check if only system prompt or no messages
-                addAIChatMessage("¡Hola! Soy tu asistente de IA del Banco Juvenil. ¿En qué puedo ayudarte hoy, mi campeón?", 'ai');
-            }
-        });
-        closeAIChatModalBtn.addEventListener('click', () => {
-            closeModal(aiChatModal);
-        });
-        aiSendButton.addEventListener('click', sendAIChatMessage);
-        aiUserInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                sendAIChatMessage();
-            }
-        });
-
-        // Savings Goal Event Listeners
-        setSavingsGoalBtn.addEventListener('click', () => {
-            savingsGoalModal.classList.remove('hidden');
-            savingsGoalForm.reset(); // Clear form when opened
-            generatedPlanText.classList.add('hidden'); // Hide previous plan
-            generatedPlanText.innerHTML = ''; // Clear previous plan text
-        });
-        closeSavingsGoalModalBtn.addEventListener('click', () => {
-            closeModal(savingsGoalModal);
-        });
-        savingsGoalForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await generateSavingsPlan();
-        });
-
-        // Explain Term Event Listeners
-        explainTermBtn.addEventListener('click', () => {
-            explainTermModal.classList.remove('hidden');
-            explainTermForm.reset(); // Clear form when opened
-            termExplanationOutput.classList.add('hidden'); // Hide previous explanation
-            termExplanationOutput.innerHTML = ''; // Clear previous explanation text
-        });
-        closeExplainTermModalBtn.addEventListener('click', () => {
-            closeModal(explainTermModal);
-        });
-        explainTermForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await generateTermExplanation();
-        });
-
-        // Summarize History Event Listener
-        summarizeHistoryBtn.addEventListener('click', summarizeUserHistory);
-
-        // Financial Tip Event Listeners
-        consejoFinancieroBtn.addEventListener('click', () => {
-            consejoFinancieroModal.classList.remove('hidden');
-            financialTipOutput.innerHTML = `<p class="text-center text-gray-600">Haz clic en "Obtener Consejo" para recibir una perla de sabiduría financiera.</p>`; // Reset content
-            getFinancialTipBtn.disabled = false; // Ensure button is enabled
-        });
-        closeConsejoFinancieroModalBtn.addEventListener('click', () => {
-            closeModal(consejoFinancieroModal);
-        });
-        getFinancialTipBtn.addEventListener('click', generateFinancialTip);
-
-        // Interest Calculator Event Listeners
-        calculadoraInteresesBtn.addEventListener('click', () => {
-            calculadoraInteresesModal.classList.remove('hidden');
-            interestCalculatorForm.reset(); // Reset form when opened
-            interestExplanationOutput.classList.add('hidden'); // Hide previous explanation
-            interestExplanationOutput.innerHTML = ''; // Clear previous explanation text
-            calculateInterestBtn.disabled = false; // Ensure button is enabled
-        });
-        closeCalculadoraInteresesModalBtn.addEventListener('click', () => {
-            closeModal(calculadoraInteresesModal);
-        });
-        interestCalculatorForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await calculateAndExplainInterest();
         });
 
         // Edit Profile Event Listeners
