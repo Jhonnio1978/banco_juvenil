@@ -350,12 +350,18 @@
                     <!-- Streaming Service Button -->
                     <button id="streamingPaymentBtn" class="btn-primary w-full bg-pink-600 hover:bg-pink-700">Pagar Servicio de Streaming</button>
 
-                    <!-- NEW: AI Assistant Button -->
+                    <!-- AI Assistant Button -->
                     <button id="openAIChatBtn" class="btn-primary w-full bg-indigo-500 hover:bg-indigo-600">Abrir Asistente de IA ✨</button>
-                    <!-- NEW: Set Savings Goal Button -->
+                    <!-- Set Savings Goal Button -->
                     <button id="setSavingsGoalBtn" class="btn-primary w-full bg-green-500 hover:bg-green-600">Establecer Meta de Ahorro ✨</button>
-                    <!-- NEW: Explain Financial Term Button -->
+                    <!-- Explain Financial Term Button -->
                     <button id="explainTermBtn" class="btn-primary w-full bg-purple-500 hover:bg-purple-600">Explicar Término Financiero ✨</button>
+                    <!-- Financial Tip Button -->
+                    <button id="consejoFinancieroBtn" class="btn-primary w-full bg-yellow-500 hover:bg-yellow-600">Consejo Financiero del Día ✨</button>
+                    <!-- Interest Calculator Button -->
+                    <button id="calculadoraInteresesBtn" class="btn-primary w-full bg-orange-500 hover:bg-orange-600">Calculadora de Intereses ✨</button>
+                    <!-- NEW: Edit Profile Button -->
+                    <button id="editProfileBtn" class="btn-primary w-full bg-gray-500 hover:bg-gray-600">Editar Perfil</button>
 
 
                     <!-- Admin specific buttons, initially hidden -->
@@ -470,10 +476,11 @@
                                         <th>Detalle</th>
                                         <th>Monto</th>
                                         <th>Moneda</th>
+                                        <th>Recibo</th> <!-- New column for receipt button -->
                                     </tr>
                                 </thead>
                                 <tbody id="userHistoryTableBody">
-                                    <tr><td colspan="5" class="text-center text-gray-500 py-4">Cargando historial...</td></tr>
+                                    <tr><td colspan="6" class="text-center text-gray-500 py-4">Cargando historial...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -797,11 +804,80 @@
         </div>
     </div>
 
+    <!-- Financial Tip Modal -->
+    <div id="consejoFinancieroModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8 w-full max-w-md">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Consejo Financiero del Día ✨</h3>
+            <div id="financialTipOutput" class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm text-left">
+                <p class="text-center text-gray-600">Haz clic en "Obtener Consejo" para recibir una perla de sabiduría financiera.</p>
+            </div>
+            <div class="flex justify-between items-center mt-6">
+                <button id="getFinancialTipBtn" class="btn-primary">Obtener Consejo ✨</button>
+                <button id="closeConsejoFinancieroModalBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interest Calculator Modal -->
+    <div id="calculadoraInteresesModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8 w-full max-w-lg">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Calculadora de Intereses ✨</h3>
+            <form id="interestCalculatorForm" class="space-y-4">
+                <div>
+                    <label for="principalAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto Principal (Capital)</label>
+                    <input type="number" id="principalAmount" class="input-field" placeholder="Ej: 1000.00" min="0.01" step="0.01" required>
+                </div>
+                <div>
+                    <label for="interestRate" class="block text-gray-700 text-sm font-semibold mb-2">Tasa de Interés Anual (%)</label>
+                    <input type="number" id="interestRate" class="input-field" placeholder="Ej: 5" min="0.01" step="0.01" required>
+                </div>
+                <div>
+                    <label for="timePeriod" class="block text-gray-700 text-sm font-semibold mb-2">Período (Años)</label>
+                    <input type="number" id="timePeriod" class="input-field" placeholder="Ej: 3" min="1" step="1" required>
+                </div>
+                <div class="text-center">
+                    <button type="submit" id="calculateInterestBtn" class="btn-primary">Calcular y Explicar ✨</button>
+                </div>
+            </form>
+            <div id="interestExplanationOutput" class="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-lg text-orange-800 text-sm text-left hidden">
+                <!-- AI generated explanation will be inserted here -->
+            </div>
+            <div class="flex justify-end space-x-4 mt-6">
+                <button type="button" id="closeCalculadoraInteresesModalBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Edit Profile Modal -->
+    <div id="editProfileModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="modal-content p-8 w-full max-w-sm">
+            <h3 class="text-2xl font-bold mb-4 text-gray-800 text-center">Editar Perfil</h3>
+            <form id="editProfileForm" class="space-y-4">
+                <div>
+                    <label for="editName" class="block text-gray-700 text-sm font-semibold mb-2">Nombre</label>
+                    <input type="text" id="editName" class="input-field" required>
+                </div>
+                <div>
+                    <label for="editSurname" class="block text-gray-700 text-sm font-semibold mb-2">Apellido</label>
+                    <input type="text" id="editSurname" class="input-field" required>
+                </div>
+                <div>
+                    <label for="editAge" class="block text-gray-700 text-sm font-semibold mb-2">Edad</label>
+                    <input type="number" id="editAge" class="input-field" min="0" required>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" id="cancelEditProfileBtn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl shadow transition duration-200">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, serverTimestamp, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
         // Your web app's Firebase configuration - provided by the user
@@ -880,7 +956,11 @@
         const viewAdminPendingRequestsBtn = document.getElementById('viewAdminPendingRequestsBtn'); // Admin Pending Requests Button
         const openAIChatBtn = document.getElementById('openAIChatBtn'); // AI Assistant Button
         const setSavingsGoalBtn = document.getElementById('setSavingsGoalBtn'); // Set Savings Goal Button
-        const explainTermBtn = document.getElementById('explainTermBtn'); // NEW: Explain Financial Term Button
+        const explainTermBtn = document.getElementById('explainTermBtn'); // Explain Financial Term Button
+        const consejoFinancieroBtn = document.getElementById('consejoFinancieroBtn'); // Financial Tip Button
+        const calculadoraInteresesBtn = document.getElementById('calculadoraInteresesBtn'); // Interest Calculator Button
+        const editProfileBtn = document.getElementById('editProfileBtn'); // NEW: Edit Profile Button
+
 
         const adminFullHistoryTableBodyModal = document.getElementById('adminFullHistoryTableBodyModal'); // Admin History (in modal)
 
@@ -934,8 +1014,8 @@
         const userHistoryModal = document.getElementById('userHistoryModal');
         const userHistoryTableBody = document.getElementById('userHistoryTableBody');
         const closeUserHistoryModalBtn = document.getElementById('closeUserHistoryModalBtn');
-        const summarizeHistoryBtn = document.getElementById('summarizeHistoryBtn'); // NEW: Summarize History Button
-        const historySummaryOutput = document.getElementById('historySummaryOutput'); // NEW: History Summary Output
+        const summarizeHistoryBtn = document.getElementById('summarizeHistoryBtn'); // Summarize History Button
+        const historySummaryOutput = document.getElementById('historySummaryOutput'); // History Summary Output
 
         const adminFullHistoryModal = document.getElementById('adminFullHistoryModal');
         const closeAdminFullHistoryModalBtn = document.getElementById('closeAdminFullHistoryModalBtn');
@@ -993,7 +1073,7 @@
         const generatedPlanText = document.getElementById('generatedPlanText');
         const generatePlanBtn = document.getElementById('generatePlanBtn');
 
-        // NEW: Explain Term elements
+        // Explain Term elements
         const explainTermModal = document.getElementById('explainTermModal');
         const closeExplainTermModalBtn = document.getElementById('closeExplainTermModalBtn');
         const explainTermForm = document.getElementById('explainTermForm');
@@ -1001,10 +1081,34 @@
         const generateExplanationBtn = document.getElementById('generateExplanationBtn');
         const termExplanationOutput = document.getElementById('termExplanationOutput');
 
+        // Financial Tip Modal elements
+        const consejoFinancieroModal = document.getElementById('consejoFinancieroModal');
+        const closeConsejoFinancieroModalBtn = document.getElementById('closeConsejoFinancieroModalBtn');
+        const getFinancialTipBtn = document.getElementById('getFinancialTipBtn');
+        const financialTipOutput = document.getElementById('financialTipOutput');
+
+        // Interest Calculator Modal elements
+        const calculadoraInteresesModal = document.getElementById('calculadoraInteresesModal');
+        const closeCalculadoraInteresesModalBtn = document.getElementById('closeCalculadoraInteresesModalBtn');
+        const interestCalculatorForm = document.getElementById('interestCalculatorForm');
+        const principalAmountInput = document.getElementById('principalAmount');
+        const interestRateInput = document.getElementById('interestRate');
+        const timePeriodInput = document.getElementById('timePeriod');
+        const calculateInterestBtn = document.getElementById('calculateInterestBtn');
+        const interestExplanationOutput = document.getElementById('interestExplanationOutput');
+
+        // NEW: Edit Profile Modal elements
+        const editProfileModal = document.getElementById('editProfileModal');
+        const closeEditProfileBtn = document.getElementById('cancelEditProfileBtn');
+        const editProfileForm = document.getElementById('editProfileForm');
+        const editNameInput = document.getElementById('editName');
+        const editSurnameInput = document.getElementById('editSurname');
+        const editAgeInput = document.getElementById('editAge');
+
 
         // Initial chat history for AI Chat with a system instruction for its role
         let aiChatHistory = [
-            { role: "system", parts: [{ text: "Eres un asistente de IA amigable y útil para un banco juvenil. Tu objetivo es responder preguntas sobre finanzas, ahorro, transferencias, depósitos, retiros, compras online, pagos de streaming y otras funcionalidades del banco, de una manera sencilla y comprensible para jóvenes. Usa un tono positivo y motivador. Si te preguntan sobre cosas fuera del ámbito bancario, redirige amablemente al usuario a temas financieros." }] },
+            { role: "system", parts: [{ text: "Eres un asistente de IA amigable y útil para un banco juvenil. Tu objetivo es responder cualquier pregunta sobre finanzas personales, ahorro, transferencias, depósitos, retiros, compras online, pagos de streaming, seguridad bancaria, y otras funcionalidades del banco, de una manera sencilla, clara y comprensible para jóvenes. Usa un tono positivo, motivador y educativo. Si te preguntan sobre cosas fuera del ámbito bancario o que no son relevantes para un banco, redirige amablemente al usuario a temas financieros o explica que no puedes ayudar con eso." }] },
             { role: "model", parts: [{ text: "¡Hola! Soy tu asistente de IA del Banco Juvenil. ¿En qué puedo ayudarte hoy, mi campeón?" }] }
         ];
 
@@ -1058,31 +1162,79 @@
 
         /**
          * Shows a receipt modal with transaction details.
-         * @param {Object} transactionDetails Object containing details for the receipt.
+         * @param {Object} transaction The transaction object from Firestore.
          */
-        function showReceipt(transactionDetails) {
-            let content = `<p class="font-bold text-lg mb-2">${transactionDetails.title}</p>`;
-            content += `<p><strong>Fecha:</strong> ${transactionDetails.date}</p>`;
-            content += `<p><strong>Tipo:</strong> ${transactionDetails.type}</p>`;
-            content += `<p><strong>Monto Total:</strong> ${transactionDetails.amount.toFixed(2)} ${transactionDetails.currency}</p>`;
+        async function showReceipt(transaction) {
+            let content = `<p class="font-bold text-lg mb-2">Recibo de Transacción</p>`;
+            content += `<p><strong>Fecha:</strong> ${new Date(transaction.timestamp.seconds * 1000).toLocaleString()}</p>`;
+            content += `<p><strong>ID de Transacción:</strong> ${transaction.id}</p>`; // Use transaction ID
 
-            if (transactionDetails.productAmount) {
-                 content += `<p><strong>Monto Productos:</strong> ${transactionDetails.productAmount.toFixed(2)} ${transactionDetails.productCurrency}</p>`;
+            let typeDisplay = '';
+            let amountDisplay = '';
+            let currencyDisplay = '';
+            let feeDisplay = '';
+            let otherDetails = '';
+
+            // Fetch sender/recipient names for transfers
+            if (transaction.type === 'transfer') {
+                const senderName = await getUserDisplayName(transaction.senderId);
+                const recipientName = await getUserDisplayName(transaction.recipientId);
+                typeDisplay = 'Transferencia';
+                amountDisplay = transaction.amount.toFixed(2);
+                currencyDisplay = transaction.currency;
+                otherDetails += `<p><strong>Remitente:</strong> ${senderName}</p>`;
+                otherDetails += `<p><strong>Destinatario:</strong> ${recipientName}</p>`;
+            } else if (transaction.type === 'deposit') {
+                typeDisplay = 'Depósito';
+                amountDisplay = transaction.amount.toFixed(2);
+                currencyDisplay = transaction.currency;
+                otherDetails += `<p><strong>Número de Serie:</strong> ${transaction.serialNumber || 'N/A'}</p>`;
+            } else if (transaction.type === 'withdrawal') {
+                typeDisplay = 'Retiro';
+                amountDisplay = transaction.amount.toFixed(2);
+                currencyDisplay = transaction.currency;
+                feeDisplay = `Tarifa (4%): $${transaction.feeAmount ? transaction.feeAmount.toFixed(2) : '0.00'} USD`;
+            } else if (transaction.type === 'online_purchase') {
+                typeDisplay = 'Compra Online';
+                amountDisplay = transaction.totalAmountDeducted.toFixed(2);
+                currencyDisplay = 'USD';
+                feeDisplay = `Tarifa (3%): $${transaction.feeAmount ? transaction.feeAmount.toFixed(2) : '0.00'} USD`;
+                otherDetails += `<p><strong>Monto Productos:</strong> ${transaction.productAmount.toFixed(2)} ${transaction.productCurrency}</p>`;
+                if (transaction.productLinks) {
+                    otherDetails += `<p><strong>Enlaces de Productos:</strong></p>`;
+                    transaction.productLinks.split('\n').forEach(link => {
+                        if (link.trim()) {
+                            otherDetails += `<p class="ml-4 text-xs break-all"><a href="${link.trim()}" target="_blank" class="text-blue-500 hover:underline">${link.trim()}</a></p>`;
+                        }
+                    });
+                }
+            } else if (transaction.type === 'streaming_payment') {
+                typeDisplay = 'Pago de Streaming';
+                amountDisplay = transaction.totalAmountDeducted.toFixed(2);
+                currencyDisplay = 'USD';
+                feeDisplay = `Tarifa (3%): $${transaction.feeAmount ? transaction.feeAmount.toFixed(2) : '0.00'} USD`;
+                otherDetails += `<p><strong>Servicio:</strong> ${transaction.service || 'N/A'}</p>`;
+                otherDetails += `<p><strong>Cuenta:</strong> ${transaction.accountIdentifier || 'N/A'}</p>`;
+                otherDetails += `<p><strong>Monto Suscripción:</strong> ${transaction.subscriptionAmount.toFixed(2)} ${transaction.subscriptionCurrency}</p>`;
+            } else if (transaction.type === 'withdrawal_fee') {
+                typeDisplay = 'Tarifa de Retiro Cobrada';
+                amountDisplay = transaction.amount.toFixed(2);
+                currencyDisplay = transaction.currency;
+                const payerName = await getUserDisplayName(transaction.payerId);
+                const receiverName = await getUserDisplayName(transaction.receiverId);
+                otherDetails += `<p><strong>Pagado por:</strong> ${payerName}</p>`;
+                otherDetails += `<p><strong>Recibido por:</strong> ${receiverName}</p>`;
+                otherDetails += `<p><strong>Relacionado con Solicitud ID:</strong> ${transaction.originalRequestId || 'N/A'}</p>`;
             }
-            if (transactionDetails.feeAmount) {
-                content += `<p><strong>Tarifa (${(COMMISSION_RATE * 100).toFixed(0)}%):</strong> ${transactionDetails.feeAmount.toFixed(2)} ${transactionDetails.feeCurrency}</p>`;
+
+
+            content += `<p><strong>Tipo:</strong> ${typeDisplay}</p>`;
+            content += `<p><strong>Monto:</strong> ${amountDisplay} ${currencyDisplay}</p>`;
+            if (feeDisplay) {
+                content += `<p><strong>${feeDisplay}</strong></p>`;
             }
-            if (transactionDetails.service) {
-                content += `<p><strong>Servicio:</strong> ${transactionDetails.service}</p>`;
-                content += `<p><strong>Cuenta:</strong> ${transactionDetails.accountIdentifier}</p>`;
-            }
-            if (transactionDetails.productLinks) {
-                content += `<p><strong>Enlaces:</strong></p>`;
-                transactionDetails.productLinks.split('\n').forEach(link => {
-                    if (link.trim()) {
-                        content += `<p class="ml-4 text-xs break-all"><a href="${link.trim()}" target="_blank" class="text-blue-500 hover:underline">${link.trim()}</a></p>`;
-                    }
-                });
+            if (otherDetails) {
+                content += otherDetails;
             }
             content += `<p class="mt-4 font-bold">¡Gracias por usar Banco Juvenil!</p>`;
 
@@ -1109,12 +1261,12 @@
                 loginTab.classList.add('active');
                 registerTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal);
+                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal, consejoFinancieroModal, calculadoraInteresesModal, editProfileModal);
             } else {
                 registerTab.classList.add('active');
                 loginTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal);
+                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal, consejoFinancieroModal, calculadoraInteresesModal, editProfileModal);
             }
             hideMessage(); // Hide any previous messages when changing tabs
         }
@@ -1404,7 +1556,7 @@
                 });
 
                 // Display dashboard and hide login/register forms and all modals
-                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal);
+                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, aiChatModal, savingsGoalModal, explainTermModal, consejoFinancieroModal, calculadoraInteresesModal, editProfileModal);
 
             } else {
                 // User is signed out
@@ -1634,7 +1786,7 @@
 
                 // Record the transaction in a public collection
                 // Path: artifacts/{appId}/public/data/transactions
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                const newTransactionRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
                     senderId: senderUid,
                     recipientId: actualRecipientUid,
                     amount: amount,
@@ -1647,6 +1799,12 @@
 
                 showMessage(`Transferencia de ${amount.toFixed(2)} ${currency} a ${recipientDisplayName} completada exitosamente.`, 'success');
                 // Balances will be updated automatically by the onSnapshot listener
+
+                // Show receipt for the sender
+                const transactionDoc = await getDoc(newTransactionRef);
+                if (transactionDoc.exists()) {
+                    showReceipt({ id: transactionDoc.id, ...transactionDoc.data() });
+                }
 
             } catch (error) {
                 console.error("Error al completar la transferencia:", error);
@@ -1919,7 +2077,7 @@
                 Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
                 Monto de productos: ${productAmount.toFixed(2)} ${productCurrency}
                 Tarifa (3%): $${feeAmount.toFixed(2)} USD
-                TOTAL A DEDUCIR: $${totalToDeductInUSD.toFixed(2)} USD (al confirmar)
+                TOTAL A DEDUCIR: $${totalToDeductedInUSD.toFixed(2)} USD (al confirmar)
                 Enlaces de productos:
                 ${productLinks}
                 Por favor, revisa y confirma.
@@ -2216,15 +2374,6 @@
 
                 let transactionType = type;
                 let transactionDescription = '';
-                let receiptDetails = {
-                    title: '',
-                    date: new Date().toLocaleString(),
-                    type: '',
-                    amount: 0,
-                    currency: '',
-                    feeAmount: 0,
-                    feeCurrency: 'USD'
-                };
                 let amountToRecordInTransaction = amount; // Default to original request amount
                 let currencyToRecordInTransaction = currency; // Default to original request currency
                 let typeDisplay = ''; // Initialize typeDisplay here
@@ -2239,13 +2388,6 @@
                         userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Depósito con serie ${serialNumber}`;
                         typeDisplay = 'Depósito'; // Set typeDisplay here
-                        receiptDetails = {
-                            title: 'Recibo de Depósito',
-                            type: 'Depósito',
-                            amount: amount,
-                            currency: currency,
-                            description: transactionDescription
-                        };
                         console.log("Deposit logic applied. New user USD balance:", userCurrentBalanceUSD);
                         break;
                     case 'withdrawal':
@@ -2265,15 +2407,6 @@
                         userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Retiro (Tarifa: ${calculatedFeeInUSD.toFixed(2)} USD)`;
                         typeDisplay = 'Retiro'; // Set typeDisplay here
-                        receiptDetails = {
-                            title: 'Recibo de Retiro',
-                            type: 'Retiro',
-                            amount: amount,
-                            currency: currency,
-                            feeAmount: calculatedFeeInUSD,
-                            feeCurrency: 'USD',
-                            description: transactionDescription
-                        };
                         console.log("Withdrawal logic applied. New user USD balance:", userCurrentBalanceUSD);
 
                         // Transfer fee to admin
@@ -2309,18 +2442,6 @@
                         amountToRecordInTransaction = totalAmountToDeduct; // Record total deducted from user
                         currencyToRecordInTransaction = 'USD'; // Always USD for this deduction
                         typeDisplay = 'Compra Online'; // Set typeDisplay here
-                        receiptDetails = {
-                            title: 'Recibo de Compra Online',
-                            type: 'Compra Online',
-                            amount: totalAmountToDeduct,
-                            currency: 'USD',
-                            productAmount: productAmount,
-                            productCurrency: productCurrency,
-                            feeAmount: feeAmount,
-                            feeCurrency: 'USD',
-                            productLinks: productLinks,
-                            description: transactionDescription
-                        };
                         console.log("Online purchase logic applied. New user USD balance:", userCurrentBalanceUSD);
 
                          // Transfer entire amount (products + fee) to admin
@@ -2347,19 +2468,6 @@
                         amountToRecordInTransaction = totalAmountToDeduct;
                         currencyToRecordInTransaction = 'USD'; // Always USD for this deduction
                         typeDisplay = 'Pago Streaming'; // Set typeDisplay here
-                        receiptDetails = {
-                            title: 'Recibo de Pago Streaming',
-                            type: 'Pago Streaming',
-                            amount: totalAmountToDeduct,
-                            currency: 'USD',
-                            service: service,
-                            accountIdentifier: accountIdentifier,
-                            subscriptionAmount: subscriptionAmount,
-                            subscriptionCurrency: subscriptionCurrency,
-                            feeAmount: feeAmount,
-                            feeCurrency: 'USD',
-                            description: transactionDescription
-                        };
                         console.log("Streaming payment logic applied. New user USD balance:", userCurrentBalanceUSD);
 
                         // Transfer entire amount (subscription + fee) to admin
@@ -2367,7 +2475,7 @@
                             console.log("Transferring total streaming payment amount to admin:", totalAmountToDeduct, "USD");
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
-                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + totalAmountToDeduct;
+                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + totalToDeduct;
                             await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
                             console.log("Streaming payment amount transferred to admin.");
                         }
@@ -2394,8 +2502,9 @@
                 });
                 console.log("Request status updated successfully.");
 
-                console.log("Attempting to add transaction record...", { userId, type: transactionType, amount: amountToRecordInTransaction, currency: currencyToRecordInTransaction });
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                // Record the transaction in a public collection
+                // Path: artifacts/{appId}/public/data/transactions
+                const newTransactionRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
                     userId: userId,
                     type: transactionType,
                     amount: amountToRecordInTransaction,
@@ -2403,7 +2512,7 @@
                     timestamp: serverTimestamp(),
                     status: 'completed',
                     description: transactionDescription,
-                    // Store additional details for specific types
+                    // Store additional details for specific types for receipt generation
                     ...(type === 'withdrawal' && { feeAmount: calculatedFeeInUSD, feeCurrency: 'USD', adminReceiverId: adminId }),
                     ...(type === 'online_purchase' && { productAmount, productCurrency, productLinks, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId }),
                     ...(type === 'streaming_payment' && { service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId })
@@ -2412,9 +2521,10 @@
 
                 showMessage(`Solicitud #${requestId} (${typeDisplay}) confirmada exitosamente.`, 'success');
 
-                if (currentUserId === userId) {
-                    console.log("Showing receipt to current user.");
-                    showReceipt(receiptDetails);
+                // Show receipt for the user who initiated the request
+                const transactionDoc = await getDoc(newTransactionRef);
+                if (transactionDoc.exists()) {
+                    showReceipt({ id: transactionDoc.id, ...transactionDoc.data() });
                 }
 
             } catch (error) {
@@ -2456,7 +2566,7 @@
          * Loads and displays the current user's transaction history.
          */
         async function loadUserHistory() {
-            userHistoryTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Cargando historial...</td></tr>';
+            userHistoryTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Cargando historial...</td></tr>';
             historySummaryOutput.classList.add('hidden'); // Hide previous summary
             historySummaryOutput.innerHTML = ''; // Clear previous summary text
 
@@ -2479,10 +2589,11 @@
                     } else if (transaction.type === 'transfer' && (transaction.senderId === currentUserId || transaction.recipientId === currentUserId)) {
                         userTransactionsData.push(transaction);
                     }
+                    // Do NOT include 'withdrawal_fee' in user's history as it's an internal admin transaction
                 }
 
                 if (userTransactionsData.length === 0) {
-                    userHistoryTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">No hay movimientos en tu historial.</td></tr>';
+                    userHistoryTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">No hay movimientos en tu historial.</td></tr>';
                     return;
                 }
 
@@ -2505,7 +2616,7 @@
                     switch (transaction.type) {
                         case 'deposit':
                             typeDisplay = 'Depósito';
-                            detailsDisplay = `Serie: ${transaction.description.split('Serie: ')[1] || 'N/A'}`;
+                            detailsDisplay = `Serie: ${transaction.serialNumber || 'N/A'}`;
                             amountDisplay = `+${transaction.amount.toFixed(2)} ${transaction.currency}`;
                             break;
                         case 'withdrawal':
@@ -2545,12 +2656,28 @@
                         <td>${detailsDisplay}</td>
                         <td>${amountDisplay}</td>
                         <td>${transaction.currency}</td>
+                        <td><button class="btn-secondary view-receipt-btn" data-transaction-id="${transaction.id}">Ver Recibo</button></td>
                     `;
                     userHistoryTableBody.appendChild(row);
                 }
+
+                // Attach event listeners for "Ver Recibo" buttons
+                document.querySelectorAll('.view-receipt-btn').forEach(button => {
+                    button.onclick = async (event) => {
+                        const transactionId = event.target.dataset.transactionId;
+                        const transactionDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'transactions', transactionId);
+                        const transactionDocSnap = await getDoc(transactionDocRef);
+                        if (transactionDocSnap.exists()) {
+                            showReceipt({ id: transactionDocSnap.id, ...transactionDocSnap.data() });
+                        } else {
+                            showMessage('No se pudo encontrar el recibo para esta transacción.', 'error');
+                        }
+                    };
+                });
+
             }, (error) => {
                 console.error("Error loading user history:", error);
-                userHistoryTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-4">Error al cargar tu historial.</td></tr>`;
+                userHistoryTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-4">Error al cargar tu historial.</td></tr>`;
             });
         }
 
@@ -2602,7 +2729,7 @@
                         case 'deposit':
                             typeDisplay = 'Depósito';
                             usersInvolved = await getUserDisplayName(transaction.userId);
-                            details = `Serie: ${transaction.description.split('Serie: ')[1] || 'N/A'}`;
+                            details = `Serie: ${transaction.serialNumber || 'N/A'}`;
                             break;
                         case 'withdrawal':
                             typeDisplay = 'Retiro';
@@ -2628,7 +2755,7 @@
                         case 'online_purchase':
                             typeDisplay = 'Compra Online';
                             usersInvolved = await getUserDisplayName(transaction.userId);
-                            details = `Links: ${transaction.productLinks.substring(0, 50)}... Total prod: ${transaction.productAmount.toFixed(2)} ${transaction.productCurrency}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
+                            details = `Links: ${transaction.productLinks ? transaction.productLinks.substring(0, 50) + '...' : 'N/A'}. Total prod: ${transaction.productAmount.toFixed(2)} ${transaction.productCurrency}, Tarifa: ${transaction.feeAmount.toFixed(2)} ${transaction.feeCurrency}`;
                             amountValue = transaction.totalAmountDeducted; // Show total deducted from user
                             currencyValue = 'USD';
                             break;
@@ -2867,7 +2994,7 @@
             const goalName = goalNameInput.value.trim();
             const goalAmount = parseFloat(goalAmountInput.value);
             const goalCurrency = goalCurrencyInput.value;
-            const targetDate = targetDateInput.value; // YYYY-MM-DD
+            const targetDate = targetDateInput.value; //YYYY-MM-DD
 
             if (!goalName || isNaN(goalAmount) || goalAmount <= 0) {
                 generatedPlanText.classList.remove('hidden');
@@ -2943,7 +3070,7 @@
             }
         }
 
-        // --- NEW: Explain Term Functions ---
+        // --- Explain Term Functions ---
 
         // Function to display a loading indicator for term explanation
         function showTermExplanationLoadingIndicator() {
@@ -3012,7 +3139,7 @@
             }
         }
 
-        // --- NEW: Summarize History Functions ---
+        // --- Summarize History Functions ---
 
         // Function to display a loading indicator for history summary
         function showHistorySummaryLoadingIndicator() {
@@ -3046,7 +3173,7 @@
                     : 'Fecha no disponible';
                 let description = t.description || t.type;
                 if (t.type === 'transfer') {
-                    description = t.senderId === currentUserId ? `Transferencia enviada a ${t.recipientId}` : `Transferencia recibida de ${t.senderId}`;
+                    description = t.senderId === currentUserId ? `Transferencia enviada a ${t.recipientId}` : `Transferencia recibida de ${t.recipientId}`;
                 } else if (t.type === 'online_purchase') {
                     description = `Compra online de ${t.productAmount.toFixed(2)} ${t.productCurrency} (total deducido: ${t.totalAmountDeducted.toFixed(2)} USD)`;
                 } else if (t.type === 'streaming_payment') {
@@ -3095,6 +3222,196 @@
                 summarizeHistoryBtn.disabled = false;
             }
         }
+
+        // --- Financial Tip Functions ---
+        function showFinancialTipLoadingIndicator() {
+            financialTipOutput.classList.remove('hidden');
+            financialTipOutput.innerHTML = `
+                <div class="loading-indicator">
+                    <span>Obteniendo consejo</span>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            `;
+        }
+
+        async function generateFinancialTip() {
+            showFinancialTipLoadingIndicator();
+            getFinancialTipBtn.disabled = true;
+
+            const prompt = `Dame un consejo financiero corto, práctico y motivador para un joven. Usa un tono amigable y positivo.`;
+
+            try {
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                const apiKey = ""; // Leave as is, Canvas will provide it at runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const aiTipText = result.candidates[0].content.parts[0].text;
+                    financialTipOutput.classList.remove('hidden', 'bg-red-100', 'text-red-800');
+                    financialTipOutput.classList.add('bg-yellow-50', 'text-yellow-800');
+                    financialTipOutput.innerHTML = `<p>${aiTipText}</p>`;
+                } else {
+                    financialTipOutput.classList.remove('hidden');
+                    financialTipOutput.classList.add('bg-red-100', 'text-red-800');
+                    financialTipOutput.innerHTML = `<p>Lo siento, no pude generar un consejo. Por favor, intenta de nuevo.</p>`;
+                    console.error("Unexpected API response structure for financial tip:", result);
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API for financial tip:", error);
+                financialTipOutput.classList.remove('hidden');
+                financialTipOutput.classList.add('bg-red-100', 'text-red-800');
+                financialTipOutput.innerHTML = `<p>Hubo un error al generar el consejo. Por favor, verifica tu conexión o inténtalo más tarde.</p>`;
+            } finally {
+                getFinancialTipBtn.disabled = false;
+            }
+        }
+
+        // --- Interest Calculator Functions ---
+        function showInterestExplanationLoadingIndicator() {
+            interestExplanationOutput.classList.remove('hidden');
+            interestExplanationOutput.innerHTML = `
+                <div class="loading-indicator">
+                    <span>Calculando y explicando</span>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
+            `;
+        }
+
+        async function calculateAndExplainInterest() {
+            const principal = parseFloat(principalAmountInput.value);
+            const rate = parseFloat(interestRateInput.value);
+            const time = parseInt(timePeriodInput.value);
+
+            if (isNaN(principal) || principal <= 0 || isNaN(rate) || rate <= 0 || isNaN(time) || time <= 0) {
+                interestExplanationOutput.classList.remove('hidden');
+                interestExplanationOutput.classList.add('bg-red-100', 'text-red-800');
+                interestExplanationOutput.innerHTML = `<p>Por favor, ingresa valores válidos y positivos para todos los campos.</p>`;
+                return;
+            }
+
+            showInterestExplanationLoadingIndicator();
+            calculateInterestBtn.disabled = true;
+
+            // Simple Interest Calculation (I = P * R * T)
+            const interestEarned = principal * (rate / 100) * time;
+            const totalAmount = principal + interestEarned;
+
+            const prompt = `Calculé el interés simple para un monto principal de ${principal.toFixed(2)} USD, una tasa de interés anual del ${rate}% y un período de ${time} años. El interés ganado es ${interestEarned.toFixed(2)} USD y el monto total final es ${totalAmount.toFixed(2)} USD. Explica de forma sencilla para un joven qué es el interés, cómo funciona en este ejemplo y por qué es importante entenderlo, tanto para ahorrar como para pedir prestado. Usa un tono motivador y fácil de entender.`;
+
+            try {
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                const apiKey = ""; // Leave as is, Canvas will provide it at runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const aiExplanationText = result.candidates[0].content.parts[0].text;
+                    interestExplanationOutput.classList.remove('hidden', 'bg-red-100', 'text-red-800');
+                    interestExplanationOutput.classList.add('bg-orange-50', 'text-orange-800');
+                    interestExplanationOutput.innerHTML = `
+                        <h4 class="font-bold text-lg mb-2">¡Entendiendo el Interés!</h4>
+                        <p><strong>Monto Principal:</strong> $${principal.toFixed(2)} USD</p>
+                        <p><strong>Tasa de Interés Anual:</strong> ${rate}%</p>
+                        <p><strong>Período:</strong> ${time} años</p>
+                        <p><strong>Interés Ganado/Pagado:</strong> $${interestEarned.toFixed(2)} USD</p>
+                        <p><strong>Monto Total Final:</strong> $${totalAmount.toFixed(2)} USD</p>
+                        <p class="mt-4">${aiExplanationText}</p>
+                    `;
+                } else {
+                    interestExplanationOutput.classList.remove('hidden');
+                    interestExplanationOutput.classList.add('bg-red-100', 'text-red-800');
+                    interestExplanationOutput.innerHTML = `<p>Lo siento, no pude generar una explicación. Por favor, intenta de nuevo.</p>`;
+                    console.error("Unexpected API response structure for interest explanation:", result);
+                }
+            } catch (error) {
+                console.error("Error calling Gemini API for interest explanation:", error);
+                interestExplanationOutput.classList.remove('hidden');
+                interestExplanationOutput.classList.add('bg-red-100', 'text-red-800');
+                interestExplanationOutput.innerHTML = `<p>Hubo un error al generar la explicación. Por favor, verifica tu conexión o inténtalo más tarde.</p>`;
+            } finally {
+                calculateInterestBtn.disabled = false;
+            }
+        }
+
+        // --- NEW: Edit Profile Functions ---
+        editProfileBtn.addEventListener('click', async () => {
+            if (!currentUser) {
+                showMessage('Debes iniciar sesión para editar tu perfil.', 'error');
+                return;
+            }
+            try {
+                const userDocRef = doc(db, 'artifacts', appId, 'users', currentUserId);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    editNameInput.value = userData.name || '';
+                    editSurnameInput.value = userData.surname || '';
+                    editAgeInput.value = userData.age || '';
+                    editProfileModal.classList.remove('hidden');
+                } else {
+                    showMessage('No se pudieron cargar los datos de tu perfil.', 'error');
+                }
+            } catch (error) {
+                console.error("Error loading profile for editing:", error);
+                showMessage('Error al cargar los datos de tu perfil. Intenta de nuevo.', 'error');
+            }
+        });
+
+        closeEditProfileBtn.addEventListener('click', () => {
+            closeModal(editProfileModal);
+            editProfileForm.reset();
+        });
+
+        editProfileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+
+            const name = editNameInput.value.trim();
+            const surname = editSurnameInput.value.trim();
+            const age = parseInt(editAgeInput.value);
+
+            if (!name || !surname || isNaN(age) || age <= 0) {
+                showMessage('Por favor, completa todos los campos correctamente.', 'error');
+                return;
+            }
+
+            try {
+                const userDocRef = doc(db, 'artifacts', appId, 'users', currentUserId);
+                await updateDoc(userDocRef, {
+                    name: name,
+                    surname: surname,
+                    age: age
+                });
+                showMessage('¡Perfil actualizado exitosamente!', 'success');
+                closeModal(editProfileModal);
+            } catch (error) {
+                console.error("Error updating profile:", error);
+                showMessage('Error al actualizar el perfil. Intenta de nuevo.', 'error');
+            }
+        });
 
 
         // --- Event Listeners ---
@@ -3228,7 +3545,7 @@
             await generateSavingsPlan();
         });
 
-        // NEW: Explain Term Event Listeners
+        // Explain Term Event Listeners
         explainTermBtn.addEventListener('click', () => {
             explainTermModal.classList.remove('hidden');
             explainTermForm.reset(); // Clear form when opened
@@ -3243,8 +3560,92 @@
             await generateTermExplanation();
         });
 
-        // NEW: Summarize History Event Listener
+        // Summarize History Event Listener
         summarizeHistoryBtn.addEventListener('click', summarizeUserHistory);
+
+        // Financial Tip Event Listeners
+        consejoFinancieroBtn.addEventListener('click', () => {
+            consejoFinancieroModal.classList.remove('hidden');
+            financialTipOutput.innerHTML = `<p class="text-center text-gray-600">Haz clic en "Obtener Consejo" para recibir una perla de sabiduría financiera.</p>`; // Reset content
+            getFinancialTipBtn.disabled = false; // Ensure button is enabled
+        });
+        closeConsejoFinancieroModalBtn.addEventListener('click', () => {
+            closeModal(consejoFinancieroModal);
+        });
+        getFinancialTipBtn.addEventListener('click', generateFinancialTip);
+
+        // Interest Calculator Event Listeners
+        calculadoraInteresesBtn.addEventListener('click', () => {
+            calculadoraInteresesModal.classList.remove('hidden');
+            interestCalculatorForm.reset(); // Reset form when opened
+            interestExplanationOutput.classList.add('hidden'); // Hide previous explanation
+            interestExplanationOutput.innerHTML = ''; // Clear previous explanation text
+            calculateInterestBtn.disabled = false; // Ensure button is enabled
+        });
+        closeCalculadoraInteresesModalBtn.addEventListener('click', () => {
+            closeModal(calculadoraInteresesModal);
+        });
+        interestCalculatorForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await calculateAndExplainInterest();
+        });
+
+        // NEW: Edit Profile Event Listeners
+        editProfileBtn.addEventListener('click', async () => {
+            if (!currentUser) {
+                showMessage('Debes iniciar sesión para editar tu perfil.', 'error');
+                return;
+            }
+            try {
+                const userDocRef = doc(db, 'artifacts', appId, 'users', currentUserId);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    editNameInput.value = userData.name || '';
+                    editSurnameInput.value = userData.surname || '';
+                    editAgeInput.value = userData.age || '';
+                    editProfileModal.classList.remove('hidden');
+                } else {
+                    showMessage('No se pudieron cargar los datos de tu perfil.', 'error');
+                }
+            } catch (error) {
+                console.error("Error loading profile for editing:", error);
+                showMessage('Error al cargar los datos de tu perfil. Intenta de nuevo.', 'error');
+            }
+        });
+
+        closeEditProfileBtn.addEventListener('click', () => {
+            closeModal(editProfileModal);
+            editProfileForm.reset();
+        });
+
+        editProfileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+
+            const name = editNameInput.value.trim();
+            const surname = editSurnameInput.value.trim();
+            const age = parseInt(editAgeInput.value);
+
+            if (!name || !surname || isNaN(age) || age <= 0) {
+                showMessage('Por favor, completa todos los campos correctamente.', 'error');
+                return;
+            }
+
+            try {
+                const userDocRef = doc(db, 'artifacts', appId, 'users', currentUserId);
+                await updateDoc(userDocRef, {
+                    name: name,
+                    surname: surname,
+                    age: age
+                });
+                showMessage('¡Perfil actualizado exitosamente!', 'success');
+                closeModal(editProfileModal);
+            } catch (error) {
+                console.error("Error updating profile:", error);
+                showMessage('Error al actualizar el perfil. Intenta de nuevo.', 'error');
+            }
+        });
 
     </script>
 </body>
