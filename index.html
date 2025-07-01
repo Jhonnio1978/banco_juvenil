@@ -1255,7 +1255,7 @@
 
         // NEW: View Savings Accounts Modal elements
         const viewSavingsAccountsModal = document.getElementById('viewSavingsAccountsModal');
-        const closeViewSavingsAccountsBtn = document.getElementById('closeViewSavingsAccountsBtn'); // Corrected line
+        const closeViewSavingsAccountsBtn = document.getElementById('closeViewSavingsAccountsBtn');
         const savingsAccountsTableBody = document.getElementById('savingsAccountsTableBody');
 
         // NEW: Edit Announcements Modal elements
@@ -2742,17 +2742,17 @@
                             showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para el pago de streaming.`, 'error');
                             return;
                         }
-                        userCurrentBalanceUSD -= totalAmountToDeduct;
+                        userCurrentBalanceUSD -= totalToDeduct;
                         userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Pago de ${service}`;
-                        amountToRecordInTransaction = totalAmountToDeduct;
+                        amountToRecordInTransaction = totalToDeduct;
                         currencyToRecordInTransaction = 'USD'; // Always USD for this deduction
                         typeDisplay = 'Pago Streaming'; // Set typeDisplay here
                         console.log("Streaming payment logic applied. New user USD balance:", userCurrentBalanceUSD);
 
                         // Transfer entire amount (subscription + fee) to admin
                         if (adminId) {
-                            console.log("Transferring total streaming payment amount to admin:", totalAmountToDeduct, "USD");
+                            console.log("Transferring total streaming payment amount to admin:", totalToDeduct, "USD");
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
                             let adminNewBalanceUSD = (adminData.balanceUSD || 0) + totalToDeduct;
@@ -3421,7 +3421,7 @@
                         const { accountId, savingsGoal, balanceUsd } = event.target.dataset;
                         showWithdrawFromSavingsModal(accountId, savingsGoal, parseFloat(balanceUsd));
                     };
-                }); // Corrected missing parenthesis
+                });
                 savingsAccountsTableBody.querySelectorAll('.delete-savings-account-btn').forEach(button => {
                     button.onclick = (event) => {
                         const { accountId, savingsGoal, balanceUsd } = event.target.dataset;
@@ -3671,6 +3671,23 @@
                     balanceUSD: newUserBalanceUSD,
                     balanceDOP: newUserBalanceDOP
                 });
+
+                // Transfer fee to admin
+                let adminId = null;
+                const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
+                const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
+                const adminSnapshot = await getDocs(adminQuery);
+                if (!adminSnapshot.empty) {
+                    adminId = adminSnapshot.docs[0].id;
+                    const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
+                    const adminData = (await getDoc(adminProfileRef)).data();
+                    let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
+                    await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
+                    console.log("Savings account deletion fee transferred to admin and recorded.");
+                } else {
+                    console.warn("Admin account not found. Savings account deletion fee might not be transferred.");
+                }
+
 
                 // Delete the savings account document
                 await deleteDoc(savingsAccountRef);
