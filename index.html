@@ -224,6 +224,10 @@
                         <input type="number" id="registerAge" class="input-field" placeholder="18" min="0" required>
                     </div>
                     <div>
+                        <label for="registerPhoneNumber" class="block text-gray-700 text-sm font-semibold mb-2">Número de Teléfono (para avisos de ahorro)</label>
+                        <input type="tel" id="registerPhoneNumber" class="input-field" placeholder="Ej: 8091234567" pattern="[0-9]{10}" title="Número de teléfono de 10 dígitos" required>
+                    </div>
+                    <div>
                         <label for="registerPassword" class="block text-gray-700 text-sm font-semibold mb-2">Contraseña</label>
                         <input type="password" id="registerPassword" class="input-field" placeholder="********" required>
                     </div>
@@ -539,7 +543,11 @@
                 </div>
                 <div>
                     <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo abro una cuenta de ahorro?</h4>
-                    <p class="text-sm">Puedes solicitar una cuenta de ahorro desde tu panel. Deberás especificar tu objetivo de ahorro y un monto de depósito inicial. Una vez aprobada por el administrador, se creará tu cuenta de ahorro.</p>
+                    <p class="text-sm">Puedes solicitar una cuenta de ahorro desde tu panel. Deberás especificar tu objetivo de ahorro, un monto de depósito inicial y una fecha de finalización. Una vez aprobada por el administrador, se creará tu cuenta de ahorro.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Hay alguna tarifa por cerrar una cuenta de ahorro?</h4>
+                    <p class="text-sm">Sí, al eliminar una cuenta de ahorro, se aplica una tarifa del 2% sobre el saldo restante. El resto del dinero se transferirá a tu cuenta principal.</p>
                 </div>
             </div>
         </div>
@@ -731,6 +739,10 @@
                     <label for="editAge" class="block text-gray-700 text-sm font-semibold mb-2">Edad</label>
                     <input type="number" id="editAge" class="input-field" min="0" required>
                 </div>
+                <div>
+                    <label for="editPhoneNumber" class="block text-gray-700 text-sm font-semibold mb-2">Número de Teléfono</label>
+                    <input type="tel" id="editPhoneNumber" class="input-field" placeholder="Ej: 8091234567" pattern="[0-9]{10}" title="Número de teléfono de 10 dígitos">
+                </div>
                 <div class="flex justify-end space-x-4 pt-4">
                     <button type="submit" class="btn-primary">Guardar Cambios</button>
                 </div>
@@ -854,6 +866,10 @@
                 <button id="cancelOpenSavingsAccountBtn" class="close-button">&times;</button>
             </div>
             <form id="savingsAccountForm" class="space-y-4">
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 p-4 mb-4" role="alert">
+                    <p class="font-bold">Aviso Importante:</p>
+                    <p class="text-sm">Al eliminar una cuenta de ahorro, se aplicará una tarifa del 2% sobre el saldo restante. El resto del dinero se transferirá a tu cuenta principal.</p>
+                </div>
                 <div>
                     <label for="savingsGoal" class="block text-gray-700 text-sm font-semibold mb-2">¿Para qué estás ahorrando?</label>
                     <input type="text" id="savingsGoal" class="input-field" placeholder="Ej: Viaje a la playa, Consola de videojuegos" required>
@@ -879,6 +895,10 @@
                         <option value="Ocasional">Ocasional</option>
                     </select>
                 </div>
+                <div>
+                    <label for="savingsEndDate" class="block text-gray-700 text-sm font-semibold mb-2">Fecha de Finalización del Ahorro</label>
+                    <input type="date" id="savingsEndDate" class="input-field" required>
+                </div>
                 <div class="flex justify-end space-x-4 pt-4">
                     <button type="submit" class="btn-primary">Solicitar Cuenta de Ahorro</button>
                 </div>
@@ -902,11 +922,14 @@
                             <th>Saldo (USD)</th>
                             <th>Saldo (DOP)</th>
                             <th>Frecuencia</th>
+                            <th>Inicio</th>
+                            <th>Fin</th>
                             <th>Estado</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="savingsAccountsTableBody">
-                        <tr><td colspan="6" class="text-center text-gray-500 py-4">Cargando cuentas de ahorro...</td></tr>
+                        <tr><td colspan="9" class="text-center text-gray-500 py-4">Cargando cuentas de ahorro...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -929,6 +952,77 @@
                     <button type="submit" class="btn-primary">Guardar Anuncios</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- NEW: Deposit to Savings Modal -->
+    <div id="depositToSavingsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-sm">
+            <div class="modal-header">
+                Depositar a Cuenta de Ahorro
+                <button id="cancelDepositToSavingsBtn" class="close-button">&times;</button>
+            </div>
+            <form id="depositToSavingsForm" class="space-y-4">
+                <p class="text-sm text-gray-700">Cuenta de Ahorro: <span id="depositToSavingsAccountIdDisplay" class="font-bold"></span></p>
+                <div>
+                    <label for="depositToSavingsAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto a Depositar</label>
+                    <input type="number" id="depositToSavingsAmount" class="input-field" placeholder="Ej: 20.00" min="0.01" step="0.01" required>
+                </div>
+                <div>
+                    <label for="depositToSavingsCurrency" class="block text-gray-700 text-sm font-semibold mb-2">Moneda</label>
+                    <select id="depositToSavingsCurrency" class="input-field">
+                        <option value="USD">Dólar (USD)</option>
+                        <option value="DOP">Peso Dominicano (DOP)</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="submit" class="btn-primary">Confirmar Depósito</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW: Withdraw from Savings Modal -->
+    <div id="withdrawFromSavingsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-sm">
+            <div class="modal-header">
+                Retirar de Cuenta de Ahorro
+                <button id="cancelWithdrawFromSavingsBtn" class="close-button">&times;</button>
+            </div>
+            <form id="withdrawFromSavingsForm" class="space-y-4">
+                <p class="text-sm text-gray-700">Cuenta de Ahorro: <span id="withdrawFromSavingsAccountIdDisplay" class="font-bold"></span></p>
+                <div>
+                    <label for="withdrawFromSavingsAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto a Retirar</label>
+                    <input type="number" id="withdrawFromSavingsAmount" class="input-field" placeholder="Ej: 10.00" min="0.01" step="0.01" required>
+                </div>
+                <div>
+                    <label for="withdrawFromSavingsCurrency" class="block text-gray-700 text-sm font-semibold mb-2">Moneda</label>
+                    <select id="withdrawFromSavingsCurrency" class="input-field">
+                        <option value="USD">Dólar (USD)</option>
+                        <option value="DOP">Peso Dominicano (DOP)</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="submit" class="btn-primary">Confirmar Retiro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW: Confirm Delete Savings Account Modal -->
+    <div id="confirmDeleteSavingsAccountModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-sm text-center">
+            <div class="modal-header">
+                Confirmar Eliminación de Cuenta
+                <button id="cancelDeleteSavingsAccountBtn" class="close-button">&times;</button>
+            </div>
+            <p class="text-lg text-gray-700 mb-4">¿Estás seguro de que quieres eliminar la cuenta de ahorro "<span id="deleteSavingsAccountGoalDisplay" class="font-bold"></span>"?</p>
+            <p class="text-red-600 font-semibold mb-4">Se aplicará una tarifa del 2% sobre el saldo actual (<span id="deleteSavingsAccountFeeDisplay"></span>).</p>
+            <p class="text-gray-700 mb-6">El saldo restante (<span id="deleteSavingsAccountRemainingDisplay"></span>) se transferirá a tu cuenta principal.</p>
+            <div class="flex justify-center space-x-4">
+                <button id="confirmDeleteSavingsAccountBtn" class="btn-danger">Sí, Eliminar</button>
+                <button id="cancelDeleteSavingsAccountBtn2" class="btn-secondary">Cancelar</button>
+            </div>
         </div>
     </div>
 
@@ -965,6 +1059,7 @@
         const USD_TO_DOP_RATE = 58.0; // Example rate
         const COMMISSION_RATE = 0.03; // 3% commission for online shopping and streaming
         const WITHDRAWAL_FEE_RATE = 0.04; // 4% fee for withdrawals
+        const SAVINGS_DELETE_FEE_RATE = 0.02; // 2% fee for deleting savings account
 
         // Admin email for prototype purposes
         const ADMIN_EMAIL = `admin.jhonnio@${appId}.com`;
@@ -998,6 +1093,7 @@
         const registerNameInput = document.getElementById('registerName');
         const registerSurnameInput = document.getElementById('registerSurname');
         const registerAgeInput = document.getElementById('registerAge');
+        const registerPhoneNumberInput = document.getElementById('registerPhoneNumber'); // NEW: Phone Number Input
         const registerPasswordInput = document.getElementById('registerPassword');
 
         const logoutBtn = document.getElementById('logoutBtn');
@@ -1051,7 +1147,7 @@
             <p class="mb-2"><strong>5. Retiros:</strong> Las solicitudes de retiro también requieren aprobación del banco. Se aplicará una tarifa del 4% a cada retiro.</p>
             <p class="mb-2"><strong>6. Compras y Streaming:</strong> Las solicitudes de compra por internet y pago de servicios de streaming requieren la aprobación del administrador antes de que se deduzca el dinero.</p>
             <p class="mb-2"><strong>7. Transferencias:</strong> Las transferencias tienen un tiempo de procesamiento de 10 segundos. Verifica bien al destinatario, no son reversibles.</p>
-            <p><strong>8. Cuentas de Ahorro:</strong> Las solicitudes para abrir cuentas de ahorro requieren la aprobación del administrador.</p>
+            <p class="mb-2"><strong>8. Cuentas de Ahorro:</strong> Las solicitudes para abrir cuentas de ahorro requieren la aprobación del administrador. Al eliminar una cuenta de ahorro, se aplicará una tarifa del 2% sobre el saldo restante.</p>
         `;
 
         // Modals
@@ -1095,7 +1191,7 @@
         const shoppingAmountInput = document.getElementById('shoppingAmount');
         const shoppingCurrencyInput = document.getElementById('shoppingCurrency');
         const productLinksInput = document.getElementById('productLinks');
-        const shoppingCategoryInput = document.getElementById('shoppingCategory'); // NEW: Category Input
+        const shoppingCategoryInput = document.getElementById('shoppingCategory'); // Category Input
         const shoppingFeeDisplay = document.getElementById('shoppingFeeDisplay');
         const shoppingTotalDisplay = document.getElementById('shoppingTotalDisplay');
 
@@ -1106,7 +1202,7 @@
         const streamingAccountIdentifierInput = document.getElementById('streamingAccountIdentifier');
         const streamingAmountInput = document.getElementById('streamingAmount');
         const streamingCurrencyInput = document.getElementById('streamingCurrency');
-        const streamingCategoryInput = document.getElementById('streamingCategory'); // NEW: Category Input
+        const streamingCategoryInput = document.getElementById('streamingCategory'); // Category Input
         const streamingFeeDisplay = document.getElementById('streamingFeeDisplay');
         const streamingTotalDisplay = document.getElementById('streamingTotalDisplay');
 
@@ -1125,6 +1221,7 @@
         const editNameInput = document.getElementById('editName');
         const editSurnameInput = document.getElementById('editSurname');
         const editAgeInput = document.getElementById('editAge');
+        const editPhoneNumberInput = document.getElementById('editPhoneNumber'); // NEW: Phone Number Input
 
         // Change Password Modal elements
         const changePasswordModal = document.getElementById('changePasswordModal');
@@ -1154,10 +1251,11 @@
         const initialDepositAmountInput = document.getElementById('initialDepositAmount');
         const initialDepositCurrencyInput = document.getElementById('initialDepositCurrency');
         const preferredSavingsFrequencyInput = document.getElementById('preferredSavingsFrequency');
+        const savingsEndDateInput = document.getElementById('savingsEndDate'); // NEW: End Date Input
 
         // NEW: View Savings Accounts Modal elements
         const viewSavingsAccountsModal = document.getElementById('viewSavingsAccountsModal');
-        const closeViewSavingsAccountsBtn = document.getElementById('closeViewSavingsAccountsBtn');
+        const closeViewSavingsAccountsBtn = document.getElementById('closeViewSavingsAccountsBtn'); // Corrected line
         const savingsAccountsTableBody = document.getElementById('savingsAccountsTableBody');
 
         // NEW: Edit Announcements Modal elements
@@ -1166,6 +1264,35 @@
         const editAnnouncementsForm = document.getElementById('editAnnouncementsForm');
         const announcementsTextarea = document.getElementById('announcementsTextarea');
         const announcementsList = document.getElementById('announcementsList'); // Reference to the UL in dashboard
+
+        // NEW: Deposit/Withdraw from Savings Modals
+        const depositToSavingsModal = document.getElementById('depositToSavingsModal');
+        const cancelDepositToSavingsBtn = document.getElementById('cancelDepositToSavingsBtn');
+        const depositToSavingsForm = document.getElementById('depositToSavingsForm');
+        const depositToSavingsAccountIdDisplay = document.getElementById('depositToSavingsAccountIdDisplay');
+        const depositToSavingsAmountInput = document.getElementById('depositToSavingsAmount');
+        const depositToSavingsCurrencyInput = document.getElementById('depositToSavingsCurrency');
+
+        const withdrawFromSavingsModal = document.getElementById('withdrawFromSavingsModal');
+        const cancelWithdrawFromSavingsBtn = document.getElementById('cancelWithdrawFromSavingsBtn');
+        const withdrawFromSavingsForm = document.getElementById('withdrawFromSavingsForm');
+        const withdrawFromSavingsAccountIdDisplay = document.getElementById('withdrawFromSavingsAccountIdDisplay');
+        const withdrawFromSavingsAmountInput = document.getElementById('withdrawFromSavingsAmount');
+        const withdrawFromSavingsCurrencyInput = document.getElementById('withdrawFromSavingsCurrency');
+
+        // NEW: Confirm Delete Savings Account Modal
+        const confirmDeleteSavingsAccountModal = document.getElementById('confirmDeleteSavingsAccountModal');
+        const cancelDeleteSavingsAccountBtn = document.getElementById('cancelDeleteSavingsAccountBtn');
+        const cancelDeleteSavingsAccountBtn2 = document.getElementById('cancelDeleteSavingsAccountBtn2'); // Second cancel button
+        const confirmDeleteSavingsAccountBtn = document.getElementById('confirmDeleteSavingsAccountBtn');
+        const deleteSavingsAccountGoalDisplay = document.getElementById('deleteSavingsAccountGoalDisplay');
+        const deleteSavingsAccountFeeDisplay = document.getElementById('deleteSavingsAccountFeeDisplay');
+        const deleteSavingsAccountRemainingDisplay = document.getElementById('deleteSavingsAccountRemainingDisplay');
+
+        // Variables to store data for savings account operations
+        let currentSavingsAccountId = null;
+        let currentSavingsAccountBalanceUSD = 0;
+        let currentSavingsAccountGoal = '';
 
         // Variable to hold the unsubscribe function for admin pending requests listener
         let adminPendingRequestsUnsubscribe = null;
@@ -1295,7 +1422,28 @@
                 currencyDisplay = transaction.initialDepositCurrency;
                 otherDetails += `<p><strong>Objetivo de Ahorro:</strong> ${transaction.savingsGoal || 'N/A'}</p>`;
                 otherDetails += `<p><strong>Frecuencia Preferida:</strong> ${transaction.preferredSavingsFrequency || 'N/A'}</p>`;
+                otherDetails += `<p><strong>Fecha Inicio:</strong> ${transaction.startDate ? new Date(transaction.startDate.seconds * 1000).toLocaleDateString() : 'N/A'}</p>`;
+                otherDetails += `<p><strong>Fecha Fin:</strong> ${transaction.endDate || 'N/A'}</p>`;
                 otherDetails += `<p><strong>ID de Cuenta de Ahorro:</strong> ${transaction.savingsAccountId || 'N/A'}</p>`;
+            } else if (transaction.type === 'deposit_to_savings') {
+                typeDisplay = 'Depósito a Ahorro';
+                amountDisplay = (transaction.amount ?? 0).toFixed(2);
+                currencyDisplay = transaction.currency;
+                otherDetails += `<p><strong>ID Cuenta Ahorro:</strong> ${transaction.savingsAccountId || 'N/A'}</p>`;
+                otherDetails += `<p><strong>Objetivo:</strong> ${transaction.savingsGoal || 'N/A'}</p>`;
+            } else if (transaction.type === 'withdraw_from_savings') {
+                typeDisplay = 'Retiro de Ahorro';
+                amountDisplay = (transaction.amount ?? 0).toFixed(2);
+                currencyDisplay = transaction.currency;
+                otherDetails += `<p><strong>ID Cuenta Ahorro:</strong> ${transaction.savingsAccountId || 'N/A'}</p>`;
+                otherDetails += `<p><strong>Objetivo:</strong> ${transaction.savingsGoal || 'N/A'}</p>`;
+            } else if (transaction.type === 'delete_savings_account') {
+                typeDisplay = 'Eliminación Cuenta Ahorro';
+                amountDisplay = (transaction.remainingBalanceTransferred ?? 0).toFixed(2);
+                currencyDisplay = 'USD'; // Remaining balance is always in USD
+                feeDisplay = `Tarifa (2%): $${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
+                otherDetails += `<p><strong>Objetivo de Cuenta Eliminada:</strong> ${transaction.savingsGoal || 'N/A'}</p>`;
+                otherDetails += `<p><strong>ID Cuenta Eliminada:</strong> ${transaction.savingsAccountId || 'N/A'}</p>`;
             }
 
 
@@ -1332,12 +1480,12 @@
                 loginTab.classList.add('active');
                 registerTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal);
+                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal);
             } else {
                 registerTab.classList.add('active');
                 loginTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal);
+                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal);
             }
             hideMessage(); // Hide any previous messages when changing tabs
         }
@@ -1405,15 +1553,16 @@
             const name = registerNameInput.value.trim();
             const surname = registerSurnameInput.value.trim();
             const age = parseInt(registerAgeInput.value);
+            const phoneNumber = registerPhoneNumberInput.value.trim(); // Get phone number
             const password = registerPasswordInput.value;
 
-            if (!name || !surname || !password || isNaN(age) || age <= 0) {
+            if (!name || !surname || !password || isNaN(age) || age <= 0 || !phoneNumber) {
                 showMessage('Por favor, completa todos los campos correctamente.', 'error');
                 return;
             }
 
             // Store data temporarily for use after rules consent
-            tempRegisterData = { name, surname, age, password };
+            tempRegisterData = { name, surname, age, phoneNumber, password };
 
             // Show rules consent modal
             briefRulesTextContainer.innerHTML = briefRulesText;
@@ -1425,9 +1574,10 @@
          * @param {string} name User's name.
          * @param {string} surname User's surname.
          * @param {number} age User's age.
+         * @param {string} phoneNumber User's phone number.
          * @param {string} password User's password.
          */
-        async function performRegistration(name, surname, age, password) {
+        async function performRegistration(name, surname, age, phoneNumber, password) {
             // Generate email for Firebase Auth (internal use primarily)
             const generatedEmail = `${name.toLowerCase().replace(/\s/g, '')}.${surname.toLowerCase().replace(/\s/g, '')}@${appId}.com`;
             // Generate a simple, user-friendly ID for display
@@ -1444,6 +1594,7 @@
                     name: name,
                     surname: surname,
                     age: age,
+                    phoneNumber: phoneNumber, // Store phone number
                     email: generatedEmail, // Primary login email
                     balanceUSD: 0,
                     balanceDOP: 0,
@@ -1631,7 +1782,7 @@
                 loadAnnouncements();
 
                 // Display dashboard and hide login/register forms and all modals
-                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal);
+                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal);
 
             } else {
                 // User is signed out
@@ -2317,7 +2468,7 @@
 
             // Assign the unsubscribe function to adminPendingRequestsUnsubscribe
             adminPendingRequestsUnsubscribe = onSnapshot(q, async (snapshot) => {
-                adminPendingRequestsTableBody.innerHTML = '';
+                adminPendingRequestsTableBody.innerHTML = ''; // Clear table for new data
                 if (snapshot.empty) {
                     adminPendingRequestsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay solicitudes pendientes.</td></tr>';
                     return;
@@ -2366,7 +2517,7 @@
                             typeDisplay = 'Apertura Cta. Ahorro';
                             amountDisplay = (request.initialDepositAmount ?? 0).toFixed(2);
                             currencyDisplay = request.initialDepositCurrency;
-                            detailsDisplay = `Objetivo: ${request.savingsGoal}, Frecuencia: ${request.preferredSavingsFrequency}. Depósito Inicial: ${amountDisplay} ${currencyDisplay}`;
+                            detailsDisplay = `Objetivo: ${request.savingsGoal}, Frecuencia: ${request.preferredSavingsFrequency}. Inicio: ${request.startDate ? new Date(request.startDate.seconds * 1000).toLocaleDateString() : 'N/A'}, Fin: ${request.endDate || 'N/A'}. Depósito Inicial: ${amountDisplay} ${currencyDisplay}`;
                             break;
                         default:
                             typeDisplay = 'Desconocido';
@@ -2405,6 +2556,8 @@
                                 data-initial-deposit-amount="${request.initialDepositAmount || 0}"
                                 data-initial-deposit-currency="${request.initialDepositCurrency || ''}"
                                 data-preferred-savings-frequency="${request.preferredSavingsFrequency || ''}"
+                                data-start-date="${request.startDate ? request.startDate.seconds * 1000 : ''}"
+                                data-end-date="${request.endDate || ''}"
                                 >Confirmar</button>
                             <button class="btn-danger reject-request-btn"
                                 data-request-id="${requestId}"
@@ -2415,43 +2568,47 @@
                     `;
                     adminPendingRequestsTableBody.appendChild(row);
                 }
-
-                // Attach event listeners for dynamic buttons
-                document.querySelectorAll('.confirm-request-btn').forEach(button => {
-                    button.onclick = async (event) => {
-                        const dataset = event.target.dataset;
-                        await confirmRequest(
-                            dataset.requestId,
-                            dataset.type,
-                            dataset.userId,
-                            parseFloat(dataset.amount),
-                            dataset.currency,
-                            dataset.serialNumber,
-                            parseFloat(dataset.productAmount),
-                            dataset.productCurrency,
-                            dataset.productLinks,
-                            dataset.service,
-                            dataset.accountIdentifier,
-                            parseFloat(dataset.subscriptionAmount),
-                            dataset.subscriptionCurrency,
-                            parseFloat(dataset.feeAmount),
-                            parseFloat(dataset.totalAmountToDeduct),
-                            dataset.category,
-                            dataset.savingsGoal, // New
-                            parseFloat(dataset.initialDepositAmount), // New
-                            dataset.initialDepositCurrency, // New
-                            dataset.preferredSavingsFrequency // New
-                        );
-                    };
-                });
-                document.querySelectorAll('.reject-request-btn').forEach(button => {
-                    button.onclick = async (event) => {
-                        const dataset = event.target.dataset;
-                        await rejectRequest(dataset.requestId, dataset.type, dataset.userId);
-                    };
-                });
+            }, (error) => {
+                console.error("Error loading admin pending requests:", error);
+                adminPendingRequestsTableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error al cargar solicitudes pendientes.</td></tr>`;
             });
         }
+
+        // Event delegation for confirm/reject buttons in admin pending requests table
+        adminPendingRequestsTableBody.addEventListener('click', async (event) => {
+            const target = event.target;
+            if (target.classList.contains('confirm-request-btn')) {
+                const dataset = target.dataset;
+                await confirmRequest(
+                    dataset.requestId,
+                    dataset.type,
+                    dataset.userId,
+                    parseFloat(dataset.amount),
+                    dataset.currency,
+                    dataset.serialNumber,
+                    parseFloat(dataset.productAmount),
+                    dataset.productCurrency,
+                    dataset.productLinks,
+                    dataset.service,
+                    dataset.accountIdentifier,
+                    parseFloat(dataset.subscriptionAmount),
+                    dataset.subscriptionCurrency,
+                    parseFloat(dataset.feeAmount),
+                    parseFloat(dataset.totalAmountToDeduct),
+                    dataset.category,
+                    dataset.savingsGoal,
+                    parseFloat(dataset.initialDepositAmount),
+                    dataset.initialDepositCurrency,
+                    dataset.preferredSavingsFrequency,
+                    dataset.startDate, // Pass startDate
+                    dataset.endDate // Pass endDate
+                );
+            } else if (target.classList.contains('reject-request-btn')) {
+                const dataset = target.dataset;
+                await rejectRequest(dataset.requestId, dataset.type, dataset.userId);
+            }
+        });
+
 
         /**
          * Confirms a pending request, handles money transfer, and records transaction.
@@ -2461,9 +2618,9 @@
             productAmount, productCurrency, productLinks,
             service, accountIdentifier, subscriptionAmount, subscriptionCurrency,
             feeAmount, totalAmountToDeduct, category,
-            savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency // New parameters for savings account
+            savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, startDate, endDate // New parameters
         ) {
-            console.log("Confirming request:", { requestId, type, userId, amount, currency, serialNumber, productAmount, productCurrency, productLinks, service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, totalAmountToDeduct, category, savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency });
+            console.log("Confirming request:", { requestId, type, userId, amount, currency, serialNumber, productAmount, productCurrency, productLinks, service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, totalAmountToDeduct, category, savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, startDate, endDate });
             try {
                 const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
                 const requestDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_requests', requestId);
@@ -2632,6 +2789,8 @@
                             initialDepositAmount: initialDepositAmount,
                             initialDepositCurrency: initialDepositCurrency,
                             preferredSavingsFrequency: preferredSavingsFrequency,
+                            startDate: serverTimestamp(), // Automatically set start date
+                            endDate: endDate, // Use provided end date
                             createdAt: serverTimestamp(),
                             status: 'active'
                         });
@@ -2679,7 +2838,7 @@
                     ...(type === 'withdrawal' && { feeAmount: calculatedFeeInUSD, feeCurrency: 'USD', adminReceiverId: adminId }),
                     ...(type === 'online_purchase' && { productAmount, productCurrency, productLinks, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category }),
                     ...(type === 'streaming_payment' && { service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category }),
-                    ...(type === 'savings_account_open' && { savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, savingsAccountId }) // New for savings account
+                    ...(type === 'savings_account_open' && { savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, savingsAccountId, startDate: serverTimestamp(), endDate: endDate }) // New for savings account
                 });
                 console.log("Transaction recorded successfully.");
 
@@ -2746,7 +2905,7 @@
                     const transaction = { id: docEntry.id, ...docEntry.data() };
 
                     // Filter for current user's completed transactions
-                    if ((transaction.type === 'deposit' || transaction.type === 'withdrawal' || transaction.type === 'online_purchase' || transaction.type === 'streaming_payment' || transaction.type === 'savings_account_open') && transaction.userId === currentUserId) {
+                    if ((transaction.type === 'deposit' || transaction.type === 'withdrawal' || transaction.type === 'online_purchase' || transaction.type === 'streaming_payment' || transaction.type === 'savings_account_open' || transaction.type === 'deposit_to_savings' || transaction.type === 'withdraw_from_savings' || transaction.type === 'delete_savings_account') && transaction.userId === currentUserId) {
                         userTransactionsData.push(transaction);
                     } else if (transaction.type === 'transfer' && (transaction.senderId === currentUserId || transaction.recipientId === currentUserId)) {
                         userTransactionsData.push(transaction);
@@ -2813,6 +2972,21 @@
                             typeDisplay = 'Apertura Cta. Ahorro';
                             detailsDisplay = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
                             amountDisplay = `-${(transaction.initialDepositAmount ?? 0).toFixed(2)} ${transaction.initialDepositCurrency} (de cuenta principal)`;
+                            break;
+                        case 'deposit_to_savings':
+                            typeDisplay = 'Depósito a Ahorro';
+                            detailsDisplay = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
+                            amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency} (de principal)`;
+                            break;
+                        case 'withdraw_from_savings':
+                            typeDisplay = 'Retiro de Ahorro';
+                            detailsDisplay = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
+                            amountDisplay = `+${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency} (a principal)`;
+                            break;
+                        case 'delete_savings_account':
+                            typeDisplay = 'Eliminación Cta. Ahorro';
+                            detailsDisplay = `Objetivo: ${transaction.savingsGoal}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
+                            amountDisplay = `+${(transaction.remainingBalanceTransferred ?? 0).toFixed(2)} USD (a principal)`;
                             break;
                     }
 
@@ -2943,6 +3117,27 @@
                             currencyValue = transaction.initialDepositCurrency;
                             details = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
                             break;
+                        case 'deposit_to_savings':
+                            typeDisplay = 'Depósito a Ahorro';
+                            usersInvolved = await getUserDisplayName(transaction.userId);
+                            amountValue = (transaction.amount ?? 0);
+                            currencyValue = transaction.currency;
+                            details = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
+                            break;
+                        case 'withdraw_from_savings':
+                            typeDisplay = 'Retiro de Ahorro';
+                            usersInvolved = await getUserDisplayName(transaction.userId);
+                            amountValue = (transaction.amount ?? 0);
+                            currencyValue = transaction.currency;
+                            details = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
+                            break;
+                        case 'delete_savings_account':
+                            typeDisplay = 'Eliminación Cta. Ahorro';
+                            usersInvolved = await getUserDisplayName(transaction.userId);
+                            amountValue = (transaction.remainingBalanceTransferred ?? 0);
+                            currencyValue = 'USD';
+                            details = `Objetivo: ${transaction.savingsGoal}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
+                            break;
                         default:
                             usersInvolved = transaction.userId || 'N/A'; // Fallback
                             details = 'N/A';
@@ -3017,7 +3212,7 @@
                             typeDisplay = 'Apertura Cta. Ahorro';
                             amountToDisplay = (data.initialDepositAmount ?? 0);
                             currencyToDisplay = data.initialDepositCurrency;
-                            detailDisplay = `Objetivo: ${data.savingsGoal}, Frecuencia: ${data.preferredSavingsFrequency}`;
+                            detailDisplay = `Objetivo: ${data.savingsGoal}, Frecuencia: ${data.preferredSavingsFrequency}, Fin: ${data.endDate || 'N/A'}`;
                             break;
                         default:
                             typeDisplay = 'Desconocido';
@@ -3074,6 +3269,12 @@
         openSavingsAccountBtn.addEventListener('click', () => {
             openSavingsAccountModal.classList.remove('hidden');
             savingsAccountForm.reset();
+            // Set min date for savingsEndDate to today
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            savingsEndDateInput.min = `${year}-${month}-${day}`;
         });
 
         cancelOpenSavingsAccountBtn.addEventListener('click', () => {
@@ -3089,8 +3290,9 @@
             const initialDepositAmount = parseFloat(initialDepositAmountInput.value);
             const initialDepositCurrency = initialDepositCurrencyInput.value;
             const preferredSavingsFrequency = preferredSavingsFrequencyInput.value;
+            const savingsEndDate = savingsEndDateInput.value; // Get end date
 
-            if (!savingsGoal || isNaN(initialDepositAmount) || initialDepositAmount <= 0 || !preferredSavingsFrequency) {
+            if (!savingsGoal || isNaN(initialDepositAmount) || initialDepositAmount <= 0 || !preferredSavingsFrequency || !savingsEndDate) {
                 showMessage('Por favor, completa todos los campos para tu cuenta de ahorro.', 'error');
                 return;
             }
@@ -3114,6 +3316,8 @@
                     initialDepositAmount: initialDepositAmount,
                     initialDepositCurrency: initialDepositCurrency,
                     preferredSavingsFrequency: preferredSavingsFrequency,
+                    startDate: serverTimestamp(), // Automatically set start date
+                    endDate: savingsEndDate, // Store provided end date
                     timestamp: serverTimestamp(),
                     status: 'pending'
                 });
@@ -3131,6 +3335,7 @@
                 Objetivo: ${savingsGoal}
                 Depósito Inicial: ${initialDepositAmount.toFixed(2)} ${initialDepositCurrency}
                 Frecuencia Preferida: ${preferredSavingsFrequency}
+                Fecha Finalización: ${savingsEndDate}
                 Por favor, revisa y confirma.
                 `;
                 const encodedMessage = encodeURIComponent(whatsappMessage);
@@ -3153,10 +3358,10 @@
         });
 
         async function loadSavingsAccounts() {
-            savingsAccountsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Cargando cuentas de ahorro...</td></tr>';
+            savingsAccountsTableBody.innerHTML = '<tr><td colspan="9" class="text-center text-gray-500 py-4">Cargando cuentas de ahorro...</td></tr>';
 
             if (!currentUserId) {
-                savingsAccountsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-red-500 py-4">Inicia sesión para ver tus cuentas de ahorro.</td></tr>';
+                savingsAccountsTableBody.innerHTML = '<tr><td colspan="9" class="text-center text-red-500 py-4">Inicia sesión para ver tus cuentas de ahorro.</td></tr>';
                 return;
             }
 
@@ -3165,12 +3370,15 @@
             onSnapshot(savingsAccountsRef, (snapshot) => {
                 savingsAccountsTableBody.innerHTML = '';
                 if (snapshot.empty) {
-                    savingsAccountsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">No tienes cuentas de ahorro activas.</td></tr>';
+                    savingsAccountsTableBody.innerHTML = '<tr><td colspan="9" class="text-center text-gray-500 py-4">No tienes cuentas de ahorro activas.</td></tr>';
                     return;
                 }
 
                 snapshot.forEach(docEntry => {
                     const account = docEntry.data();
+                    const startDateDisplay = account.startDate ? new Date(account.startDate.seconds * 1000).toLocaleDateString() : 'N/A';
+                    const endDateDisplay = account.endDate || 'N/A';
+
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${account.accountId.substring(0, 8)}...</td>
@@ -3178,15 +3386,316 @@
                         <td>$${(account.balanceUSD ?? 0).toFixed(2)} USD</td>
                         <td>RD$${(account.balanceDOP ?? 0).toFixed(2)} DOP</td>
                         <td>${account.preferredSavingsFrequency}</td>
+                        <td>${startDateDisplay}</td>
+                        <td>${endDateDisplay}</td>
                         <td>${account.status === 'active' ? 'Activa' : account.status}</td>
+                        <td>
+                            <button class="btn-primary btn-sm deposit-to-savings-btn"
+                                data-account-id="${account.accountId}"
+                                data-savings-goal="${account.savingsGoal}"
+                                >Depositar</button>
+                            <button class="btn-secondary btn-sm withdraw-from-savings-btn"
+                                data-account-id="${account.accountId}"
+                                data-savings-goal="${account.savingsGoal}"
+                                data-balance-usd="${account.balanceUSD}"
+                                >Retirar</button>
+                            <button class="btn-danger btn-sm delete-savings-account-btn"
+                                data-account-id="${account.accountId}"
+                                data-savings-goal="${account.savingsGoal}"
+                                data-balance-usd="${account.balanceUSD}"
+                                >Eliminar</button>
+                        </td>
                     `;
                     savingsAccountsTableBody.appendChild(row);
                 });
+
+                // Attach event listeners for new buttons using delegation
+                savingsAccountsTableBody.querySelectorAll('.deposit-to-savings-btn').forEach(button => {
+                    button.onclick = (event) => {
+                        const { accountId, savingsGoal } = event.target.dataset;
+                        showDepositToSavingsModal(accountId, savingsGoal);
+                    };
+                });
+                savingsAccountsTableBody.querySelectorAll('.withdraw-from-savings-btn').forEach(button => {
+                    button.onclick = (event) => {
+                        const { accountId, savingsGoal, balanceUsd } = event.target.dataset;
+                        showWithdrawFromSavingsModal(accountId, savingsGoal, parseFloat(balanceUsd));
+                    };
+                }); // Corrected missing parenthesis
+                savingsAccountsTableBody.querySelectorAll('.delete-savings-account-btn').forEach(button => {
+                    button.onclick = (event) => {
+                        const { accountId, savingsGoal, balanceUsd } = event.target.dataset;
+                        showConfirmDeleteSavingsAccountModal(accountId, savingsGoal, parseFloat(balanceUsd));
+                    };
+                });
+
             }, (error) => {
                 console.error("Error loading savings accounts:", error);
-                savingsAccountsTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-4">Error al cargar cuentas de ahorro.</td></tr>`;
+                savingsAccountsTableBody.innerHTML = `<tr><td colspan="9" class="text-center text-red-500 py-4">Error al cargar cuentas de ahorro.</td></tr>`;
             });
         }
+
+        // --- NEW: Deposit to Savings Modal Functions ---
+        function showDepositToSavingsModal(accountId, savingsGoal) {
+            currentSavingsAccountId = accountId;
+            depositToSavingsAccountIdDisplay.textContent = `${savingsGoal} (${accountId.substring(0, 8)}...)`;
+            depositToSavingsModal.classList.remove('hidden');
+            depositToSavingsForm.reset();
+        }
+
+        cancelDepositToSavingsBtn.addEventListener('click', () => {
+            closeModal(depositToSavingsModal);
+        });
+
+        depositToSavingsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+
+            const amount = parseFloat(depositToSavingsAmountInput.value);
+            const currency = depositToSavingsCurrencyInput.value;
+
+            if (isNaN(amount) || amount <= 0) {
+                showMessage('El monto a depositar debe ser un número positivo.', 'error');
+                return;
+            }
+
+            let amountInUSD = amount;
+            if (currency === 'DOP') {
+                amountInUSD = amount / USD_TO_DOP_RATE;
+            }
+
+            if (currentBalanceUSD < amountInUSD) {
+                showMessage(`Saldo insuficiente en tu cuenta principal para depositar ${amount.toFixed(2)} ${currency} en tu cuenta de ahorro. Necesitas al menos $${amountInUSD.toFixed(2)} USD.`, 'error');
+                return;
+            }
+
+            try {
+                const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
+                const savingsAccountRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts', currentSavingsAccountId);
+
+                const userDocSnap = await getDoc(userProfileRef);
+                const savingsDocSnap = await getDoc(savingsAccountRef);
+
+                if (!userDocSnap.exists() || !savingsDocSnap.exists()) {
+                    showMessage('Error: No se encontró tu perfil o la cuenta de ahorro.', 'error');
+                    return;
+                }
+
+                const userData = userDocSnap.data();
+                const savingsData = savingsDocSnap.data();
+
+                // Deduct from main account
+                let newUserBalanceUSD = userData.balanceUSD - amountInUSD;
+                let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
+
+                // Add to savings account
+                let newSavingsBalanceUSD = savingsData.balanceUSD + amountInUSD;
+                let newSavingsBalanceDOP = newSavingsBalanceUSD * USD_TO_DOP_RATE;
+
+                await updateDoc(userProfileRef, {
+                    balanceUSD: newUserBalanceUSD,
+                    balanceDOP: newUserBalanceDOP
+                });
+
+                await updateDoc(savingsAccountRef, {
+                    balanceUSD: newSavingsBalanceUSD,
+                    balanceDOP: newSavingsBalanceDOP
+                });
+
+                // Record transaction
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                    userId: currentUserId,
+                    type: 'deposit_to_savings',
+                    amount: amount,
+                    currency: currency,
+                    savingsAccountId: currentSavingsAccountId,
+                    savingsGoal: savingsData.savingsGoal,
+                    timestamp: serverTimestamp(),
+                    status: 'completed',
+                    description: `Depósito a cuenta de ahorro "${savingsData.savingsGoal}"`
+                });
+
+                showMessage(`¡Depósito de ${amount.toFixed(2)} ${currency} a tu cuenta de ahorro realizado con éxito!`, 'success');
+                closeModal(depositToSavingsModal);
+            } catch (error) {
+                console.error("Error depositing to savings account:", error);
+                showMessage('Error al depositar en la cuenta de ahorro. Intenta de nuevo.', 'error');
+            }
+        });
+
+        // --- NEW: Withdraw from Savings Modal Functions ---
+        function showWithdrawFromSavingsModal(accountId, savingsGoal, balanceUsd) {
+            currentSavingsAccountId = accountId;
+            currentSavingsAccountGoal = savingsGoal;
+            currentSavingsAccountBalanceUSD = balanceUsd; // Store for validation
+            withdrawFromSavingsAccountIdDisplay.textContent = `${savingsGoal} (${accountId.substring(0, 8)}...)`;
+            withdrawFromSavingsModal.classList.remove('hidden');
+            withdrawFromSavingsForm.reset();
+        }
+
+        cancelWithdrawFromSavingsBtn.addEventListener('click', () => {
+            closeModal(withdrawFromSavingsModal);
+        });
+
+        withdrawFromSavingsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+
+            const amount = parseFloat(withdrawFromSavingsAmountInput.value);
+            const currency = withdrawFromSavingsCurrencyInput.value;
+
+            if (isNaN(amount) || amount <= 0) {
+                showMessage('El monto a retirar debe ser un número positivo.', 'error');
+                return;
+            }
+
+            let amountInUSD = amount;
+            if (currency === 'DOP') {
+                amountInUSD = amount / USD_TO_DOP_RATE;
+            }
+
+            if (currentSavingsAccountBalanceUSD < amountInUSD) {
+                showMessage(`Saldo insuficiente en tu cuenta de ahorro para retirar ${amount.toFixed(2)} ${currency}. Saldo actual: $${currentSavingsAccountBalanceUSD.toFixed(2)} USD.`, 'error');
+                return;
+            }
+
+            try {
+                const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
+                const savingsAccountRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts', currentSavingsAccountId);
+
+                const userDocSnap = await getDoc(userProfileRef);
+                const savingsDocSnap = await getDoc(savingsAccountRef);
+
+                if (!userDocSnap.exists() || !savingsDocSnap.exists()) {
+                    showMessage('Error: No se encontró tu perfil o la cuenta de ahorro.', 'error');
+                    return;
+                }
+
+                const userData = userDocSnap.data();
+                const savingsData = savingsDocSnap.data();
+
+                // Deduct from savings account
+                let newSavingsBalanceUSD = savingsData.balanceUSD - amountInUSD;
+                let newSavingsBalanceDOP = newSavingsBalanceUSD * USD_TO_DOP_RATE;
+
+                // Add to main account
+                let newUserBalanceUSD = userData.balanceUSD + amountInUSD;
+                let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
+
+                await updateDoc(userProfileRef, {
+                    balanceUSD: newUserBalanceUSD,
+                    balanceDOP: newUserBalanceDOP
+                });
+
+                await updateDoc(savingsAccountRef, {
+                    balanceUSD: newSavingsBalanceUSD,
+                    balanceDOP: newSavingsBalanceDOP
+                });
+
+                // Record transaction
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                    userId: currentUserId,
+                    type: 'withdraw_from_savings',
+                    amount: amount,
+                    currency: currency,
+                    savingsAccountId: currentSavingsAccountId,
+                    savingsGoal: savingsData.savingsGoal,
+                    timestamp: serverTimestamp(),
+                    status: 'completed',
+                    description: `Retiro de cuenta de ahorro "${savingsData.savingsGoal}"`
+                });
+
+                showMessage(`¡Retiro de ${amount.toFixed(2)} ${currency} de tu cuenta de ahorro realizado con éxito!`, 'success');
+                closeModal(withdrawFromSavingsModal);
+            } catch (error) {
+                console.error("Error withdrawing from savings account:", error);
+                showMessage('Error al retirar de la cuenta de ahorro. Intenta de nuevo.', 'error');
+            }
+        });
+
+        // --- NEW: Delete Savings Account Functions ---
+        function showConfirmDeleteSavingsAccountModal(accountId, savingsGoal, balanceUsd) {
+            currentSavingsAccountId = accountId;
+            currentSavingsAccountGoal = savingsGoal;
+            currentSavingsAccountBalanceUSD = balanceUsd; // Store for calculation
+
+            const feeAmount = balanceUsd * SAVINGS_DELETE_FEE_RATE;
+            const remainingBalance = balanceUsd - feeAmount;
+
+            deleteSavingsAccountGoalDisplay.textContent = savingsGoal;
+            deleteSavingsAccountFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
+            deleteSavingsAccountRemainingDisplay.textContent = `$${remainingBalance.toFixed(2)} USD`;
+
+            confirmDeleteSavingsAccountModal.classList.remove('hidden');
+        }
+
+        cancelDeleteSavingsAccountBtn.addEventListener('click', () => {
+            closeModal(confirmDeleteSavingsAccountModal);
+        });
+        cancelDeleteSavingsAccountBtn2.addEventListener('click', () => { // Second cancel button
+            closeModal(confirmDeleteSavingsAccountModal);
+        });
+
+        confirmDeleteSavingsAccountBtn.addEventListener('click', async () => {
+            hideMessage();
+
+            if (!currentSavingsAccountId) {
+                showMessage('Error: No se seleccionó ninguna cuenta de ahorro para eliminar.', 'error');
+                return;
+            }
+
+            try {
+                const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
+                const savingsAccountRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts', currentSavingsAccountId);
+
+                const userDocSnap = await getDoc(userProfileRef);
+                const savingsDocSnap = await getDoc(savingsAccountRef);
+
+                if (!userDocSnap.exists() || !savingsDocSnap.exists()) {
+                    showMessage('Error: No se encontró tu perfil o la cuenta de ahorro a eliminar.', 'error');
+                    return;
+                }
+
+                const userData = userDocSnap.data();
+                const savingsData = savingsDocSnap.data();
+                const savingsBalanceUSD = savingsData.balanceUSD || 0;
+
+                const feeAmount = savingsBalanceUSD * SAVINGS_DELETE_FEE_RATE;
+                const remainingBalanceToTransfer = savingsBalanceUSD - feeAmount;
+
+                // Update main account balance
+                let newUserBalanceUSD = userData.balanceUSD + remainingBalanceToTransfer;
+                let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
+
+                await updateDoc(userProfileRef, {
+                    balanceUSD: newUserBalanceUSD,
+                    balanceDOP: newUserBalanceDOP
+                });
+
+                // Delete the savings account document
+                await deleteDoc(savingsAccountRef);
+
+                // Record transaction for deletion
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                    userId: currentUserId,
+                    type: 'delete_savings_account',
+                    savingsAccountId: currentSavingsAccountId,
+                    savingsGoal: savingsData.savingsGoal,
+                    feeAmount: feeAmount,
+                    remainingBalanceTransferred: remainingBalanceToTransfer,
+                    timestamp: serverTimestamp(),
+                    status: 'completed',
+                    description: `Eliminación de cuenta de ahorro "${savingsData.savingsGoal}"`
+                });
+
+                showMessage(`¡Cuenta de ahorro "${currentSavingsAccountGoal}" eliminada con éxito! Se transfirieron $${remainingBalanceToTransfer.toFixed(2)} USD a tu cuenta principal (después de la tarifa de $${feeAmount.toFixed(2)} USD).`, 'success');
+                closeModal(confirmDeleteSavingsAccountModal);
+                // The loadSavingsAccounts() onSnapshot listener will automatically refresh the table
+            } catch (error) {
+                console.error("Error deleting savings account:", error);
+                showMessage('Error al eliminar la cuenta de ahorro. Intenta de nuevo.', 'error');
+            }
+        });
 
 
         // --- NEW: Admin Edit Announcements Functionality ---
@@ -3284,6 +3793,7 @@
                     editNameInput.value = userData.name || '';
                     editSurnameInput.value = userData.surname || '';
                     editAgeInput.value = userData.age || '';
+                    editPhoneNumberInput.value = userData.phoneNumber || ''; // Populate phone number
                     editProfileModal.classList.remove('hidden');
                 } else {
                     showMessage('No se pudieron cargar los datos de tu perfil.', 'error');
@@ -3306,8 +3816,9 @@
             const name = editNameInput.value.trim();
             const surname = editSurnameInput.value.trim();
             const age = parseInt(editAgeInput.value);
+            const phoneNumber = editPhoneNumberInput.value.trim(); // Get phone number
 
-            if (!name || !surname || isNaN(age) || age <= 0) {
+            if (!name || !surname || isNaN(age) || age <= 0 || !phoneNumber) {
                 showMessage('Por favor, completa todos los campos correctamente.', 'error');
                 return;
             }
@@ -3317,7 +3828,8 @@
                 await updateDoc(userDocRef, {
                     name: name,
                     surname: surname,
-                    age: age
+                    age: age,
+                    phoneNumber: phoneNumber // Update phone number
                 });
                 showMessage('¡Perfil actualizado exitosamente!', 'success');
                 closeModal(editProfileModal);
@@ -3438,7 +3950,7 @@
         acceptRulesBtn.addEventListener('click', () => {
             rulesConsentModal.classList.add('hidden');
             // Proceed with registration using stored data
-            performRegistration(tempRegisterData.name, tempRegisterData.surname, tempRegisterData.age, tempRegisterData.password);
+            performRegistration(tempRegisterData.name, tempRegisterData.surname, tempRegisterData.age, tempRegisterData.phoneNumber, tempRegisterData.password);
         });
 
         rejectRulesBtn.addEventListener('click', () => {
@@ -3546,6 +4058,24 @@
             closeModal(editAnnouncementsModal);
         });
         // The submit event listener for editAnnouncementsForm is already defined globally.
+
+        // NEW: Deposit to Savings Modal Event Listeners
+        cancelDepositToSavingsBtn.addEventListener('click', () => {
+            closeModal(depositToSavingsModal);
+        });
+
+        // NEW: Withdraw from Savings Modal Event Listeners
+        cancelWithdrawFromSavingsBtn.addEventListener('click', () => {
+            closeModal(withdrawFromSavingsModal);
+        });
+
+        // NEW: Confirm Delete Savings Account Modal Event Listeners
+        cancelDeleteSavingsAccountBtn.addEventListener('click', () => {
+            closeModal(confirmDeleteSavingsAccountModal);
+        });
+        cancelDeleteSavingsAccountBtn2.addEventListener('click', () => {
+            closeModal(confirmDeleteSavingsAccountModal);
+        });
 
     </script>
 </body>
