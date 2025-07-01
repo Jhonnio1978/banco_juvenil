@@ -1167,6 +1167,9 @@
         const announcementsTextarea = document.getElementById('announcementsTextarea');
         const announcementsList = document.getElementById('announcementsList'); // Reference to the UL in dashboard
 
+        // Variable to hold the unsubscribe function for admin pending requests listener
+        let adminPendingRequestsUnsubscribe = null;
+
 
         // --- Utility Functions ---
 
@@ -2289,17 +2292,31 @@
 
         closeAdminPendingRequestsModalBtn.addEventListener('click', () => {
             closeModal(adminPendingRequestsModal);
+            // Unsubscribe from the listener when the modal is closed
+            if (adminPendingRequestsUnsubscribe) {
+                adminPendingRequestsUnsubscribe();
+                adminPendingRequestsUnsubscribe = null;
+                console.log("Admin: Unsubscribed from pending requests listener on modal close.");
+            }
         });
 
         /**
          * Loads and displays all pending requests for the admin.
          */
         function loadAdminPendingRequests() {
+            // Unsubscribe from previous listener if it exists
+            if (adminPendingRequestsUnsubscribe) {
+                adminPendingRequestsUnsubscribe();
+                adminPendingRequestsUnsubscribe = null; // Reset
+                console.log("Admin: Unsubscribed from previous pending requests listener.");
+            }
+
             adminPendingRequestsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando solicitudes pendientes...</td></tr>';
             const pendingRequestsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests');
             const q = query(pendingRequestsCollectionRef, where('status', '==', 'pending'));
 
-            onSnapshot(q, async (snapshot) => {
+            // Assign the unsubscribe function to adminPendingRequestsUnsubscribe
+            adminPendingRequestsUnsubscribe = onSnapshot(q, async (snapshot) => {
                 adminPendingRequestsTableBody.innerHTML = '';
                 if (snapshot.empty) {
                     adminPendingRequestsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay solicitudes pendientes.</td></tr>';
@@ -3454,9 +3471,10 @@
             adminPendingRequestsModal.classList.remove('hidden');
             loadAdminPendingRequests();
         });
-        closeAdminPendingRequestsModalBtn.addEventListener('click', () => {
-            closeModal(adminPendingRequestsModal);
-        });
+        // This listener is now handled at the top of the file to manage unsubscribe
+        // closeAdminPendingRequestsModalBtn.addEventListener('click', () => {
+        //     closeModal(adminPendingRequestsModal);
+        // });
 
         // FAQ Modal buttons
         viewFAQBtn.addEventListener('click', () => {
@@ -3508,11 +3526,7 @@
         cancelOpenSavingsAccountBtn.addEventListener('click', () => {
             closeModal(openSavingsAccountModal);
         });
-        savingsAccountForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            // Call the function to handle savings account request
-            savingsAccountForm.dispatchEvent(new Event('submit', { cancelable: true })); // Trigger actual form submission
-        });
+        // The submit event listener for savingsAccountForm is already defined globally.
 
         // NEW: View Savings Accounts Event Listeners
         viewSavingsAccountsBtn.addEventListener('click', () => {
@@ -3531,10 +3545,7 @@
         cancelEditAnnouncementsBtn.addEventListener('click', () => {
             closeModal(editAnnouncementsModal);
         });
-        editAnnouncementsForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            saveAnnouncements();
-        });
+        // The submit event listener for editAnnouncementsForm is already defined globally.
 
     </script>
 </body>
