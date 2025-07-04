@@ -1120,6 +1120,29 @@
         </div>
     </div>
 
+    <!-- NEW: Savings Tips Modal (LLM-powered) -->
+    <div id="savingsTipsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-md">
+            <div class="modal-header">
+                Consejos de Ahorro ✨
+                <button id="closeSavingsTipsModalBtn" class="close-button">&times;</button>
+            </div>
+            <div class="text-left text-gray-700 space-y-4">
+                <p class="text-lg font-semibold">Tu Objetivo: <span id="tipsSavingsGoalDisplay" class="text-blue-700"></span></p>
+                <p>Saldo Actual: <span id="tipsCurrentBalanceDisplay" class="font-bold"></span></p>
+                <p>Fecha de Finalización: <span id="tipsEndDateDisplay" class="font-bold"></span></p>
+                <p>Frecuencia Preferida: <span id="tipsFrequencyDisplay" class="font-bold"></span></p>
+                <button id="generateTipsBtn" class="btn-primary w-full mt-4">Generar Consejos ✨</button>
+                <div id="tipsContent" class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200 text-blue-800 hidden">
+                    <p class="text-center text-sm" id="tipsLoadingIndicator">Cargando consejos...</p>
+                    <div id="llmTipsOutput" class="prose prose-sm max-w-none">
+                        <!-- LLM generated tips will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
@@ -1389,6 +1412,18 @@
         // Variable to hold the unsubscribe function for admin pending requests listener
         let adminPendingRequestsUnsubscribe = null;
 
+        // NEW: Savings Tips Modal elements
+        const savingsTipsModal = document.getElementById('savingsTipsModal');
+        const closeSavingsTipsModalBtn = document.getElementById('closeSavingsTipsModalBtn');
+        const tipsSavingsGoalDisplay = document.getElementById('tipsSavingsGoalDisplay');
+        const tipsCurrentBalanceDisplay = document.getElementById('tipsCurrentBalanceDisplay');
+        const tipsEndDateDisplay = document.getElementById('tipsEndDateDisplay');
+        const tipsFrequencyDisplay = document.getElementById('tipsFrequencyDisplay');
+        const generateTipsBtn = document.getElementById('generateTipsBtn');
+        const tipsContent = document.getElementById('tipsContent');
+        const tipsLoadingIndicator = document.getElementById('tipsLoadingIndicator');
+        const llmTipsOutput = document.getElementById('llmTipsOutput');
+
 
         // --- Utility Functions ---
 
@@ -1572,12 +1607,12 @@
                 loginTab.classList.add('active');
                 registerTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal);
+                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsTipsModal);
             } else {
                 registerTab.classList.add('active');
                 loginTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal);
+                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsTipsModal);
             }
             hideMessage(); // Hide any previous messages when changing tabs
         }
@@ -1874,7 +1909,7 @@
                 loadAnnouncements();
 
                 // Display dashboard and hide login/register forms and all modals
-                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal);
+                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsTipsModal);
 
             } else {
                 // User is signed out
@@ -3496,6 +3531,13 @@
                                 data-savings-goal="${account.savingsGoal}"
                                 data-balance-usd="${account.balanceUSD}"
                                 >Eliminar</button>
+                            <button class="btn-primary btn-sm get-savings-tips-btn mt-2"
+                                data-account-id="${account.accountId}"
+                                data-savings-goal="${account.savingsGoal}"
+                                data-current-balance-usd="${account.balanceUSD}"
+                                data-preferred-frequency="${account.preferredSavingsFrequency}"
+                                data-end-date="${account.endDate}"
+                                >Obtener Consejos ✨</button>
                         </td>
                     `;
                     savingsAccountsTableBody.appendChild(row);
@@ -3518,6 +3560,13 @@
                     button.onclick = (event) => {
                         const { accountId, savingsGoal, balanceUsd } = event.target.dataset;
                         showConfirmDeleteSavingsAccountModal(accountId, savingsGoal, parseFloat(balanceUsd));
+                    };
+                });
+                // NEW: Event listener for "Obtener Consejos" button
+                savingsAccountsTableBody.querySelectorAll('.get-savings-tips-btn').forEach(button => {
+                    button.onclick = (event) => {
+                        const { accountId, savingsGoal, currentBalanceUsd, preferredFrequency, endDate } = event.target.dataset;
+                        showSavingsTipsModal(accountId, savingsGoal, parseFloat(currentBalanceUsd), preferredFrequency, endDate);
                     };
                 });
 
@@ -4038,6 +4087,92 @@
 
         closeContactSupportBtn.addEventListener('click', () => {
             closeModal(contactSupportModal);
+        });
+
+        // --- NEW: Savings Tips Modal Functions (LLM Integration) ---
+        let currentTipsAccountId = null; // Store account ID for tips generation
+
+        function showSavingsTipsModal(accountId, savingsGoal, currentBalanceUsd, preferredFrequency, endDate) {
+            currentTipsAccountId = accountId; // Set the account ID for the LLM function
+            tipsSavingsGoalDisplay.textContent = savingsGoal;
+            tipsCurrentBalanceDisplay.textContent = `$${currentBalanceUsd.toFixed(2)} USD`;
+            tipsEndDateDisplay.textContent = endDate;
+            tipsFrequencyDisplay.textContent = preferredFrequency;
+            llmTipsOutput.innerHTML = ''; // Clear previous tips
+            tipsContent.classList.add('hidden'); // Hide content initially
+            savingsTipsModal.classList.remove('hidden');
+        }
+
+        closeSavingsTipsModalBtn.addEventListener('click', () => {
+            closeModal(savingsTipsModal);
+            llmTipsOutput.innerHTML = ''; // Clear tips when closing
+            tipsContent.classList.add('hidden'); // Hide content div
+            tipsLoadingIndicator.classList.remove('hidden'); // Show loading indicator again
+        });
+
+        generateTipsBtn.addEventListener('click', async () => {
+            llmTipsOutput.innerHTML = ''; // Clear previous tips
+            tipsContent.classList.remove('hidden'); // Show the content area
+            tipsLoadingIndicator.classList.remove('hidden'); // Show loading indicator
+
+            const savingsGoal = tipsSavingsGoalDisplay.textContent;
+            const currentBalance = parseFloat(tipsCurrentBalanceDisplay.textContent.replace('$', '').replace(' USD', ''));
+            const endDate = tipsEndDateDisplay.textContent;
+            const frequency = tipsFrequencyDisplay.textContent;
+            const mainAccountBalance = currentBalanceUSD; // Get user's main account balance for context
+
+            const prompt = `Genera 3-5 consejos de ahorro personalizados y motivadores para un usuario.
+            Su objetivo de ahorro es: "${savingsGoal}".
+            Su saldo actual en esta cuenta de ahorro es: $${currentBalance.toFixed(2)} USD.
+            Su fecha de finalización deseada es: ${endDate}.
+            Su frecuencia de ahorro preferida es: ${frequency}.
+            Su saldo total en la cuenta principal es: $${mainAccountBalance.toFixed(2)} USD.
+
+            Los consejos deben ser prácticos, realistas y adaptados a un público juvenil. Incluye un saludo amigable y termina con una frase motivadora.
+            Formato:
+            ¡Hola, [Nombre del Usuario]!
+            Aquí tienes algunos consejos para alcanzar tu meta de ahorro de "${savingsGoal}":
+            1. [Consejo 1]
+            2. [Consejo 2]
+            ...
+            ¡Sigue así, campeón! ¡Tú puedes lograrlo!`;
+
+            try {
+                const apiKey = ""; // If you want to use models other than gemini-2.0-flash or imagen-3.0-generate-002, provide an API key here. Otherwise, leave this as-is.
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { contents: chatHistory };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Error de la API de Gemini: ${response.status} - ${errorData.error.message}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    llmTipsOutput.innerHTML = text.replace(/\n/g, '<br>'); // Replace newlines with <br> for HTML display
+                } else {
+                    llmTipsOutput.textContent = 'No se pudieron generar consejos. Inténtalo de nuevo.';
+                }
+            } catch (error) {
+                console.error("Error al generar consejos de ahorro con Gemini API:", error);
+                llmTipsOutput.textContent = `Error al generar consejos: ${error.message}. Por favor, inténtalo de nuevo más tarde.`;
+            } finally {
+                tipsLoadingIndicator.classList.add('hidden'); // Hide loading indicator
+            }
         });
 
 
