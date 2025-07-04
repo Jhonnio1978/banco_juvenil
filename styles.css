@@ -1,94 +1,171 @@
 body {
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
-  margin: 0;
-  padding: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #e0f2fe; /* Light blue background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
-#app {
-  max-width: 400px;
-  margin: 40px auto;
-  background: #fff;
-  padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-input, button {
-  width: 100%;
-  margin: 8px 0;
-  padding: 8px;
-}
-
-header {
-    background: #007bff;
-    color: #fff;
-    padding: 10px 0;
-    text-align: center;
-}
-
-h1 {
-    margin: 0;
-}
-
 .container {
-    width: 80%;
-    margin: auto;
-    overflow: hidden;
-}
-
-form {
-    background: #fff;
-    padding: 20px;
-    margin: 20px 0;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-input[type="text"],
-input[type="password"],
-input[type="email"],
-input[type="number"] {
+    min-height: 100vh; /* Ensure container takes full height on small screens */
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
 }
-
-input[type="submit"] {
-    background: #007bff;
-    color: #fff;
-    border: none;
-    padding: 10px;
-    border-radius: 5px;
+.card {
+    background-color: #ffffff;
+    border-radius: 1.5rem; /* More rounded corners */
+    box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.15), 0 0px 12px -6px rgba(0, 0, 0, 0.08); /* Deeper, softer shadow */
+    padding: 2rem;
+    width: 100%;
+    max-width: 480px; /* Increased max-width for better layout */
+    margin: 1.5rem; /* Margin for small screens */
+}
+.btn-primary {
+    background-image: linear-gradient(to right, #2563eb, #3b82f6); /* Stronger blue gradient */
+    color: white;
+    border-radius: 0.75rem;
+    padding: 0.85rem 1.75rem; /* Slightly larger padding */
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    background-image: linear-gradient(to right, #1d4ed8, #2563eb); /* Darker on hover */
+}
+.input-field {
+    padding: 0.85rem 1.25rem; /* Slightly larger padding */
+    border-radius: 0.75rem;
+    border: 1px solid #d1d5db; /* Light gray border */
+    width: 100%;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.input-field:focus {
+    outline: none;
+    border-color: #2563eb; /* Stronger blue border on focus */
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25); /* Blue shadow on focus */
+}
+.tab-button {
+    padding: 0.85rem 1.75rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    color: #6b7280; /* Gray text */
+    transition: all 0.2s ease-in-out;
     cursor: pointer;
-}
-
-input[type="submit"]:hover {
-    background: #0056b3;
-}
-
-.message {
-    margin: 10px 0;
-    padding: 10px;
-    border-radius: 5px;
-}
-
-.success {
-    background: #d4edda;
-    color: #155724;
-}
-
-.error {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-footer {
+    flex: 1; /* Make tabs take equal width */
     text-align: center;
-    padding: 10px 0;
-    background: #007bff;
-    color: #fff;
-    position: relative;
-    bottom: 0;
+}
+.tab-button.active {
+    background-color: #2563eb; /* Stronger blue for active */
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.tab-button:not(.active):hover {
+    background-color: #e5e7eb; /* Lighter gray on hover for inactive tabs */
+}
+.hidden {
+    display: none;
+}
+.table-container {
+    overflow-x: auto;
+    border-radius: 0.75rem; /* Rounded table container */
+    border: 1px solid #e5e7eb;
+}
+table {
     width: 100%;
+    border-collapse: collapse;
+    margin-top: 0; /* Remove top margin as container has padding */
+}
+th, td {
+    padding: 1rem; /* More padding for table cells */
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb; /* Light gray border */
+}
+th {
+    background-color: #f9fafb; /* Light header background */
+    font-weight: 600;
+    color: #4b5563; /* Darker gray text */
+}
+tr:last-child td {
+    border-bottom: none; /* No border on last row */
+}
+tr:hover {
+    background-color: #f3f4f6; /* Light gray on row hover */
+}
+.btn-danger {
+    background-color: #ef4444; /* Red */
+    color: white;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.btn-danger:hover {
+    background-color: #dc2626; /* Darker red */
+    transform: translateY(-1px);
+}
+.btn-success {
+    background-color: #22c55e; /* Green */
+    color: white;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.btn-success:hover {
+    background-color: #16a34a; /* Darker green */
+    transform: translateY(-1px);
+}
+.btn-secondary {
+    background-color: #6b7280; /* Gray */
+    color: white;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.btn-secondary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    background-color: #4b5563;
+}
+.modal-content {
+    background-color: #ffffff;
+    border-radius: 1.5rem;
+    box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.15), 0 0px 12px -6px rgba(0, 0, 0, 0.08);
+    max-width: 90%;
+    width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 2rem;
+}
+/* Specific modal header for better aesthetics */
+.modal-header {
+    background-image: linear-gradient(to right, #2563eb, #3b82f6);
+    color: white;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.75rem;
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+    position: relative;
+    margin: -2rem -2rem 2rem -2rem; /* Pull header outside padding */
+}
+.modal-header .close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.8rem;
+    cursor: pointer;
+    line-height: 1;
 }
