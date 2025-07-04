@@ -370,6 +370,8 @@
                     <button id="openSavingsAccountBtn" class="btn-primary w-full bg-gradient-to-r from-lime-600 to-lime-700 hover:from-lime-700 hover:to-lime-800">Abrir Cuenta de Ahorro 💰</button>
                     <!-- NEW: View Savings Accounts Button -->
                     <button id="viewSavingsAccountsBtn" class="btn-primary w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800">Ver Mis Cuentas de Ahorro 📈</button>
+                    <!-- NEW: View Savings Debts Button (Client) -->
+                    <button id="viewSavingsDebtsBtn" class="btn-primary w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800">Ver Mis Deudas de Ahorro 💸</button>
 
 
                     <!-- Edit Profile Button -->
@@ -391,6 +393,8 @@
                         <button id="adminFullHistoryBtn" class="btn-primary w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800">Ver Historial Completo (Admin)</button>
                         <!-- NEW: Edit Announcements Button -->
                         <button id="editAnnouncementsBtn" class="btn-primary w-full bg-gradient-to-r from-yellow-700 to-yellow-800 hover:from-yellow-800 hover:to-yellow-900">Editar Anuncios ✏️</button>
+                        <!-- NEW: View Admin Savings Debts Button -->
+                        <button id="viewAdminSavingsDebtsBtn" class="btn-primary w-full bg-gradient-to-r from-red-800 to-red-900 hover:from-red-900 hover:to-red-950">Ver Deudas de Ahorro (Admin) 🚨</button>
                     </div>
 
                     <!-- FAQ button visible to all logged-in users -->
@@ -642,6 +646,10 @@
                 <div>
                     <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Hay alguna tarifa por cerrar una cuenta de ahorro?</h4>
                     <p class="text-sm">Sí, al eliminar una cuenta de ahorro, se aplica una tarifa del 2% sobre el saldo restante. El resto del dinero se transferirá a tu cuenta principal.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Qué pasa si no puedo pagar mi cuota de ahorro?</h4>
+                    <p class="text-sm">Si tu cuenta principal no tiene fondos suficientes para cubrir tu cuota de ahorro automática, se registrará una deuda. Si esta deuda no se paga en la fecha límite, se aplicará una indemnización que se cargará a tu cuenta y se transferirá al administrador.</p>
                 </div>
             </div>
         </div>
@@ -963,6 +971,7 @@
                 <div class="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 p-4 mb-4" role="alert">
                     <p class="font-bold">Aviso Importante:</p>
                     <p class="text-sm">Al eliminar una cuenta de ahorro, se aplicará una tarifa del 2% sobre el saldo restante. El resto del dinero se transferirá a tu cuenta principal.</p>
+                    <p class="text-sm mt-2">Las cuotas de ahorro se cobrarán automáticamente. Si no tienes fondos, se registrará una deuda y se podrá aplicar una indemnización.</p>
                 </div>
                 <div>
                     <label for="savingsGoal" class="block text-gray-700 text-sm font-semibold mb-2">¿Para qué estás ahorrando?</label>
@@ -983,11 +992,17 @@
                     <label for="preferredSavingsFrequency" class="block text-gray-700 text-sm font-semibold mb-2">Frecuencia de Ahorro Preferida</label>
                     <select id="preferredSavingsFrequency" class="input-field" required>
                         <option value="">Selecciona una frecuencia</option>
+                        <option value="Diaria">Diaria</option>
                         <option value="Semanal">Semanal</option>
                         <option value="Quincenal">Quincenal</option>
                         <option value="Mensual">Mensual</option>
-                        <option value="Ocasional">Ocasional</option>
+                        <option value="Ocasional">Ocasional (sin cobro automático)</option>
                     </select>
+                </div>
+                <div>
+                    <label for="periodicContributionAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto de Cuota Periódica (USD)</label>
+                    <input type="number" id="periodicContributionAmount" class="input-field" placeholder="Ej: 10.00" min="0" step="0.01" required>
+                    <p class="text-xs text-gray-500 mt-1">Este es el monto que se intentará cobrar automáticamente según la frecuencia seleccionada.</p>
                 </div>
                 <div>
                     <label for="savingsEndDate" class="block text-gray-700 text-sm font-semibold mb-2">Fecha de Finalización del Ahorro</label>
@@ -1016,14 +1031,15 @@
                             <th>Saldo (USD)</th>
                             <th>Saldo (DOP)</th>
                             <th>Frecuencia</th>
-                            <th>Inicio</th>
+                            <th>Cuota Periódica</th>
+                            <th>Próximo Cobro</th>
                             <th>Fin</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="savingsAccountsTableBody">
-                        <tr><td colspan="9" class="text-center text-gray-500 py-4">Cargando cuentas de ahorro...</td></tr>
+                        <tr><td colspan="10" class="text-center text-gray-500 py-4">Cargando cuentas de ahorro...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1120,25 +1136,56 @@
         </div>
     </div>
 
-    <!-- NEW: Savings Tips Modal (LLM-powered) -->
-    <div id="savingsTipsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-        <div class="modal-content w-full max-w-md">
+    <!-- NEW: Savings Debts Modal (Client) -->
+    <div id="savingsDebtsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content">
             <div class="modal-header">
-                Consejos de Ahorro ✨
-                <button id="closeSavingsTipsModalBtn" class="close-button">&times;</button>
+                Mis Deudas de Ahorro 💸
+                <button id="closeSavingsDebtsModalBtn" class="close-button">&times;</button>
             </div>
-            <div class="text-left text-gray-700 space-y-4">
-                <p class="text-lg font-semibold">Tu Objetivo: <span id="tipsSavingsGoalDisplay" class="text-blue-700"></span></p>
-                <p>Saldo Actual: <span id="tipsCurrentBalanceDisplay" class="font-bold"></span></p>
-                <p>Fecha de Finalización: <span id="tipsEndDateDisplay" class="font-bold"></span></p>
-                <p>Frecuencia Preferida: <span id="tipsFrequencyDisplay" class="font-bold"></span></p>
-                <button id="generateTipsBtn" class="btn-primary w-full mt-4">Generar Consejos ✨</button>
-                <div id="tipsContent" class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200 text-blue-800 hidden">
-                    <p class="text-center text-sm" id="tipsLoadingIndicator">Cargando consejos...</p>
-                    <div id="llmTipsOutput" class="prose prose-sm max-w-none">
-                        <!-- LLM generated tips will be displayed here -->
-                    </div>
-                </div>
+            <div class="table-container bg-white shadow">
+                <table class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Cuenta de Ahorro</th>
+                            <th>Monto Adeudado</th>
+                            <th>Fecha Límite</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="savingsDebtsTableBody">
+                        <tr><td colspan="5" class="text-center text-gray-500 py-4">Cargando deudas...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW: Admin Savings Debts Modal -->
+    <div id="adminSavingsDebtsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content">
+            <div class="modal-header">
+                Deudas de Cuentas de Ahorro (Admin) 🚨
+                <button id="closeAdminSavingsDebtsModalBtn" class="close-button">&times;</button>
+            </div>
+            <div class="table-container bg-white shadow">
+                <table class="min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Cuenta de Ahorro</th>
+                            <th>Monto Adeudado</th>
+                            <th>Fecha Límite</th>
+                            <th>Estado</th>
+                            <th>Contacto</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminSavingsDebtsTableBody">
+                        <tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando deudas...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -1175,6 +1222,7 @@
         const COMMISSION_RATE = 0.03; // 3% commission for online shopping and streaming
         const WITHDRAWAL_FEE_RATE = 0.04; // 4% fee for withdrawals
         const SAVINGS_DELETE_FEE_RATE = 0.02; // 2% fee for deleting savings account
+        const INDEMNIZATION_RATE = 0.05; // 5% indemnization for overdue savings debts
 
         // Admin email for prototype purposes
         const ADMIN_EMAIL = `admin.jhonnio@${appId}.com`;
@@ -1188,8 +1236,9 @@
         let currentTransferRecipientIdentifier = ''; // The ID or email the user typed
         let currentTransferRecipientDisplayName = ''; // The name displayed to the user
 
-        // Global map to store user display names to avoid repeated Firestore lookups
+        // Global map to store user display names and phone numbers to avoid repeated Firestore lookups
         const userDisplayNamesCache = {};
+        const userPhoneNumbersCache = {}; // New cache for phone numbers
 
         // Global variable to store user's transaction data for summarization (no longer used for AI summary but kept for history loading)
         let userTransactionsData = [];
@@ -1233,7 +1282,8 @@
         const openSavingsAccountBtn = document.getElementById('openSavingsAccountBtn'); // NEW: Open Savings Account Button
         const viewSavingsAccountsBtn = document.getElementById('viewSavingsAccountsBtn'); // NEW: View Savings Accounts Button
         const editAnnouncementsBtn = document.getElementById('editAnnouncementsBtn'); // NEW: Edit Announcements Button
-
+        const viewSavingsDebtsBtn = document.getElementById('viewSavingsDebtsBtn'); // NEW: View Savings Debts Button (Client)
+        const viewAdminSavingsDebtsBtn = document.getElementById('viewAdminSavingsDebtsBtn'); // NEW: View Admin Savings Debts Button
 
         const adminFullHistoryTableBodyModal = document.getElementById('adminFullHistoryTableBodyModal'); // Admin History (in modal)
 
@@ -1263,6 +1313,8 @@
             <p class="mb-2"><strong>6. Compras y Streaming:</strong> Las solicitudes de compra por internet y pago de servicios de streaming requieren la aprobación del administrador antes de que se deduzca el dinero.</p>
             <p class="mb-2"><strong>7. Transferencias:</strong> Las transferencias tienen un tiempo de procesamiento de 10 segundos. Verifica bien al destinatario, no son reversibles.</p>
             <p class="mb-2"><strong>8. Cuentas de Ahorro:</strong> Las solicitudes para abrir cuentas de ahorro requieren la aprobación del administrador. Al eliminar una cuenta de ahorro, se aplicará una tarifa del 2% sobre el saldo restante.</p>
+            <p class="mb-2"><strong>9. Cobro Automático de Ahorros:</strong> Las cuotas de ahorro se intentarán cobrar automáticamente de tu cuenta principal en la frecuencia establecida. Si no hay fondos suficientes, se registrará una deuda y se podrá aplicar una indemnización.</p>
+            <p class="mb-2"><strong>10. Deudas de Ahorro:</strong> Las deudas por cuotas de ahorro no pagadas pueden generar una indemnización del ${INDEMNIZATION_RATE * 100}% del monto adeudado si no se pagan a tiempo. Esta indemnización se transferirá al administrador.</p>
         `;
 
         // Modals
@@ -1366,6 +1418,7 @@
         const initialDepositAmountInput = document.getElementById('initialDepositAmount');
         const initialDepositCurrencyInput = document.getElementById('initialDepositCurrency');
         const preferredSavingsFrequencyInput = document.getElementById('preferredSavingsFrequency');
+        const periodicContributionAmountInput = document.getElementById('periodicContributionAmount'); // NEW: Periodic Contribution Amount
         const savingsEndDateInput = document.getElementById('savingsEndDate'); // NEW: End Date Input
 
         // NEW: View Savings Accounts Modal elements
@@ -1411,21 +1464,66 @@
 
         // Variable to hold the unsubscribe function for admin pending requests listener
         let adminPendingRequestsUnsubscribe = null;
+        let adminSavingsDebtsUnsubscribe = null; // New unsubscribe for admin savings debts
 
-        // NEW: Savings Tips Modal elements
-        const savingsTipsModal = document.getElementById('savingsTipsModal');
-        const closeSavingsTipsModalBtn = document.getElementById('closeSavingsTipsModalBtn');
-        const tipsSavingsGoalDisplay = document.getElementById('tipsSavingsGoalDisplay');
-        const tipsCurrentBalanceDisplay = document.getElementById('tipsCurrentBalanceDisplay');
-        const tipsEndDateDisplay = document.getElementById('tipsEndDateDisplay');
-        const tipsFrequencyDisplay = document.getElementById('tipsFrequencyDisplay');
-        const generateTipsBtn = document.getElementById('generateTipsBtn');
-        const tipsContent = document.getElementById('tipsContent');
-        const tipsLoadingIndicator = document.getElementById('tipsLoadingIndicator');
-        const llmTipsOutput = document.getElementById('llmTipsOutput');
+        // NEW: Savings Debts Modal (Client)
+        const savingsDebtsModal = document.getElementById('savingsDebtsModal');
+        const closeSavingsDebtsModalBtn = document.getElementById('closeSavingsDebtsModalBtn');
+        const savingsDebtsTableBody = document.getElementById('savingsDebtsTableBody');
+
+        // NEW: Admin Savings Debts Modal
+        const adminSavingsDebtsModal = document.getElementById('adminSavingsDebtsModal');
+        const closeAdminSavingsDebtsModalBtn = document.getElementById('closeAdminSavingsDebtsModalBtn');
+        const adminSavingsDebtsTableBody = document.getElementById('adminSavingsDebtsTableBody');
 
 
         // --- Utility Functions ---
+
+        /**
+         * Adds days to a given date.
+         * @param {Date} date The starting date.
+         * @param {number} days The number of days to add.
+         * @returns {Date} The new date.
+         */
+        function addDays(date, days) {
+            const result = new Date(date);
+            result.setDate(date.getDate() + days);
+            return result;
+        }
+
+        /**
+         * Adds weeks to a given date.
+         * @param {Date} date The starting date.
+         * @param {number} weeks The number of weeks to add.
+         * @returns {Date} The new date.
+         */
+        function addWeeks(date, weeks) {
+            return addDays(date, weeks * 7);
+        }
+
+        /**
+         * Adds months to a given date.
+         * @param {Date} date The starting date.
+         * @param {number} months The number of months to add.
+         * @returns {Date} The new date.
+         */
+        function addMonths(date, months) {
+            const result = new Date(date);
+            result.setMonth(date.getMonth() + months);
+            return result;
+        }
+
+        /**
+         * Formats a Date object to 'YYYY-MM-DD'.
+         * @param {Date} date The date object.
+         * @returns {string} Formatted date string.
+         */
+        function formatDateToYYYYMMDD(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
         /**
          * Displays a message in the UI message box.
@@ -1549,6 +1647,7 @@
                 currencyDisplay = transaction.initialDepositCurrency;
                 otherDetails += `<p><strong>Objetivo de Ahorro:</strong> ${transaction.savingsGoal || 'N/A'}</p>`;
                 otherDetails += `<p><strong>Frecuencia Preferida:</strong> ${transaction.preferredSavingsFrequency || 'N/A'}</p>`;
+                otherDetails += `<p><strong>Cuota Periódica:</strong> $${(transaction.periodicContributionAmount ?? 0).toFixed(2)} USD</p>`;
                 otherDetails += `<p><strong>Fecha Inicio:</strong> ${transaction.startDate ? new Date(transaction.startDate.seconds * 1000).toLocaleDateString() : 'N/A'}</p>`;
                 otherDetails += `<p><strong>Fecha Fin:</strong> ${transaction.endDate || 'N/A'}</p>`;
                 otherDetails += `<p><strong>ID de Cuenta de Ahorro:</strong> ${transaction.savingsAccountId || 'N/A'}</p>`;
@@ -1571,6 +1670,28 @@
                 feeDisplay = `Tarifa (2%): $${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
                 otherDetails += `<p><strong>Objetivo de Cuenta Eliminada:</strong> ${transaction.savingsGoal || 'N/A'}</p>`;
                 otherDetails += `<p><strong>ID Cuenta Eliminada:</strong> ${transaction.savingsAccountId || 'N/A'}</p>`;
+            } else if (transaction.type === 'automatic_savings_collection') {
+                typeDisplay = 'Cobro Automático de Ahorro';
+                amountDisplay = (transaction.amount ?? 0).toFixed(2);
+                currencyDisplay = transaction.currency;
+                otherDetails += `<p><strong>ID Cuenta Ahorro:</strong> ${transaction.savingsAccountId || 'N/A'}</p>`;
+                otherDetails += `<p><strong>Objetivo:</strong> ${transaction.savingsGoal || 'N/A'}</p>`;
+            } else if (transaction.type === 'savings_debt_payment') {
+                typeDisplay = 'Pago de Deuda de Ahorro';
+                amountDisplay = (transaction.amount ?? 0).toFixed(2);
+                currencyDisplay = transaction.currency;
+                otherDetails += `<p><strong>ID Cuenta Ahorro:</strong> ${transaction.savingsAccountId || 'N/A'}</p>`;
+                otherDetails += `<p><strong>Objetivo:</strong> ${transaction.savingsGoal || 'N/A'}</p>`;
+                otherDetails += `<p><strong>ID Deuda:</strong> ${transaction.debtId || 'N/A'}</p>`;
+            } else if (transaction.type === 'savings_indemnization_applied') {
+                typeDisplay = 'Indemnización de Ahorro Aplicada';
+                amountDisplay = (transaction.amount ?? 0).toFixed(2);
+                currencyDisplay = transaction.currency;
+                const payerName = await getUserDisplayName(transaction.payerId);
+                const receiverName = await getUserDisplayName(transaction.receiverId);
+                otherDetails += `<p><strong>Pagado por:</strong> ${payerName}</p>`;
+                otherDetails += `<p><strong>Recibido por:</strong> ${receiverName}</p>`;
+                otherDetails += `<p><strong>ID Deuda:</strong> ${transaction.debtId || 'N/A'}</p>`;
             }
 
 
@@ -1607,12 +1728,12 @@
                 loginTab.classList.add('active');
                 registerTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsTipsModal);
+                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
             } else {
                 registerTab.classList.add('active');
                 loginTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsTipsModal);
+                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
             }
             hideMessage(); // Hide any previous messages when changing tabs
         }
@@ -1665,6 +1786,30 @@
                 console.error("Error fetching user display name:", error);
             }
             return `ID: ${userId.substring(0, 5)}...`; // Fallback to truncated Firebase UID
+        }
+
+        /**
+         * Fetches a user's phone number from cache or Firestore.
+         * @param {string} userId The Firebase UID of the user.
+         * @returns {Promise<string|null>} The user's phone number or null if not found.
+         */
+        async function getUserPhoneNumber(userId) {
+            if (userPhoneNumbersCache[userId]) {
+                return userPhoneNumbersCache[userId];
+            }
+            try {
+                const userDocRef = doc(db, 'artifacts', appId, 'users', userId);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    const phoneNumber = userData.phoneNumber || null;
+                    userPhoneNumbersCache[userId] = phoneNumber;
+                    return phoneNumber;
+                }
+            } catch (error) {
+                console.error("Error fetching user phone number:", error);
+            }
+            return null;
         }
 
 
@@ -1909,7 +2054,7 @@
                 loadAnnouncements();
 
                 // Display dashboard and hide login/register forms and all modals
-                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsTipsModal);
+                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
 
             } else {
                 // User is signed out
@@ -2644,7 +2789,7 @@
                             typeDisplay = 'Apertura Cta. Ahorro';
                             amountDisplay = (request.initialDepositAmount ?? 0).toFixed(2);
                             currencyDisplay = request.initialDepositCurrency;
-                            detailsDisplay = `Objetivo: ${request.savingsGoal}, Frecuencia: ${request.preferredSavingsFrequency}. Inicio: ${request.startDate ? new Date(request.startDate.seconds * 1000).toLocaleDateString() : 'N/A'}, Fin: ${request.endDate || 'N/A'}. Depósito Inicial: ${amountDisplay} ${currencyDisplay}`;
+                            detailsDisplay = `Objetivo: ${request.savingsGoal}, Frecuencia: ${request.preferredSavingsFrequency}. Cuota Periódica: $${(request.periodicContributionAmount ?? 0).toFixed(2)} USD. Inicio: ${request.startDate ? new Date(request.startDate.seconds * 1000).toLocaleDateString() : 'N/A'}, Fin: ${request.endDate || 'N/A'}. Depósito Inicial: ${amountDisplay} ${currencyDisplay}`;
                             break;
                         default:
                             typeDisplay = 'Desconocido';
@@ -2683,6 +2828,7 @@
                                 data-initial-deposit-amount="${request.initialDepositAmount || 0}"
                                 data-initial-deposit-currency="${request.initialDepositCurrency || ''}"
                                 data-preferred-savings-frequency="${request.preferredSavingsFrequency || ''}"
+                                data-periodic-contribution-amount="${request.periodicContributionAmount || 0}"
                                 data-start-date="${request.startDate ? request.startDate.seconds * 1000 : ''}"
                                 data-end-date="${request.endDate || ''}"
                                 >Confirmar</button>
@@ -2727,6 +2873,7 @@
                     parseFloat(dataset.initialDepositAmount),
                     dataset.initialDepositCurrency,
                     dataset.preferredSavingsFrequency,
+                    parseFloat(dataset.periodicContributionAmount), // Pass periodicContributionAmount
                     dataset.startDate, // Pass startDate
                     dataset.endDate // Pass endDate
                 );
@@ -2745,9 +2892,9 @@
             productAmount, productCurrency, productLinks,
             service, accountIdentifier, subscriptionAmount, subscriptionCurrency,
             feeAmount, totalAmountToDeduct, category,
-            savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, startDate, endDate // New parameters
+            savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, startDate, endDate // New parameters
         ) {
-            console.log("Confirming request:", { requestId, type, userId, amount, currency, serialNumber, productAmount, productCurrency, productLinks, service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, totalAmountToDeduct, category, savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, startDate, endDate });
+            console.log("Confirming request:", { requestId, type, userId, amount, currency, serialNumber, productAmount, productCurrency, productLinks, service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, totalAmountToDeduct, category, savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, startDate, endDate });
             try {
                 const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
                 const requestDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_requests', requestId);
@@ -2904,6 +3051,19 @@
                         userCurrentBalanceUSD -= initialDepositAmountInUSD;
                         userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
 
+                        // Calculate next contribution due date based on frequency
+                        let nextDueDate = new Date(); // Start from today
+                        if (preferredSavingsFrequency === 'Diaria') {
+                            nextDueDate = addDays(nextDueDate, 1);
+                        } else if (preferredSavingsFrequency === 'Semanal') {
+                            nextDueDate = addWeeks(nextDueDate, 1);
+                        } else if (preferredSavingsFrequency === 'Quincenal') {
+                            nextDueDate = addDays(nextDueDate, 15);
+                        } else if (preferredSavingsFrequency === 'Mensual') {
+                            nextDueDate = addMonths(nextDueDate, 1);
+                        }
+                        // For 'Ocasional', nextDueDate is not relevant for automatic collection, can be null or same as endDate
+
                         // Create new savings account document
                         const newSavingsAccountId = crypto.randomUUID();
                         const savingsAccountRef = doc(db, 'artifacts', appId, 'users', userId, 'savings_accounts', newSavingsAccountId);
@@ -2916,7 +3076,9 @@
                             initialDepositAmount: initialDepositAmount,
                             initialDepositCurrency: initialDepositCurrency,
                             preferredSavingsFrequency: preferredSavingsFrequency,
-                            startDate: serverTimestamp(), // Automatically set start date
+                            periodicContributionAmount: periodicContributionAmount, // Store periodic contribution
+                            nextContributionDueDate: preferredSavingsFrequency !== 'Ocasional' ? nextDueDate : null, // Set next due date
+                            lastContributionAttemptDate: null, // Initialize last attempt date
                             endDate: endDate, // Use provided end date
                             createdAt: serverTimestamp(),
                             status: 'active'
@@ -2965,7 +3127,7 @@
                     ...(type === 'withdrawal' && { feeAmount: calculatedFeeInUSD, feeCurrency: 'USD', adminReceiverId: adminId }),
                     ...(type === 'online_purchase' && { productAmount, productCurrency, productLinks, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category }),
                     ...(type === 'streaming_payment' && { service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category }),
-                    ...(type === 'savings_account_open' && { savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, savingsAccountId, startDate: serverTimestamp(), endDate: endDate }) // New for savings account
+                    ...(type === 'savings_account_open' && { savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, savingsAccountId, startDate: serverTimestamp(), endDate: endDate }) // New for savings account
                 });
                 console.log("Transaction recorded successfully.");
 
@@ -3032,7 +3194,7 @@
                     const transaction = { id: docEntry.id, ...docEntry.data() };
 
                     // Filter for current user's completed transactions
-                    if ((transaction.type === 'deposit' || transaction.type === 'withdrawal' || transaction.type === 'online_purchase' || transaction.type === 'streaming_payment' || transaction.type === 'savings_account_open' || transaction.type === 'deposit_to_savings' || transaction.type === 'withdraw_from_savings' || transaction.type === 'delete_savings_account') && transaction.userId === currentUserId) {
+                    if ((transaction.type === 'deposit' || transaction.type === 'withdrawal' || transaction.type === 'online_purchase' || transaction.type === 'streaming_payment' || transaction.type === 'savings_account_open' || transaction.type === 'deposit_to_savings' || transaction.type === 'withdraw_from_savings' || transaction.type === 'delete_savings_account' || transaction.type === 'automatic_savings_collection' || transaction.type === 'savings_debt_payment' || transaction.type === 'savings_indemnization_applied') && transaction.userId === currentUserId) {
                         userTransactionsData.push(transaction);
                     } else if (transaction.type === 'transfer' && (transaction.senderId === currentUserId || transaction.recipientId === currentUserId)) {
                         userTransactionsData.push(transaction);
@@ -3114,6 +3276,21 @@
                             typeDisplay = 'Eliminación Cta. Ahorro';
                             detailsDisplay = `Objetivo: ${transaction.savingsGoal}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
                             amountDisplay = `+${(transaction.remainingBalanceTransferred ?? 0).toFixed(2)} USD (a principal)`;
+                            break;
+                        case 'automatic_savings_collection':
+                            typeDisplay = 'Cobro Automático Ahorro';
+                            detailsDisplay = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
+                            amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency} (a ahorro)`;
+                            break;
+                        case 'savings_debt_payment':
+                            typeDisplay = 'Pago Deuda Ahorro';
+                            detailsDisplay = `Objetivo: ${transaction.savingsGoal}, ID Deuda: ${transaction.debtId.substring(0, 8)}...`;
+                            amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency}`;
+                            break;
+                        case 'savings_indemnization_applied':
+                            typeDisplay = 'Indemnización Ahorro';
+                            detailsDisplay = `ID Deuda: ${transaction.debtId.substring(0, 8)}...`;
+                            amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency} (a admin)`;
                             break;
                     }
 
@@ -3242,7 +3419,7 @@
                             usersInvolved = await getUserDisplayName(transaction.userId);
                             amountValue = (transaction.initialDepositAmount ?? 0);
                             currencyValue = transaction.initialDepositCurrency;
-                            details = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
+                            details = `Objetivo: ${transaction.savingsGoal}, Cuota Periódica: $${(transaction.periodicContributionAmount ?? 0).toFixed(2)} USD, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
                             break;
                         case 'deposit_to_savings':
                             typeDisplay = 'Depósito a Ahorro';
@@ -3264,6 +3441,29 @@
                             amountValue = (transaction.remainingBalanceTransferred ?? 0);
                             currencyValue = 'USD';
                             details = `Objetivo: ${transaction.savingsGoal}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
+                            break;
+                        case 'automatic_savings_collection':
+                            typeDisplay = 'Cobro Automático Ahorro';
+                            usersInvolved = await getUserDisplayName(transaction.userId);
+                            amountValue = (transaction.amount ?? 0);
+                            currencyValue = transaction.currency;
+                            details = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
+                            break;
+                        case 'savings_debt_payment':
+                            typeDisplay = 'Pago Deuda Ahorro';
+                            usersInvolved = await getUserDisplayName(transaction.userId);
+                            amountValue = (transaction.amount ?? 0);
+                            currencyValue = transaction.currency;
+                            details = `Objetivo: ${transaction.savingsGoal}, ID Deuda: ${transaction.debtId.substring(0, 8)}...`;
+                            break;
+                        case 'savings_indemnization_applied':
+                            typeDisplay = 'Indemnización Ahorro';
+                            const payerName = await getUserDisplayName(transaction.payerId);
+                            const receiverName = await getUserDisplayName(transaction.receiverId);
+                            usersInvolved = `${payerName} (paga) -> ${receiverName} (recibe)`;
+                            amountValue = (transaction.amount ?? 0);
+                            currencyValue = transaction.currency;
+                            details = `ID Deuda: ${transaction.debtId.substring(0, 8)}...`;
                             break;
                         default:
                             usersInvolved = transaction.userId || 'N/A'; // Fallback
@@ -3339,7 +3539,7 @@
                             typeDisplay = 'Apertura Cta. Ahorro';
                             amountToDisplay = (data.initialDepositAmount ?? 0);
                             currencyToDisplay = data.initialDepositCurrency;
-                            detailDisplay = `Objetivo: ${data.savingsGoal}, Frecuencia: ${data.preferredSavingsFrequency}, Fin: ${data.endDate || 'N/A'}`;
+                            detailDisplay = `Objetivo: ${data.savingsGoal}, Frecuencia: ${data.preferredSavingsFrequency}, Cuota: $${(data.periodicContributionAmount ?? 0).toFixed(2)} USD, Fin: ${data.endDate || 'N/A'}`;
                             break;
                         default:
                             typeDisplay = 'Desconocido';
@@ -3417,10 +3617,11 @@
             const initialDepositAmount = parseFloat(initialDepositAmountInput.value);
             const initialDepositCurrency = initialDepositCurrencyInput.value;
             const preferredSavingsFrequency = preferredSavingsFrequencyInput.value;
+            const periodicContributionAmount = parseFloat(periodicContributionAmountInput.value); // Get periodic contribution
             const savingsEndDate = savingsEndDateInput.value; // Get end date
 
-            if (!savingsGoal || isNaN(initialDepositAmount) || initialDepositAmount <= 0 || !preferredSavingsFrequency || !savingsEndDate) {
-                showMessage('Por favor, completa todos los campos para tu cuenta de ahorro.', 'error');
+            if (!savingsGoal || isNaN(initialDepositAmount) || initialDepositAmount <= 0 || !preferredSavingsFrequency || isNaN(periodicContributionAmount) || periodicContributionAmount < 0 || !savingsEndDate) {
+                showMessage('Por favor, completa todos los campos correctamente para tu cuenta de ahorro.', 'error');
                 return;
             }
 
@@ -3430,7 +3631,7 @@
             }
 
             if (currentBalanceUSD < initialDepositAmountInUSD) {
-                showMessage(`Saldo insuficiente para el depósito inicial de ${initialDepositAmount.toFixed(2)} ${initialDepositCurrency}. Necesitas al menos $${initialDepositAmountInUSD.toFixed(2)} USD.`, 'error');
+                showMessage(`Saldo insuficiente para el depósito inicial de ${initialDepositAmount.toFixed(2)} ${initialDepositCurrency}. Necesitas al menos $${initialDepositAmountInUSD.toFixed(2)} USD en tu cuenta principal.`, 'error');
                 return;
             }
 
@@ -3443,6 +3644,7 @@
                     initialDepositAmount: initialDepositAmount,
                     initialDepositCurrency: initialDepositCurrency,
                     preferredSavingsFrequency: preferredSavingsFrequency,
+                    periodicContributionAmount: periodicContributionAmount, // Store periodic contribution
                     startDate: serverTimestamp(), // Automatically set start date
                     endDate: savingsEndDate, // Store provided end date
                     timestamp: serverTimestamp(),
@@ -3462,6 +3664,7 @@
                 Objetivo: ${savingsGoal}
                 Depósito Inicial: ${initialDepositAmount.toFixed(2)} ${initialDepositCurrency}
                 Frecuencia Preferida: ${preferredSavingsFrequency}
+                Cuota Periódica: $${periodicContributionAmount.toFixed(2)} USD
                 Fecha Finalización: ${savingsEndDate}
                 Por favor, revisa y confirma.
                 `;
@@ -3484,27 +3687,52 @@
             closeModal(viewSavingsAccountsModal);
         });
 
+        /**
+         * Loads and displays the user's savings accounts and handles automatic collection.
+         */
         async function loadSavingsAccounts() {
-            savingsAccountsTableBody.innerHTML = '<tr><td colspan="9" class="text-center text-gray-500 py-4">Cargando cuentas de ahorro...</td></tr>';
+            savingsAccountsTableBody.innerHTML = '<tr><td colspan="10" class="text-center text-gray-500 py-4">Cargando cuentas de ahorro...</td></tr>';
 
             if (!currentUserId) {
-                savingsAccountsTableBody.innerHTML = '<tr><td colspan="9" class="text-center text-red-500 py-4">Inicia sesión para ver tus cuentas de ahorro.</td></tr>';
+                savingsAccountsTableBody.innerHTML = '<tr><td colspan="10" class="text-center text-red-500 py-4">Inicia sesión para ver tus cuentas de ahorro.</td></tr>';
                 return;
             }
 
             const savingsAccountsRef = collection(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts');
 
-            onSnapshot(savingsAccountsRef, (snapshot) => {
+            onSnapshot(savingsAccountsRef, async (snapshot) => {
                 savingsAccountsTableBody.innerHTML = '';
                 if (snapshot.empty) {
-                    savingsAccountsTableBody.innerHTML = '<tr><td colspan="9" class="text-center text-gray-500 py-4">No tienes cuentas de ahorro activas.</td></tr>';
+                    savingsAccountsTableBody.innerHTML = '<tr><td colspan="10" class="text-center text-gray-500 py-4">No tienes cuentas de ahorro activas.</td></tr>';
                     return;
                 }
 
-                snapshot.forEach(docEntry => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Normalize to start of day for comparison
+
+                for (const docEntry of snapshot.docs) {
                     const account = docEntry.data();
+                    const savingsAccountId = docEntry.id;
+
                     const startDateDisplay = account.startDate ? new Date(account.startDate.seconds * 1000).toLocaleDateString() : 'N/A';
                     const endDateDisplay = account.endDate || 'N/A';
+                    const nextContributionDueDateDisplay = account.nextContributionDueDate ? new Date(account.nextContributionDueDate.seconds * 1000).toLocaleDateString() : 'N/A';
+
+                    // --- Automatic Collection Logic ---
+                    if (account.status === 'active' && account.preferredSavingsFrequency !== 'Ocasional' && account.periodicContributionAmount > 0) {
+                        const nextDueDate = account.nextContributionDueDate ? new Date(account.nextContributionDueDate.seconds * 1000) : null;
+                        const lastAttemptDate = account.lastContributionAttemptDate ? new Date(account.lastContributionAttemptDate.seconds * 1000) : null;
+
+                        // Normalize nextDueDate and lastAttemptDate to start of day for accurate comparison
+                        if (nextDueDate) nextDueDate.setHours(0, 0, 0, 0);
+                        if (lastAttemptDate) lastAttemptDate.setHours(0, 0, 0, 0);
+
+                        // Check if a payment is due AND it hasn't been attempted today
+                        if (nextDueDate && today >= nextDueDate && (!lastAttemptDate || today > lastAttemptDate)) {
+                            console.log(`Attempting automatic collection for savings account ${savingsAccountId} (Goal: ${account.savingsGoal})`);
+                            await attemptAutomaticSavingsCollection(currentUserId, savingsAccountId, account.periodicContributionAmount, account.savingsGoal);
+                        }
+                    }
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -3513,7 +3741,8 @@
                         <td>$${(account.balanceUSD ?? 0).toFixed(2)} USD</td>
                         <td>RD$${(account.balanceDOP ?? 0).toFixed(2)} DOP</td>
                         <td>${account.preferredSavingsFrequency}</td>
-                        <td>${startDateDisplay}</td>
+                        <td>$${(account.periodicContributionAmount ?? 0).toFixed(2)} USD</td>
+                        <td>${nextContributionDueDateDisplay}</td>
                         <td>${endDateDisplay}</td>
                         <td>${account.status === 'active' ? 'Activa' : account.status}</td>
                         <td>
@@ -3526,22 +3755,15 @@
                                 data-savings-goal="${account.savingsGoal}"
                                 data-balance-usd="${account.balanceUSD}"
                                 >Retirar</button>
-                            <button class="btn-danger btn-sm delete-savings-account-btn"
+                            <button class="btn-danger btn-sm delete-savings-account-btn mt-2"
                                 data-account-id="${account.accountId}"
                                 data-savings-goal="${account.savingsGoal}"
                                 data-balance-usd="${account.balanceUSD}"
                                 >Eliminar</button>
-                            <button class="btn-primary btn-sm get-savings-tips-btn mt-2"
-                                data-account-id="${account.accountId}"
-                                data-savings-goal="${account.savingsGoal}"
-                                data-current-balance-usd="${account.balanceUSD}"
-                                data-preferred-frequency="${account.preferredSavingsFrequency}"
-                                data-end-date="${account.endDate}"
-                                >Obtener Consejos ✨</button>
                         </td>
                     `;
                     savingsAccountsTableBody.appendChild(row);
-                });
+                }
 
                 // Attach event listeners for new buttons using delegation
                 savingsAccountsTableBody.querySelectorAll('.deposit-to-savings-btn').forEach(button => {
@@ -3562,18 +3784,140 @@
                         showConfirmDeleteSavingsAccountModal(accountId, savingsGoal, parseFloat(balanceUsd));
                     };
                 });
-                // NEW: Event listener for "Obtener Consejos" button
-                savingsAccountsTableBody.querySelectorAll('.get-savings-tips-btn').forEach(button => {
-                    button.onclick = (event) => {
-                        const { accountId, savingsGoal, currentBalanceUsd, preferredFrequency, endDate } = event.target.dataset;
-                        showSavingsTipsModal(accountId, savingsGoal, parseFloat(currentBalanceUsd), preferredFrequency, endDate);
-                    };
-                });
 
             }, (error) => {
                 console.error("Error loading savings accounts:", error);
-                savingsAccountsTableBody.innerHTML = `<tr><td colspan="9" class="text-center text-red-500 py-4">Error al cargar cuentas de ahorro.</td></tr>`;
+                savingsAccountsTableBody.innerHTML = `<tr><td colspan="10" class="text-center text-red-500 py-4">Error al cargar cuentas de ahorro.</td></tr>`;
             });
+        }
+
+        /**
+         * Attempts to automatically collect savings contribution.
+         * @param {string} userId The user's Firebase UID.
+         * @param {string} savingsAccountId The ID of the savings account.
+         * @param {number} periodicAmount The amount to collect.
+         * @param {string} savingsGoal The goal of the savings account.
+         */
+        async function attemptAutomaticSavingsCollection(userId, savingsAccountId, periodicAmount, savingsGoal) {
+            console.log(`Attempting automatic collection for user ${userId}, account ${savingsAccountId}, amount ${periodicAmount}`);
+            try {
+                const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
+                const savingsAccountRef = doc(db, 'artifacts', appId, 'users', userId, 'savings_accounts', savingsAccountId);
+
+                const userDocSnap = await getDoc(userProfileRef);
+                const savingsDocSnap = await getDoc(savingsAccountRef);
+
+                if (!userDocSnap.exists() || !savingsDocSnap.exists()) {
+                    console.error("User or savings account not found during automatic collection attempt.");
+                    return;
+                }
+
+                const userData = userDocSnap.data();
+                const savingsData = savingsDocSnap.data();
+
+                let userCurrentBalanceUSD = userData.balanceUSD || 0;
+                let savingsCurrentBalanceUSD = savingsData.balanceUSD || 0;
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                // Update lastContributionAttemptDate regardless of success/failure
+                await updateDoc(savingsAccountRef, {
+                    lastContributionAttemptDate: serverTimestamp()
+                });
+
+                if (userCurrentBalanceUSD >= periodicAmount) {
+                    // Sufficient funds: perform transfer
+                    let newUserBalanceUSD = userCurrentBalanceUSD - periodicAmount;
+                    let newSavingsBalanceUSD = savingsCurrentBalanceUSD + periodicAmount;
+
+                    await updateDoc(userProfileRef, {
+                        balanceUSD: newUserBalanceUSD,
+                        balanceDOP: newUserBalanceUSD * USD_TO_DOP_RATE
+                    });
+                    await updateDoc(savingsAccountRef, {
+                        balanceUSD: newSavingsBalanceUSD,
+                        balanceDOP: newSavingsBalanceUSD * USD_TO_DOP_RATE,
+                        nextContributionDueDate: getNextDueDate(savingsData.preferredSavingsFrequency, today) // Update next due date
+                    });
+
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                        userId: userId,
+                        type: 'automatic_savings_collection',
+                        amount: periodicAmount,
+                        currency: 'USD',
+                        savingsAccountId: savingsAccountId,
+                        savingsGoal: savingsGoal,
+                        timestamp: serverTimestamp(),
+                        status: 'completed',
+                        description: `Cobro automático de ahorro para "${savingsGoal}"`
+                    });
+                    showMessage(`¡Cobro automático de $${periodicAmount.toFixed(2)} USD para "${savingsGoal}" realizado con éxito!`, 'success');
+                    console.log(`Automatic collection for ${savingsGoal} successful.`);
+
+                } else {
+                    // Insufficient funds: record a debt
+                    console.log(`Insufficient funds for automatic collection for ${savingsGoal}. Recording debt.`);
+
+                    // Check if a debt for this period already exists and is pending/overdue
+                    const existingDebtsQuery = query(
+                        collection(db, 'artifacts', appId, 'public', 'data', 'savings_debts'),
+                        where('userId', '==', userId),
+                        where('savingsAccountId', '==', savingsAccountId),
+                        where('status', 'in', ['pending', 'overdue'])
+                    );
+                    const existingDebtsSnap = await getDocs(existingDebtsQuery);
+
+                    if (existingDebtsSnap.empty) {
+                        // Create new debt entry
+                        const dueDateForDebt = addDays(today, 7); // 7 days to pay the debt
+                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'savings_debts'), {
+                            userId: userId,
+                            savingsAccountId: savingsAccountId,
+                            savingsGoal: savingsGoal,
+                            amountDue: periodicAmount,
+                            currency: 'USD',
+                            dueDate: dueDateForDebt,
+                            status: 'pending', // 'pending' for payment, 'overdue' if past dueDate, 'paid', 'penalized'
+                            penaltyApplied: false,
+                            createdAt: serverTimestamp(),
+                            lastUpdated: serverTimestamp()
+                        });
+                        showMessage(`No hay suficiente saldo para el cobro automático de "${savingsGoal}". Se ha registrado una deuda de $${periodicAmount.toFixed(2)} USD. Tienes hasta el ${dueDateForDebt.toLocaleDateString()} para pagar.`, 'error');
+                    } else {
+                        console.log(`Debt for ${savingsGoal} already exists for this period. No new debt created.`);
+                        showMessage(`Ya tienes una deuda pendiente para tu cuenta de ahorro "${savingsGoal}".`, 'info');
+                    }
+
+                    // Update next contribution due date even if debt is created, to prevent re-attempting same period
+                    await updateDoc(savingsAccountRef, {
+                        nextContributionDueDate: getNextDueDate(savingsData.preferredSavingsFrequency, today)
+                    });
+                }
+            } catch (error) {
+                console.error("Error during automatic savings collection:", error);
+                showMessage(`Error en el cobro automático para "${savingsGoal}". Intenta de nuevo más tarde.`, 'error');
+            }
+        }
+
+        /**
+         * Calculates the next contribution due date based on frequency.
+         * @param {string} frequency The preferred savings frequency.
+         * @param {Date} lastDate The last date a contribution was due or attempted.
+         * @returns {Date} The next due date.
+         */
+        function getNextDueDate(frequency, lastDate) {
+            let nextDate = new Date(lastDate); // Start from the last attempted/due date
+            if (frequency === 'Diaria') {
+                nextDate = addDays(nextDate, 1);
+            } else if (frequency === 'Semanal') {
+                nextDate = addWeeks(nextDate, 1);
+            } else if (frequency === 'Quincenal') {
+                nextDate = addDays(nextDate, 15);
+            } else if (frequency === 'Mensual') {
+                nextDate = addMonths(nextDate, 1);
+            }
+            return nextDate;
         }
 
         // --- NEW: Deposit to Savings Modal Functions ---
@@ -4089,91 +4433,376 @@
             closeModal(contactSupportModal);
         });
 
-        // --- NEW: Savings Tips Modal Functions (LLM Integration) ---
-        let currentTipsAccountId = null; // Store account ID for tips generation
-
-        function showSavingsTipsModal(accountId, savingsGoal, currentBalanceUsd, preferredFrequency, endDate) {
-            currentTipsAccountId = accountId; // Set the account ID for the LLM function
-            tipsSavingsGoalDisplay.textContent = savingsGoal;
-            tipsCurrentBalanceDisplay.textContent = `$${currentBalanceUsd.toFixed(2)} USD`;
-            tipsEndDateDisplay.textContent = endDate;
-            tipsFrequencyDisplay.textContent = preferredFrequency;
-            llmTipsOutput.innerHTML = ''; // Clear previous tips
-            tipsContent.classList.add('hidden'); // Hide content initially
-            savingsTipsModal.classList.remove('hidden');
-        }
-
-        closeSavingsTipsModalBtn.addEventListener('click', () => {
-            closeModal(savingsTipsModal);
-            llmTipsOutput.innerHTML = ''; // Clear tips when closing
-            tipsContent.classList.add('hidden'); // Hide content div
-            tipsLoadingIndicator.classList.remove('hidden'); // Show loading indicator again
+        // --- NEW: Client Savings Debts Functions ---
+        viewSavingsDebtsBtn.addEventListener('click', () => {
+            savingsDebtsModal.classList.remove('hidden');
+            loadSavingsDebts();
         });
 
-        generateTipsBtn.addEventListener('click', async () => {
-            llmTipsOutput.innerHTML = ''; // Clear previous tips
-            tipsContent.classList.remove('hidden'); // Show the content area
-            tipsLoadingIndicator.classList.remove('hidden'); // Show loading indicator
+        closeSavingsDebtsModalBtn.addEventListener('click', () => {
+            closeModal(savingsDebtsModal);
+        });
 
-            const savingsGoal = tipsSavingsGoalDisplay.textContent;
-            const currentBalance = parseFloat(tipsCurrentBalanceDisplay.textContent.replace('$', '').replace(' USD', ''));
-            const endDate = tipsEndDateDisplay.textContent;
-            const frequency = tipsFrequencyDisplay.textContent;
-            const mainAccountBalance = currentBalanceUSD; // Get user's main account balance for context
+        /**
+         * Loads and displays the current user's savings debts.
+         */
+        async function loadSavingsDebts() {
+            savingsDebtsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Cargando deudas...</td></tr>';
 
-            const prompt = `Genera 3-5 consejos de ahorro personalizados y motivadores para un usuario.
-            Su objetivo de ahorro es: "${savingsGoal}".
-            Su saldo actual en esta cuenta de ahorro es: $${currentBalance.toFixed(2)} USD.
-            Su fecha de finalización deseada es: ${endDate}.
-            Su frecuencia de ahorro preferida es: ${frequency}.
-            Su saldo total en la cuenta principal es: $${mainAccountBalance.toFixed(2)} USD.
+            if (!currentUserId) {
+                savingsDebtsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 py-4">Inicia sesión para ver tus deudas.</td></tr>';
+                return;
+            }
 
-            Los consejos deben ser prácticos, realistas y adaptados a un público juvenil. Incluye un saludo amigable y termina con una frase motivadora.
-            Formato:
-            ¡Hola, [Nombre del Usuario]!
-            Aquí tienes algunos consejos para alcanzar tu meta de ahorro de "${savingsGoal}":
-            1. [Consejo 1]
-            2. [Consejo 2]
-            ...
-            ¡Sigue así, campeón! ¡Tú puedes lograrlo!`;
+            const debtsRef = collection(db, 'artifacts', appId, 'public', 'data', 'savings_debts');
+            const q = query(debtsRef, where('userId', '==', currentUserId), where('status', 'in', ['pending', 'overdue']));
 
-            try {
-                const apiKey = ""; // If you want to use models other than gemini-2.0-flash or imagen-3.0-generate-002, provide an API key here. Otherwise, leave this as-is.
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-                
-                let chatHistory = [];
-                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            onSnapshot(q, async (snapshot) => {
+                savingsDebtsTableBody.innerHTML = '';
+                if (snapshot.empty) {
+                    savingsDebtsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">No tienes deudas de ahorro pendientes.</td></tr>';
+                    return;
+                }
 
-                const payload = { contents: chatHistory };
+                for (const docEntry of snapshot.docs) {
+                    const debt = docEntry.data();
+                    const debtId = docEntry.id;
+                    const dueDate = debt.dueDate ? new Date(debt.dueDate.seconds * 1000).toLocaleDateString() : 'N/A';
+                    const statusDisplay = debt.status === 'pending' ? 'Pendiente' : (debt.status === 'overdue' ? 'Vencida' : debt.status);
 
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${debt.savingsGoal} (${debt.savingsAccountId.substring(0, 8)}...)</td>
+                        <td>$${(debt.amountDue ?? 0).toFixed(2)} ${debt.currency}</td>
+                        <td>${dueDate}</td>
+                        <td>${statusDisplay}</td>
+                        <td>
+                            <button class="btn-success btn-sm pay-debt-btn"
+                                data-debt-id="${debtId}"
+                                data-amount-due="${debt.amountDue}"
+                                data-currency="${debt.currency}"
+                                data-savings-goal="${debt.savingsGoal}"
+                                >Pagar</button>
+                        </td>
+                    `;
+                    savingsDebtsTableBody.appendChild(row);
+                }
+
+                // Attach event listeners for "Pagar" buttons
+                savingsDebtsTableBody.querySelectorAll('.pay-debt-btn').forEach(button => {
+                    button.onclick = async (event) => {
+                        const { debtId, amountDue, currency, savingsGoal } = event.target.dataset;
+                        await paySavingsDebt(debtId, parseFloat(amountDue), currency, savingsGoal);
+                    };
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(`Error de la API de Gemini: ${response.status} - ${errorData.error.message}`);
+            }, (error) => {
+                console.error("Error loading savings debts:", error);
+                savingsDebtsTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-4">Error al cargar deudas de ahorro.</td></tr>`;
+            });
+        }
+
+        /**
+         * Handles paying a savings debt.
+         * @param {string} debtId The ID of the debt document.
+         * @param {number} amountDue The amount to pay.
+         * @param {string} currency The currency of the debt.
+         * @param {string} savingsGoal The goal of the associated savings account.
+         */
+        async function paySavingsDebt(debtId, amountDue, currency, savingsGoal) {
+            hideMessage();
+            try {
+                const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
+                const debtDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'savings_debts', debtId);
+
+                const userDocSnap = await getDoc(userProfileRef);
+                if (!userDocSnap.exists()) {
+                    showMessage('Error: No se encontró tu perfil.', 'error');
+                    return;
+                }
+                const userData = userDocSnap.data();
+                let userCurrentBalanceUSD = userData.balanceUSD || 0;
+
+                if (userCurrentBalanceUSD < amountDue) {
+                    showMessage(`Saldo insuficiente en tu cuenta principal para pagar esta deuda de $${amountDue.toFixed(2)} ${currency}.`, 'error');
+                    return;
                 }
 
-                const result = await response.json();
-                
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    const text = result.candidates[0].content.parts[0].text;
-                    llmTipsOutput.innerHTML = text.replace(/\n/g, '<br>'); // Replace newlines with <br> for HTML display
-                } else {
-                    llmTipsOutput.textContent = 'No se pudieron generar consejos. Inténtalo de nuevo.';
-                }
+                // Deduct from user's main balance
+                let newUserBalanceUSD = userCurrentBalanceUSD - amountDue;
+                let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
+
+                await updateDoc(userProfileRef, {
+                    balanceUSD: newUserBalanceUSD,
+                    balanceDOP: newUserBalanceDOP
+                });
+
+                // Update debt status to paid
+                await updateDoc(debtDocRef, {
+                    status: 'paid',
+                    paidAt: serverTimestamp()
+                });
+
+                // Record transaction
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                    userId: currentUserId,
+                    type: 'savings_debt_payment',
+                    amount: amountDue,
+                    currency: currency,
+                    savingsGoal: savingsGoal,
+                    debtId: debtId,
+                    timestamp: serverTimestamp(),
+                    status: 'completed',
+                    description: `Pago de deuda de ahorro para "${savingsGoal}"`
+                });
+
+                showMessage(`¡Deuda de $${amountDue.toFixed(2)} ${currency} para "${savingsGoal}" pagada con éxito!`, 'success');
+                closeModal(savingsDebtsModal); // Close the modal after payment
             } catch (error) {
-                console.error("Error al generar consejos de ahorro con Gemini API:", error);
-                llmTipsOutput.textContent = `Error al generar consejos: ${error.message}. Por favor, inténtalo de nuevo más tarde.`;
-            } finally {
-                tipsLoadingIndicator.classList.add('hidden'); // Hide loading indicator
+                console.error("Error paying savings debt:", error);
+                showMessage('Error al pagar la deuda de ahorro. Intenta de nuevo.', 'error');
+            }
+        }
+
+        // --- NEW: Admin Savings Debts Functions ---
+        viewAdminSavingsDebtsBtn.addEventListener('click', () => {
+            adminSavingsDebtsModal.classList.remove('hidden');
+            loadAdminSavingsDebts();
+        });
+
+        closeAdminSavingsDebtsModalBtn.addEventListener('click', () => {
+            closeModal(adminSavingsDebtsModal);
+            if (adminSavingsDebtsUnsubscribe) {
+                adminSavingsDebtsUnsubscribe();
+                adminSavingsDebtsUnsubscribe = null;
+                console.log("Admin: Unsubscribed from admin savings debts listener on modal close.");
             }
         });
+
+        /**
+         * Loads and displays all pending/overdue savings debts for the admin.
+         */
+        function loadAdminSavingsDebts() {
+            if (adminSavingsDebtsUnsubscribe) {
+                adminSavingsDebtsUnsubscribe();
+                adminSavingsDebtsUnsubscribe = null;
+                console.log("Admin: Unsubscribed from previous admin savings debts listener.");
+            }
+
+            adminSavingsDebtsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando deudas...</td></tr>';
+            const debtsRef = collection(db, 'artifacts', appId, 'public', 'data', 'savings_debts');
+            const q = query(debtsRef, where('status', 'in', ['pending', 'overdue']));
+
+            adminSavingsDebtsUnsubscribe = onSnapshot(q, async (snapshot) => {
+                adminSavingsDebtsTableBody.innerHTML = '';
+                if (snapshot.empty) {
+                    adminSavingsDebtsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay deudas de ahorro pendientes.</td></tr>';
+                    return;
+                }
+
+                const allDebts = [];
+                for (const docEntry of snapshot.docs) {
+                    allDebts.push({ id: docEntry.id, ...docEntry.data() });
+                }
+
+                // Sort by dueDate descending
+                allDebts.sort((a, b) => {
+                    const dueDateA = a.dueDate && typeof a.dueDate.seconds !== 'undefined' ? a.dueDate.seconds : 0;
+                    const dueDateB = b.dueDate && typeof b.dueDate.seconds !== 'undefined' ? b.dueDate.seconds : 0;
+                    return dueDateB - dueDateA;
+                });
+
+                for (const debt of allDebts) {
+                    const userNameDisplay = await getUserDisplayName(debt.userId);
+                    const userPhoneNumber = await getUserPhoneNumber(debt.userId);
+                    const dueDate = debt.dueDate ? new Date(debt.dueDate.seconds * 1000) : null;
+                    const dueDateDisplay = dueDate ? dueDate.toLocaleDateString() : 'N/A';
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    let statusDisplay = debt.status === 'pending' ? 'Pendiente' : (debt.status === 'overdue' ? 'Vencida' : debt.status);
+                    if (dueDate && today > dueDate && debt.status === 'pending') {
+                        // Mark as overdue if past due date and still pending
+                        statusDisplay = 'Vencida';
+                        // Optionally update status in Firestore here, but for simplicity, just display it
+                        // await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'savings_debts', debt.id), { status: 'overdue' });
+                    }
+
+                    const whatsappMessage = `¡Hola, ${userNameDisplay}! Te recordamos que tienes una deuda pendiente de $${(debt.amountDue ?? 0).toFixed(2)} USD para tu cuenta de ahorro "${debt.savingsGoal}". Tienes hasta el ${dueDateDisplay} para pagar. Si no pagas a tiempo, se aplicará una indemnización.`;
+                    const encodedMessage = encodeURIComponent(whatsappMessage);
+                    const whatsappLink = userPhoneNumber ? `https://wa.me/${userPhoneNumber}?text=${encodedMessage}` : '#';
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${userNameDisplay}</td>
+                        <td>${debt.savingsGoal} (${debt.savingsAccountId.substring(0, 8)}...)</td>
+                        <td>$${(debt.amountDue ?? 0).toFixed(2)} ${debt.currency}</td>
+                        <td>${dueDateDisplay}</td>
+                        <td>${statusDisplay}</td>
+                        <td>
+                            ${userPhoneNumber ? `<a href="${whatsappLink}" target="_blank" class="text-green-600 hover:underline font-bold">WhatsApp</a>` : 'N/A'}
+                        </td>
+                        <td>
+                            ${(dueDate && today > dueDate && !debt.penaltyApplied) ?
+                                `<button class="btn-danger btn-sm apply-indemnization-btn"
+                                    data-debt-id="${debt.id}"
+                                    data-user-id="${debt.userId}"
+                                    data-amount-due="${debt.amountDue}"
+                                    data-savings-goal="${debt.savingsGoal}"
+                                    >Aplicar Indemnización</button>` :
+                                (debt.penaltyApplied ? '<span class="text-red-500">Indemnización Aplicada</span>' : '')
+                            }
+                            <button class="btn-secondary btn-sm resolve-debt-btn mt-2"
+                                data-debt-id="${debt.id}"
+                                data-user-id="${debt.userId}"
+                                data-amount-due="${debt.amountDue}"
+                                data-savings-goal="${debt.savingsGoal}"
+                                >Marcar como Pagada</button>
+                        </td>
+                    `;
+                    adminSavingsDebtsTableBody.appendChild(row);
+                }
+
+                // Attach event listeners for admin debt actions
+                adminSavingsDebtsTableBody.querySelectorAll('.apply-indemnization-btn').forEach(button => {
+                    button.onclick = async (event) => {
+                        const { debtId, userId, amountDue, savingsGoal } = event.target.dataset;
+                        await applyIndemnization(debtId, userId, parseFloat(amountDue), savingsGoal);
+                    };
+                });
+                adminSavingsDebtsTableBody.querySelectorAll('.resolve-debt-btn').forEach(button => {
+                    button.onclick = async (event) => {
+                        const { debtId, userId, amountDue, savingsGoal } = event.target.dataset;
+                        await resolveSavingsDebtManually(debtId, userId, parseFloat(amountDue), savingsGoal);
+                    };
+                });
+
+            }, (error) => {
+                console.error("Error loading admin savings debts:", error);
+                adminSavingsDebtsTableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error al cargar deudas de ahorro.</td></tr>`;
+            });
+        }
+
+        /**
+         * Applies indemnization for an overdue debt.
+         * @param {string} debtId The ID of the debt document.
+         * @param {string} userId The user's Firebase UID.
+         * @param {number} amountDue The original amount due for the debt.
+         * @param {string} savingsGoal The goal of the associated savings account.
+         */
+        async function applyIndemnization(debtId, userId, amountDue, savingsGoal) {
+            hideMessage();
+            try {
+                const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
+                const debtDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'savings_debts', debtId);
+
+                const userDocSnap = await getDoc(userProfileRef);
+                if (!userDocSnap.exists()) {
+                    showMessage('Error: Usuario no encontrado para aplicar indemnización.', 'error');
+                    return;
+                }
+                const userData = userDocSnap.data();
+                let userCurrentBalanceUSD = userData.balanceUSD || 0;
+
+                const penaltyAmount = amountDue * INDEMNIZATION_RATE;
+
+                if (userCurrentBalanceUSD < penaltyAmount) {
+                    showMessage(`Saldo insuficiente en la cuenta del cliente para aplicar la indemnización de $${penaltyAmount.toFixed(2)} USD.`, 'error');
+                    return;
+                }
+
+                // Deduct penalty from user's main account
+                let newUserBalanceUSD = userCurrentBalanceUSD - penaltyAmount;
+                let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
+
+                await updateDoc(userProfileRef, {
+                    balanceUSD: newUserBalanceUSD,
+                    balanceDOP: newUserBalanceDOP
+                });
+
+                // Add penalty to admin's account
+                let adminId = null;
+                const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
+                const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
+                const adminSnapshot = await getDocs(adminQuery);
+                if (!adminSnapshot.empty) {
+                    adminId = adminSnapshot.docs[0].id;
+                    const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
+                    const adminData = (await getDoc(adminProfileRef)).data();
+                    let adminNewBalanceUSD = (adminData.balanceUSD || 0) + penaltyAmount;
+                    await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
+                } else {
+                    console.warn("Admin account not found. Indemnization might not be transferred.");
+                }
+
+                // Update debt status
+                await updateDoc(debtDocRef, {
+                    status: 'penalized', // New status for penalized debts
+                    penaltyApplied: true,
+                    penaltyAmount: penaltyAmount,
+                    penalizedAt: serverTimestamp()
+                });
+
+                // Record transaction for indemnization
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                    userId: userId, // User who paid the penalty
+                    payerId: userId,
+                    receiverId: adminId,
+                    type: 'savings_indemnization_applied',
+                    amount: penaltyAmount,
+                    currency: 'USD',
+                    savingsGoal: savingsGoal,
+                    debtId: debtId,
+                    timestamp: serverTimestamp(),
+                    status: 'completed',
+                    description: `Indemnización aplicada por deuda de ahorro para "${savingsGoal}"`
+                });
+
+                showMessage(`¡Indemnización de $${penaltyAmount.toFixed(2)} USD aplicada a ${await getUserDisplayName(userId)} por la deuda de "${savingsGoal}"!`, 'success');
+
+            } catch (error) {
+                console.error("Error applying indemnization:", error);
+                showMessage('Error al aplicar la indemnización. Intenta de nuevo.', 'error');
+            }
+        }
+
+        /**
+         * Allows admin to manually mark a debt as paid (e.g., if paid offline).
+         * @param {string} debtId The ID of the debt document.
+         * @param {string} userId The user's Firebase UID.
+         * @param {number} amountDue The original amount due for the debt.
+         * @param {string} savingsGoal The goal of the associated savings account.
+         */
+        async function resolveSavingsDebtManually(debtId, userId, amountDue, savingsGoal) {
+            hideMessage();
+            try {
+                const debtDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'savings_debts', debtId);
+                await updateDoc(debtDocRef, {
+                    status: 'paid',
+                    paidAt: serverTimestamp(),
+                    resolvedManually: true // Indicate manual resolution
+                });
+
+                // Record a transaction for manual resolution (no money movement here, just status update)
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
+                    userId: userId,
+                    type: 'savings_debt_payment', // Use this type but clarify it's manual
+                    amount: amountDue,
+                    currency: 'USD',
+                    savingsGoal: savingsGoal,
+                    debtId: debtId,
+                    timestamp: serverTimestamp(),
+                    status: 'completed (manual)',
+                    description: `Deuda de ahorro "${savingsGoal}" marcada manualmente como pagada.`
+                });
+
+                showMessage(`Deuda #${debtId.substring(0,8)}... para "${savingsGoal}" marcada como pagada manualmente.`, 'info');
+
+            } catch (error) {
+                console.error("Error resolving savings debt manually:", error);
+                showMessage('Error al marcar la deuda como pagada. Intenta de nuevo.', 'error');
+            }
+        }
 
 
         // --- Event Listeners ---
