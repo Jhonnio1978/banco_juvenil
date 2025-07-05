@@ -365,6 +365,8 @@
                     <button id="onlineShoppingBtn" class="btn-primary w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800">Comprar por Internet</button>
                     <!-- Streaming Service Button -->
                     <button id="streamingPaymentBtn" class="btn-primary w-full bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800">Pagar Servicio de Streaming</button>
+                    <!-- NEW: Game Recharge Button -->
+                    <button id="gameRechargeBtn" class="btn-primary w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700">Recargar Juegos 🎮</button>
 
                     <!-- NEW: Open Savings Account Button -->
                     <button id="openSavingsAccountBtn" class="btn-primary w-full bg-gradient-to-r from-lime-600 to-lime-700 hover:from-lime-700 hover:to-lime-800">Abrir Cuenta de Ahorro 💰</button>
@@ -636,12 +638,16 @@
                     <p class="text-sm">Puedes pagar tus suscripciones a servicios como Netflix, Disney+, Spotify, etc. Introduce el nombre del servicio, tu usuario/email de cuenta y el monto. Se aplicará una tarifa del 3%. **Tu solicitud será revisada y confirmada por el administrador antes de que se deduzca el dinero de tu cuenta.**</p>
                 </div>
                 <div>
+                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo recargo mis juegos (Roblox, Free Fire, etc.)?</h4>
+                    <p class="text-sm">Puedes solicitar recargas para tus juegos favoritos. Deberás seleccionar el juego, ingresar tu ID de jugador y el monto. Se aplicará una tarifa del 3%. **Tu solicitud será revisada y confirmada por el administrador antes de que se deduzca el dinero de tu cuenta.**</p>
+                </div>
+                <div>
                     <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Puedo ver mis solicitudes de depósito y retiro pendientes?</h4>
-                    <p class="text-sm">Sí, en tu dashboard puedes hacer clic en "Ver Mis Solicitudes Pendientes" para revisar el estado de todas tus solicitudes (depósitos, retiros, compras y pagos de streaming) que aún no han sido procesadas por el administrador.</p>
+                    <p class="text-sm">Sí, en tu dashboard puedes hacer clic en "Ver Mis Solicitudes Pendientes" para revisar el estado de todas tus solicitudes (depósitos, retiros, compras, pagos de streaming y recargas de juegos) que aún no han sido procesadas por el administrador.</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo abro una cuenta de ahorro?</h4>
-                    <p class="text-sm">Puedes solicitar una cuenta de ahorro desde tu panel. Deberás especificar tu objetivo de ahorro, un monto de depósito inicial y una fecha de finalización. Una vez aprobada por el administrador, se creará tu cuenta de ahorro.</p>
+                    <p class="text-sm">Puedes solicitar una cuenta de ahorro desde tu panel. Deberás especificar tu objetivo de ahorro, un monto de depósito inicial, una frecuencia y cuota periódica, y una fecha de finalización. Una vez aprobada por el administrador, se creará tu cuenta de ahorro.</p>
                 </div>
                 <div>
                     <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Hay alguna tarifa por cerrar una cuenta de ahorro?</h4>
@@ -759,6 +765,63 @@
                 </div>
                 <div class="flex justify-end space-x-4 pt-4">
                     <button type="submit" id="requestStreamingPayment" class="btn-primary">Enviar Solicitud de Pago</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW: Game Recharge Modal -->
+    <div id="gameRechargeModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+        <div class="modal-content w-full max-w-sm">
+            <div class="modal-header">
+                Recargar Juegos 🎮
+                <button id="cancelGameRecharge" class="close-button">&times;</button>
+            </div>
+            <form id="gameRechargeForm" class="space-y-4">
+                <div>
+                    <label for="gameName" class="block text-gray-700 text-sm font-semibold mb-2">Juego</label>
+                    <select id="gameName" class="input-field" required>
+                        <option value="">Seleccione un juego</option>
+                        <option value="Roblox">Roblox</option>
+                        <option value="Free Fire">Free Fire</option>
+                        <option value="Fortnite">Fortnite</option>
+                        <option value="Call of Duty Mobile">Call of Duty Mobile</option>
+                        <option value="Clash Royale">Clash Royale</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="playerId" class="block text-gray-700 text-sm font-semibold mb-2">ID de Jugador</label>
+                    <input type="text" id="playerId" class="input-field" placeholder="Ingrese su ID de jugador" required>
+                </div>
+                <div>
+                    <label for="rechargeAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto a Recargar</label>
+                    <input type="number" id="rechargeAmount" class="input-field" placeholder="Ej: 10.00" min="0.01" step="0.01" required>
+                </div>
+                <div>
+                    <label for="rechargeCurrency" class="block text-gray-700 text-sm font-semibold mb-2">Moneda</label>
+                    <select id="rechargeCurrency" class="input-field">
+                        <option value="USD">Dólar (USD)</option>
+                        <option value="DOP">Peso Dominicano (DOP)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="gameRechargeCategory" class="block text-gray-700 text-sm font-semibold mb-2">Tipo de Recarga</label>
+                    <select id="gameRechargeCategory" class="input-field" required>
+                        <option value="">Seleccione un tipo</option>
+                        <option value="Moneda Virtual">Moneda Virtual (Robux, Diamantes, etc.)</option>
+                        <option value="Pases de Batalla">Pases de Batalla</option>
+                        <option value="Suscripciones">Suscripciones</option>
+                        <option value="Otros">Otros</option>
+                    </select>
+                </div>
+                <div class="text-right text-sm text-gray-600">
+                    <p>Tarifa (3%): <span id="gameRechargeFeeDisplay">$0.00 USD</span></p>
+                    <p class="font-bold text-base text-gray-800">Total Solicitado: <span id="gameRechargeTotalDisplay">$0.00 USD</span></p>
+                    <p class="text-xs text-red-500 mt-1">Este monto será deducido de tu cuenta SÓLO después de la aprobación del administrador.</p>
+                </div>
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="submit" id="requestGameRecharge" class="btn-primary">Enviar Solicitud de Recarga</button>
                 </div>
             </form>
         </div>
@@ -1272,6 +1335,7 @@
         const viewFAQBtn = document.getElementById('viewFAQBtn'); // FAQ Button
         const onlineShoppingBtn = document.getElementById('onlineShoppingBtn'); // Online Shopping Button
         const streamingPaymentBtn = document.getElementById('streamingPaymentBtn'); // Streaming Payment Button
+        const gameRechargeBtn = document.getElementById('gameRechargeBtn'); // NEW: Game Recharge Button
         const viewUserPendingRequestsBtn = document.getElementById('viewUserPendingRequestsBtn'); // User Pending Requests Button
         const viewAdminPendingRequestsBtn = document.getElementById('viewAdminPendingRequestsBtn'); // Admin Pending Requests Button
         const editProfileBtn = document.getElementById('editProfileBtn'); // Edit Profile Button
@@ -1311,10 +1375,11 @@
             <p class="mb-2"><strong>4. Depósitos:</strong> Todos los depósitos requieren aprobación del banco. No podrás hacer otro depósito si tienes uno pendiente.</p>
             <p class="mb-2"><strong>5. Retiros:</strong> Las solicitudes de retiro también requieren aprobación del banco. Se aplicará una tarifa del 4% a cada retiro.</p>
             <p class="mb-2"><strong>6. Compras y Streaming:</strong> Las solicitudes de compra por internet y pago de servicios de streaming requieren la aprobación del administrador antes de que se deduzca el dinero.</p>
-            <p class="mb-2"><strong>7. Transferencias:</strong> Las transferencias tienen un tiempo de procesamiento de 10 segundos. Verifica bien al destinatario, no son reversibles.</p>
-            <p class="mb-2"><strong>8. Cuentas de Ahorro:</strong> Las solicitudes para abrir cuentas de ahorro requieren la aprobación del administrador. Al eliminar una cuenta de ahorro, se aplicará una tarifa del 2% sobre el saldo restante.</p>
-            <p class="mb-2"><strong>9. Cobro Automático de Ahorros:</strong> Las cuotas de ahorro se intentarán cobrar automáticamente de tu cuenta principal en la frecuencia establecida. Si no hay fondos suficientes, se registrará una deuda y se podrá aplicar una indemnización.</p>
-            <p class="mb-2"><strong>10. Deudas de Ahorro:</strong> Las deudas por cuotas de ahorro no pagadas pueden generar una indemnización del ${INDEMNIZATION_RATE * 100}% del monto adeudado si no se pagan a tiempo. Esta indemnización se transferirá al administrador.</p>
+            <p class="mb-2"><strong>7. Recargas de Juegos:</strong> Las solicitudes de recarga de juegos requieren la aprobación del administrador antes de que se deduzca el dinero. Se aplicará una tarifa del 3%.</p>
+            <p class="mb-2"><strong>8. Transferencias:</strong> Las transferencias tienen un tiempo de procesamiento de 10 segundos. Verifica bien al destinatario, no son reversibles.</p>
+            <p class="mb-2"><strong>9. Cuentas de Ahorro:</strong> Las solicitudes para abrir cuentas de ahorro requieren la aprobación del administrador. Al eliminar una cuenta de ahorro, se aplicará una tarifa del 2% sobre el saldo restante.</p>
+            <p class="mb-2"><strong>10. Cobro Automático de Ahorros:</strong> Las cuotas de ahorro se intentarán cobrar automáticamente de tu cuenta principal en la frecuencia establecida. Si no hay fondos suficientes, se registrará una deuda y se podrá aplicar una indemnización.</p>
+            <p class="mb-2"><strong>11. Deudas de Ahorro:</strong> Las deudas por cuotas de ahorro no pagadas pueden generar una indemnización del ${INDEMNIZATION_RATE * 100}% del monto adeudado si no se pagan a tiempo. Esta indemnización se transferirá al administrador.</p>
         `;
 
         // Modals
@@ -1372,6 +1437,18 @@
         const streamingCategoryInput = document.getElementById('streamingCategory'); // Category Input
         const streamingFeeDisplay = document.getElementById('streamingFeeDisplay');
         const streamingTotalDisplay = document.getElementById('streamingTotalDisplay');
+
+        // NEW: Game Recharge Modal elements
+        const gameRechargeModal = document.getElementById('gameRechargeModal');
+        const cancelGameRecharge = document.getElementById('cancelGameRecharge');
+        const gameRechargeForm = document.getElementById('gameRechargeForm');
+        const gameNameInput = document.getElementById('gameName');
+        const playerIdInput = document.getElementById('playerId');
+        const rechargeAmountInput = document.getElementById('rechargeAmount');
+        const rechargeCurrencyInput = document.getElementById('rechargeCurrency');
+        const gameRechargeCategoryInput = document.getElementById('gameRechargeCategory');
+        const gameRechargeFeeDisplay = document.getElementById('gameRechargeFeeDisplay');
+        const gameRechargeTotalDisplay = document.getElementById('gameRechargeTotalDisplay');
 
         const userPendingRequestsModal = document.getElementById('userPendingRequestsModal');
         const closeUserPendingRequestsModalBtn = document.getElementById('closeUserPendingRequestsModalBtn');
@@ -1632,7 +1709,19 @@
                 if (transaction.category) {
                     otherDetails += `<p><strong>Categoría:</strong> ${transaction.category}</p>`;
                 }
-            } else if (transaction.type === 'withdrawal_fee') {
+            } else if (transaction.type === 'game_recharge') { // NEW: Game Recharge Receipt
+                typeDisplay = 'Recarga de Juego';
+                amountDisplay = (transaction.totalAmountDeducted ?? 0).toFixed(2);
+                currencyDisplay = 'USD';
+                feeDisplay = `Tarifa (3%): $${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
+                otherDetails += `<p><strong>Juego:</strong> ${transaction.gameName || 'N/A'}</p>`;
+                otherDetails += `<p><strong>ID de Jugador:</strong> ${transaction.playerId || 'N/A'}</p>`;
+                otherDetails += `<p><strong>Monto Recarga:</strong> ${(transaction.rechargeAmount ?? 0).toFixed(2)} ${transaction.rechargeCurrency}</p>`;
+                if (transaction.category) {
+                    otherDetails += `<p><strong>Tipo de Recarga:</strong> ${transaction.category}</p>`;
+                }
+            }
+            else if (transaction.type === 'withdrawal_fee') {
                 typeDisplay = 'Tarifa de Retiro Cobrada';
                 amountDisplay = (transaction.amount ?? 0).toFixed(2);
                 currencyDisplay = transaction.currency;
@@ -1728,12 +1817,12 @@
                 loginTab.classList.add('active');
                 registerTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
+                showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, gameRechargeModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
             } else {
                 registerTab.classList.add('active');
                 loginTab.classList.remove('active');
                 // Hide all main sections and modals
-                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
+                showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, gameRechargeModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
             }
             hideMessage(); // Hide any previous messages when changing tabs
         }
@@ -2054,7 +2143,7 @@
                 loadAnnouncements();
 
                 // Display dashboard and hide login/register forms and all modals
-                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
+                showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, gameRechargeModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
 
             } else {
                 // User is signed out
@@ -2706,6 +2795,111 @@
             }
         });
 
+        // --- NEW: Game Recharge Logic ---
+        gameRechargeBtn.addEventListener('click', () => {
+            gameRechargeModal.classList.remove('hidden');
+            gameRechargeForm.reset();
+            gameRechargeFeeDisplay.textContent = '$0.00 USD';
+            gameRechargeTotalDisplay.textContent = '$0.00 USD';
+        });
+
+        cancelGameRecharge.addEventListener('click', () => {
+            closeModal(gameRechargeModal);
+            gameRechargeForm.reset();
+        });
+
+        rechargeAmountInput.addEventListener('input', updateGameRechargeCalculation);
+        rechargeCurrencyInput.addEventListener('change', updateGameRechargeCalculation);
+
+        function updateGameRechargeCalculation() {
+            const amount = parseFloat(rechargeAmountInput.value);
+            const currency = rechargeCurrencyInput.value;
+
+            if (isNaN(amount) || amount <= 0) {
+                gameRechargeFeeDisplay.textContent = `$0.00 USD`;
+                gameRechargeTotalDisplay.textContent = `$0.00 USD`;
+                return;
+            }
+
+            let amountInUSD = amount;
+            if (currency === 'DOP') {
+                amountInUSD = amount / USD_TO_DOP_RATE;
+            }
+
+            const feeAmount = amountInUSD * COMMISSION_RATE;
+            const totalAmount = amountInUSD + feeAmount; // This is what the user *will pay* after admin confirmation
+
+            gameRechargeFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
+            gameRechargeTotalDisplay.textContent = `$${totalAmount.toFixed(2)} USD`;
+        }
+
+        gameRechargeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+
+            const gameName = gameNameInput.value;
+            const playerId = playerIdInput.value.trim();
+            const rechargeAmount = parseFloat(rechargeAmountInput.value);
+            const rechargeCurrency = rechargeCurrencyInput.value;
+            const gameRechargeCategory = gameRechargeCategoryInput.value;
+
+            if (!gameName || !playerId || isNaN(rechargeAmount) || rechargeAmount <= 0 || !gameRechargeCategory) {
+                showMessage('Por favor, completa todos los campos para la recarga del juego.', 'error');
+                return;
+            }
+
+            let amountInUSD = rechargeAmount;
+            if (rechargeCurrency === 'DOP') {
+                amountInUSD = rechargeAmount / USD_TO_DOP_RATE;
+            }
+
+            const feeAmount = amountInUSD * COMMISSION_RATE;
+            const totalToDeductInUSD = amountInUSD + feeAmount; // This is the total amount the user will pay
+
+            try {
+                // Add game recharge request to 'pending_requests'
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
+                    userId: currentUserId,
+                    type: 'game_recharge',
+                    gameName: gameName,
+                    playerId: playerId,
+                    rechargeAmount: rechargeAmount,
+                    rechargeCurrency: rechargeCurrency,
+                    feeAmount: feeAmount,
+                    totalAmountToDeduct: totalToDeductInUSD,
+                    category: gameRechargeCategory,
+                    timestamp: serverTimestamp(),
+                    status: 'pending'
+                });
+
+                showMessage('Solicitud de recarga de juego enviada. Esperando aprobación del administrador. El dinero se deducirá al confirmar.', 'info');
+                closeModal(gameRechargeModal);
+                gameRechargeForm.reset();
+
+                // Send WhatsApp message to admin
+                const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
+                const userData = userDocSnap.data();
+                const whatsappMessage = `
+                Nueva solicitud de recarga de juego pendiente:
+                Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
+                Juego: ${gameName}
+                ID de Jugador: ${playerId}
+                Monto Recarga: ${rechargeAmount.toFixed(2)} ${rechargeCurrency}
+                Tarifa (3%): $${feeAmount.toFixed(2)} USD
+                TOTAL A DEDUCIR: $${totalToDeductInUSD.toFixed(2)} USD (al confirmar)
+                Tipo de Recarga: ${gameRechargeCategory}
+                Por favor, revisa y confirma.
+                `;
+                const encodedMessage = encodeURIComponent(whatsappMessage);
+                window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
+
+            } catch (error) {
+                console.error("Error al solicitar recarga de juego:", error);
+                showMessage('Error al procesar la solicitud de recarga de juego. Por favor, inténtalo de nuevo.', 'error');
+            }
+        });
+
+
         // --- Admin Pending Requests Functionality (Unified) ---
 
         viewAdminPendingRequestsBtn.addEventListener('click', () => {
@@ -2785,6 +2979,12 @@
                             currencyDisplay = 'USD'; // Assuming totalToDeduct is in USD
                             detailsDisplay = `Servicio: ${request.service}, Cuenta: ${request.accountIdentifier}, Tarifa (3%): $${(request.feeAmount ?? 0).toFixed(2)} USD. Cat: ${request.category || 'N/A'}.`;
                             break;
+                        case 'game_recharge': // NEW: Admin Pending Request Display for Game Recharge
+                            typeDisplay = 'Recarga de Juego';
+                            amountDisplay = (request.totalAmountToDeduct ?? 0).toFixed(2);
+                            currencyDisplay = 'USD';
+                            detailsDisplay = `Juego: ${request.gameName}, ID Jugador: ${request.playerId}, Monto: ${(request.rechargeAmount ?? 0).toFixed(2)} ${request.rechargeCurrency}, Tarifa (3%): $${(request.feeAmount ?? 0).toFixed(2)} USD. Tipo: ${request.category || 'N/A'}.`;
+                            break;
                         case 'savings_account_open':
                             typeDisplay = 'Apertura Cta. Ahorro';
                             amountDisplay = (request.initialDepositAmount ?? 0).toFixed(2);
@@ -2821,6 +3021,10 @@
                                 data-account-identifier="${request.accountIdentifier || ''}"
                                 data-subscription-amount="${request.subscriptionAmount || 0}"
                                 data-subscription-currency="${request.subscriptionCurrency || ''}"
+                                data-game-name="${request.gameName || ''}"
+                                data-player-id="${request.playerId || ''}"
+                                data-recharge-amount="${request.rechargeAmount || 0}"
+                                data-recharge-currency="${request.rechargeCurrency || ''}"
                                 data-fee-amount="${request.feeAmount || 0}"
                                 data-total-amount-to-deduct="${request.totalAmountToDeduct || 0}"
                                 data-category="${request.category || ''}"
@@ -2866,6 +3070,10 @@
                     dataset.accountIdentifier,
                     parseFloat(dataset.subscriptionAmount),
                     dataset.subscriptionCurrency,
+                    dataset.gameName, // NEW
+                    dataset.playerId, // NEW
+                    parseFloat(dataset.rechargeAmount), // NEW
+                    dataset.rechargeCurrency, // NEW
                     parseFloat(dataset.feeAmount),
                     parseFloat(dataset.totalAmountToDeduct),
                     dataset.category,
@@ -2891,10 +3099,11 @@
             requestId, type, userId, amount, currency, serialNumber,
             productAmount, productCurrency, productLinks,
             service, accountIdentifier, subscriptionAmount, subscriptionCurrency,
+            gameName, playerId, rechargeAmount, rechargeCurrency, // NEW Game Recharge parameters
             feeAmount, totalAmountToDeduct, category,
             savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, startDate, endDate // New parameters
         ) {
-            console.log("Confirming request:", { requestId, type, userId, amount, currency, serialNumber, productAmount, productCurrency, productLinks, service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, totalAmountToDeduct, category, savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, startDate, endDate });
+            console.log("Confirming request:", { requestId, type, userId, amount, currency, serialNumber, productAmount, productCurrency, productLinks, service, accountIdentifier, subscriptionAmount, subscriptionCurrency, gameName, playerId, rechargeAmount, rechargeCurrency, feeAmount, totalAmountToDeduct, category, savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, startDate, endDate });
             try {
                 const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
                 const requestDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_requests', requestId);
@@ -3034,6 +3243,31 @@
                             console.log("Streaming payment amount transferred to admin.");
                         }
                         break;
+                    case 'game_recharge': // NEW: Game Recharge Confirmation Logic
+                        console.log("Processing game_recharge. totalAmountToDeduct:", totalAmountToDeduct);
+                        if (userCurrentBalanceUSD < totalAmountToDeduct) {
+                            console.error("Error: Insufficient balance for game recharge.");
+                            showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para la recarga de juego.`, 'error');
+                            return;
+                        }
+                        userCurrentBalanceUSD -= totalAmountToDeduct;
+                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
+                        transactionDescription = `Recarga de ${gameName} (ID: ${playerId})`;
+                        amountToRecordInTransaction = totalAmountToDeduct;
+                        currencyToRecordInTransaction = 'USD';
+                        typeDisplay = 'Recarga de Juego';
+                        console.log("Game recharge logic applied. New user USD balance:", userCurrentBalanceUSD);
+
+                        // Transfer entire amount (recharge + fee) to admin
+                        if (adminId) {
+                            console.log("Transferring total game recharge amount to admin:", totalAmountToDeduct, "USD");
+                            const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
+                            const adminData = (await getDoc(adminProfileRef)).data();
+                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + totalAmountToDeduct;
+                            await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
+                            console.log("Game recharge amount transferred to admin.");
+                        }
+                        break;
                     case 'savings_account_open':
                         console.log("Processing savings_account_open. initialDepositAmount:", initialDepositAmount, initialDepositCurrency);
                         let initialDepositAmountInUSD = initialDepositAmount;
@@ -3127,6 +3361,7 @@
                     ...(type === 'withdrawal' && { feeAmount: calculatedFeeInUSD, feeCurrency: 'USD', adminReceiverId: adminId }),
                     ...(type === 'online_purchase' && { productAmount, productCurrency, productLinks, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category }),
                     ...(type === 'streaming_payment' && { service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category }),
+                    ...(type === 'game_recharge' && { gameName, playerId, rechargeAmount, rechargeCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category }), // NEW
                     ...(type === 'savings_account_open' && { savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, savingsAccountId, startDate: serverTimestamp(), endDate: endDate }) // New for savings account
                 });
                 console.log("Transaction recorded successfully.");
@@ -3194,7 +3429,7 @@
                     const transaction = { id: docEntry.id, ...docEntry.data() };
 
                     // Filter for current user's completed transactions
-                    if ((transaction.type === 'deposit' || transaction.type === 'withdrawal' || transaction.type === 'online_purchase' || transaction.type === 'streaming_payment' || transaction.type === 'savings_account_open' || transaction.type === 'deposit_to_savings' || transaction.type === 'withdraw_from_savings' || transaction.type === 'delete_savings_account' || transaction.type === 'automatic_savings_collection' || transaction.type === 'savings_debt_payment' || transaction.type === 'savings_indemnization_applied') && transaction.userId === currentUserId) {
+                    if ((transaction.type === 'deposit' || transaction.type === 'withdrawal' || transaction.type === 'online_purchase' || transaction.type === 'streaming_payment' || transaction.type === 'game_recharge' || transaction.type === 'savings_account_open' || transaction.type === 'deposit_to_savings' || transaction.type === 'withdraw_from_savings' || transaction.type === 'delete_savings_account' || transaction.type === 'automatic_savings_collection' || transaction.type === 'savings_debt_payment' || transaction.type === 'savings_indemnization_applied') && transaction.userId === currentUserId) {
                         userTransactionsData.push(transaction);
                     } else if (transaction.type === 'transfer' && (transaction.senderId === currentUserId || transaction.recipientId === currentUserId)) {
                         userTransactionsData.push(transaction);
@@ -3256,6 +3491,11 @@
                             typeDisplay = 'Pago Streaming';
                             detailsDisplay = `Servicio: ${transaction.service}, Cat: ${transaction.category || 'N/A'}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
                             amountDisplay = `-${(transaction.totalAmountDeducted ?? 0).toFixed(2)} ${transaction.currency}`; // This is the total deducted
+                            break;
+                        case 'game_recharge': // NEW: User History Display for Game Recharge
+                            typeDisplay = 'Recarga de Juego';
+                            detailsDisplay = `Juego: ${transaction.gameName}, ID Jugador: ${transaction.playerId}, Tipo: ${transaction.category || 'N/A'}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
+                            amountDisplay = `-${(transaction.totalAmountDeducted ?? 0).toFixed(2)} ${transaction.currency}`;
                             break;
                         case 'savings_account_open':
                             typeDisplay = 'Apertura Cta. Ahorro';
@@ -3414,6 +3654,13 @@
                             currencyValue = 'USD';
                             details = `Servicio: ${transaction.service}, Cat: ${transaction.category || 'N/A'}, Cuenta: ${transaction.accountIdentifier}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
                             break;
+                        case 'game_recharge': // NEW: Admin History Display for Game Recharge
+                            typeDisplay = 'Recarga de Juego';
+                            usersInvolved = await getUserDisplayName(transaction.userId);
+                            amountValue = (transaction.totalAmountDeducted ?? 0);
+                            currencyValue = 'USD';
+                            details = `Juego: ${transaction.gameName}, ID Jugador: ${transaction.playerId}, Tipo: ${transaction.category || 'N/A'}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
+                            break;
                         case 'savings_account_open':
                             typeDisplay = 'Apertura Cta. Ahorro';
                             usersInvolved = await getUserDisplayName(transaction.userId);
@@ -3534,6 +3781,12 @@
                             amountToDisplay = (data.totalAmountToDeduct ?? 0); // Show total that will be deducted
                             currencyToDisplay = 'USD';
                             detailDisplay = `Servicio: ${data.service}, Cat: ${data.category || 'N/A'}, Tarifa: ${(data.feeAmount ?? 0).toFixed(2)} USD`;
+                            break;
+                        case 'game_recharge': // NEW: User Pending Request Display for Game Recharge
+                            typeDisplay = 'Recarga de Juego';
+                            amountToDisplay = (data.totalAmountToDeduct ?? 0);
+                            currencyToDisplay = 'USD';
+                            detailDisplay = `Juego: ${data.gameName}, ID Jugador: ${data.playerId}, Tipo: ${data.category || 'N/A'}, Tarifa: ${(data.feeAmount ?? 0).toFixed(2)} USD`;
                             break;
                         case 'savings_account_open':
                             typeDisplay = 'Apertura Cta. Ahorro';
