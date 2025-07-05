@@ -3095,7 +3095,10 @@
         /**
          * Confirms a pending request, handles money transfer, and records transaction.
          */
-        async function confirmRequest(
+  /**
+         * Confirms a pending request, handles money transfer, and records transaction.
+         */
+async function confirmRequest(
             requestId, type, userId, amount, currency, serialNumber,
             productAmount, productCurrency, productLinks,
             service, accountIdentifier, subscriptionAmount, subscriptionCurrency,
@@ -3108,7 +3111,6 @@
                 const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
                 const requestDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_requests', requestId);
 
-                console.log("Fetching user profile...");
                 const userDocSnap = await getDoc(userProfileRef);
 
                 if (!userDocSnap.exists()) {
@@ -3120,26 +3122,23 @@
                 let userCurrentBalanceUSD = userData.balanceUSD || 0;
                 let userCurrentBalanceDOP = userData.balanceDOP || 0;
 
-                console.log("User current balances (before update):", { userCurrentBalanceUSD, userCurrentBalanceDOP });
-
                 let adminId = null;
-                console.log("Searching for admin account...");
                 const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
                 const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
                 const adminSnapshot = await getDocs(adminQuery);
                 if (!adminSnapshot.empty) {
                     adminId = adminSnapshot.docs[0].id;
-                    console.log("Admin ID found:", adminId);
                 } else {
                     console.warn("Admin account not found. Fees might not be transferred to admin.");
                 }
 
                 let transactionType = type;
                 let transactionDescription = '';
-                let amountToRecordInTransaction = amount; // Default to original request amount
-                let currencyToRecordInTransaction = currency; // Default to original request currency
-                let typeDisplay = ''; // Initialize typeDisplay here
-                let savingsAccountId = null; // For savings account type
+                let amountToRecordInTransaction = amount;
+                let currencyToRecordInTransaction = currency;
+                let typeDisplay = '';
+                let savingsAccountId = null;
+                let calculatedFeeInUSD = 0;
 
                 switch (type) {
                     case 'deposit':
@@ -3150,31 +3149,26 @@
                         userCurrentBalanceUSD += depositAmountInUSD;
                         userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Depósito con serie ${serialNumber}`;
-                        typeDisplay = 'Depósito'; // Set typeDisplay here
-                        console.log("Deposit logic applied. New user USD balance:", userCurrentBalanceUSD);
+                        typeDisplay = 'Depósito';
                         break;
                     case 'withdrawal':
                         let withdrawalAmountInUSD = amount;
                         if (currency === 'DOP') {
                             withdrawalAmountInUSD = amount / USD_TO_DOP_RATE;
                         }
-                        const calculatedFeeInUSD = withdrawalAmountInUSD * WITHDRAWAL_FEE_RATE;
+                        calculatedFeeInUSD = withdrawalAmountInUSD * WITHDRAWAL_FEE_RATE;
                         const totalDeductionFromUserForWithdrawal = withdrawalAmountInUSD + calculatedFeeInUSD;
 
                         if (userCurrentBalanceUSD < totalDeductionFromUserForWithdrawal) {
-                            console.error("Error: Insufficient balance for withdrawal.");
-                            showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para cubrir el retiro de ${amount.toFixed(2)} ${currency} más la tarifa del 4% ($${calculatedFeeInUSD.toFixed(2)} USD).`, 'error');
+                            showMessage(`Error: Saldo insuficiente para cubrir el retiro y la tarifa del 4%.`, 'error');
                             return;
                         }
                         userCurrentBalanceUSD -= totalDeductionFromUserForWithdrawal;
                         userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Retiro (Tarifa: ${calculatedFeeInUSD.toFixed(2)} USD)`;
-                        typeDisplay = 'Retiro'; // Set typeDisplay here
-                        console.log("Withdrawal logic applied. New user USD balance:", userCurrentBalanceUSD);
+                        typeDisplay = 'Retiro';
 
-                        // Transfer fee to admin
                         if (adminId) {
-                            console.log("Transferring withdrawal fee to admin:", calculatedFeeInUSD, "USD");
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
                             let adminNewBalanceUSD = (adminData.balanceUSD || 0) + calculatedFeeInUSD;
@@ -3189,65 +3183,53 @@
                                 status: 'completed',
                                 originalRequestId: requestId
                             });
-                            console.log("Withdrawal fee transferred to admin and recorded.");
                         }
                         break;
                     case 'online_purchase':
-                        console.log("Processing online_purchase. totalAmountToDeduct:", totalAmountToDeduct);
                         if (userCurrentBalanceUSD < totalAmountToDeduct) {
-                            console.error("Error: Insufficient balance for online purchase.");
-                            showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para la compra online.`, 'error');
+                            showMessage(`Error: Saldo insuficiente para la compra online.`, 'error');
                             return;
                         }
                         userCurrentBalanceUSD -= totalAmountToDeduct;
                         userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Compra online`;
-                        amountToRecordInTransaction = totalAmountToDeduct; // Record total deducted from user
-                        currencyToRecordInTransaction = 'USD'; // Always USD for this deduction
-                        typeDisplay = 'Compra Online'; // Set typeDisplay here
-                        console.log("Online purchase logic applied. New user USD balance:", userCurrentBalanceUSD);
+                        amountToRecordInTransaction = totalAmountToDeduct;
+                        currencyToRecordInTransaction = 'USD';
+                        typeDisplay = 'Compra Online';
 
-                         // Transfer entire amount (products + fee) to admin
-                        if (adminId) {
-                            console.log("Transferring total online purchase amount to admin:", totalAmountToDeduct, "USD");
+                        // --- CAMBIO AQUÍ: Solo transferimos la tarifa (feeAmount) al admin ---
+                        if (adminId && feeAmount > 0) {
+                            console.log("Transferring online purchase FEE to admin:", feeAmount, "USD");
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
-                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + totalAmountToDeduct;
+                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
                             await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
-                            // No separate fee transaction for admin for online_purchase/streaming, as the entire deducted amount goes to admin.
-                            console.log("Online purchase amount transferred to admin.");
                         }
                         break;
                     case 'streaming_payment':
-                        console.log("Processing streaming_payment. totalAmountToDeduct:", totalAmountToDeduct);
                         if (userCurrentBalanceUSD < totalAmountToDeduct) {
-                            console.error("Error: Insufficient balance for streaming payment.");
-                            showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para el pago de streaming.`, 'error');
+                            showMessage(`Error: Saldo insuficiente para el pago de streaming.`, 'error');
                             return;
                         }
                         userCurrentBalanceUSD -= totalAmountToDeduct;
                         userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
                         transactionDescription = `Pago de ${service}`;
                         amountToRecordInTransaction = totalAmountToDeduct;
-                        currencyToRecordInTransaction = 'USD'; // Always USD for this deduction
-                        typeDisplay = 'Pago Streaming'; // Set typeDisplay here
-                        console.log("Streaming payment logic applied. New user USD balance:", userCurrentBalanceUSD);
+                        currencyToRecordInTransaction = 'USD';
+                        typeDisplay = 'Pago Streaming';
 
-                        // Transfer entire amount (subscription + fee) to admin
-                        if (adminId) {
-                            console.log("Transferring total streaming payment amount to admin:", totalAmountToDeduct, "USD");
+                        // --- CAMBIO AQUÍ: Solo transferimos la tarifa (feeAmount) al admin ---
+                        if (adminId && feeAmount > 0) {
+                            console.log("Transferring streaming payment FEE to admin:", feeAmount, "USD");
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
-                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + totalAmountToDeduct;
+                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
                             await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
-                            console.log("Streaming payment amount transferred to admin.");
                         }
                         break;
-                    case 'game_recharge': // NEW: Game Recharge Confirmation Logic
-                        console.log("Processing game_recharge. totalAmountToDeduct:", totalAmountToDeduct);
+                    case 'game_recharge':
                         if (userCurrentBalanceUSD < totalAmountToDeduct) {
-                            console.error("Error: Insufficient balance for game recharge.");
-                            showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para la recarga de juego.`, 'error');
+                            showMessage(`Error: Saldo insuficiente para la recarga de juego.`, 'error');
                             return;
                         }
                         userCurrentBalanceUSD -= totalAmountToDeduct;
@@ -3256,37 +3238,30 @@
                         amountToRecordInTransaction = totalAmountToDeduct;
                         currencyToRecordInTransaction = 'USD';
                         typeDisplay = 'Recarga de Juego';
-                        console.log("Game recharge logic applied. New user USD balance:", userCurrentBalanceUSD);
 
-                        // Transfer entire amount (recharge + fee) to admin
-                        if (adminId) {
-                            console.log("Transferring total game recharge amount to admin:", totalAmountToDeduct, "USD");
+                        // --- CAMBIO AQUÍ: Solo transferimos la tarifa (feeAmount) al admin ---
+                        if (adminId && feeAmount > 0) {
+                            console.log("Transferring game recharge FEE to admin:", feeAmount, "USD");
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
-                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + totalAmountToDeduct;
+                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
                             await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
-                            console.log("Game recharge amount transferred to admin.");
                         }
                         break;
                     case 'savings_account_open':
-                        console.log("Processing savings_account_open. initialDepositAmount:", initialDepositAmount, initialDepositCurrency);
                         let initialDepositAmountInUSD = initialDepositAmount;
                         if (initialDepositCurrency === 'DOP') {
                             initialDepositAmountInUSD = initialDepositAmount / USD_TO_DOP_RATE;
                         }
 
                         if (userCurrentBalanceUSD < initialDepositAmountInUSD) {
-                            console.error("Error: Insufficient balance for initial savings deposit.");
-                            showMessage(`Error: Saldo insuficiente ($${userCurrentBalanceUSD.toFixed(2)} USD) para el depósito inicial de la cuenta de ahorro.`, 'error');
+                            showMessage(`Error: Saldo insuficiente para el depósito inicial.`, 'error');
                             return;
                         }
-
-                        // Deduct from user's main balance
                         userCurrentBalanceUSD -= initialDepositAmountInUSD;
                         userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
-
-                        // Calculate next contribution due date based on frequency
-                        let nextDueDate = new Date(); // Start from today
+                        
+                        let nextDueDate = new Date();
                         if (preferredSavingsFrequency === 'Diaria') {
                             nextDueDate = addDays(nextDueDate, 1);
                         } else if (preferredSavingsFrequency === 'Semanal') {
@@ -3296,9 +3271,7 @@
                         } else if (preferredSavingsFrequency === 'Mensual') {
                             nextDueDate = addMonths(nextDueDate, 1);
                         }
-                        // For 'Ocasional', nextDueDate is not relevant for automatic collection, can be null or same as endDate
 
-                        // Create new savings account document
                         const newSavingsAccountId = crypto.randomUUID();
                         const savingsAccountRef = doc(db, 'artifacts', appId, 'users', userId, 'savings_accounts', newSavingsAccountId);
                         await setDoc(savingsAccountRef, {
@@ -3310,45 +3283,38 @@
                             initialDepositAmount: initialDepositAmount,
                             initialDepositCurrency: initialDepositCurrency,
                             preferredSavingsFrequency: preferredSavingsFrequency,
-                            periodicContributionAmount: periodicContributionAmount, // Store periodic contribution
-                            nextContributionDueDate: preferredSavingsFrequency !== 'Ocasional' ? nextDueDate : null, // Set next due date
-                            lastContributionAttemptDate: null, // Initialize last attempt date
-                            endDate: endDate, // Use provided end date
+                            periodicContributionAmount: periodicContributionAmount,
+                            nextContributionDueDate: preferredSavingsFrequency !== 'Ocasional' ? nextDueDate : null,
+                            lastContributionAttemptDate: null,
+                            endDate: endDate,
                             createdAt: serverTimestamp(),
                             status: 'active'
                         });
-                        savingsAccountId = newSavingsAccountId; // Store for transaction record
+                        savingsAccountId = newSavingsAccountId;
 
                         transactionDescription = `Apertura de cuenta de ahorro para ${savingsGoal}`;
-                        amountToRecordInTransaction = initialDepositAmount; // Record original amount
-                        currencyToRecordInTransaction = initialDepositCurrency; // Record original currency
+                        amountToRecordInTransaction = initialDepositAmount;
+                        currencyToRecordInTransaction = initialDepositCurrency;
                         typeDisplay = 'Apertura Cta. Ahorro';
-                        console.log("Savings account opened. New user main USD balance:", userCurrentBalanceUSD);
                         break;
                     default:
                         console.error("Error: Unknown request type:", type);
                         showMessage('Tipo de solicitud desconocido.', 'error');
-                        typeDisplay = 'Desconocido'; // Fallback for typeDisplay
+                        typeDisplay = 'Desconocido';
                         return;
                 }
 
-                console.log("Attempting to update user profile...", { balanceUSD: userCurrentBalanceUSD, balanceDOP: userCurrentBalanceDOP, hasPendingDeposit: (type === 'deposit' ? false : userData.hasPendingDeposit) });
                 await updateDoc(userProfileRef, {
                     balanceUSD: userCurrentBalanceUSD,
                     balanceDOP: userCurrentBalanceDOP,
                     ...(type === 'deposit' && { hasPendingDeposit: false })
                 });
-                console.log("User profile updated successfully.");
-
-                console.log("Attempting to update request status to completed...");
+                
                 await updateDoc(requestDocRef, {
                     status: 'completed',
                     confirmedAt: serverTimestamp()
                 });
-                console.log("Request status updated successfully.");
 
-                // Record the transaction in a public collection
-                // Path: artifacts/{appId}/public/data/transactions
                 const newTransactionRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
                     userId: userId,
                     type: transactionType,
@@ -3357,18 +3323,15 @@
                     timestamp: serverTimestamp(),
                     status: 'completed',
                     description: transactionDescription,
-                    // Store additional details for specific types for receipt generation
                     ...(type === 'withdrawal' && { feeAmount: calculatedFeeInUSD, feeCurrency: 'USD', adminReceiverId: adminId }),
                     ...(type === 'online_purchase' && { productAmount, productCurrency, productLinks, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category }),
                     ...(type === 'streaming_payment' && { service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category }),
-                    ...(type === 'game_recharge' && { gameName, playerId, rechargeAmount, rechargeCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category }), // NEW
-                    ...(type === 'savings_account_open' && { savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, savingsAccountId, startDate: serverTimestamp(), endDate: endDate }) // New for savings account
+                    ...(type === 'game_recharge' && { gameName, playerId, rechargeAmount, rechargeCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category }),
+                    ...(type === 'savings_account_open' && { savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, savingsAccountId, startDate: serverTimestamp(), endDate: endDate })
                 });
-                console.log("Transaction recorded successfully.");
 
                 showMessage(`Solicitud #${requestId} (${typeDisplay}) confirmada exitosamente.`, 'success');
 
-                // Show receipt for the user who initiated the request
                 const transactionDoc = await getDoc(newTransactionRef);
                 if (transactionDoc.exists()) {
                     showReceipt({ id: transactionDoc.id, ...transactionDoc.data() });
