@@ -4657,6 +4657,10 @@ async function confirmRequest(
 
         closeSavingsDebtsModalBtn.addEventListener('click', () => {
             closeModal(savingsDebtsModal);
+            if (savingsDebtsUnsubscribe) {
+                savingsDebtsUnsubscribe();
+                savingsDebtsUnsubscribe = null;
+            }
         });
 
         /**
