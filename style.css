@@ -1,0 +1,265 @@
+/* Custom CSS */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #e0f2fe; /* Light blue background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+.container {
+    min-height: 100vh; /* Ensure container takes full height on small screens */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+.card {
+    background-color: #ffffff;
+    border-radius: 1.5rem; /* More rounded corners */
+    box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.15), 0 0px 12px -6px rgba(0, 0, 0, 0.08); /* Deeper, softer shadow */
+    padding: 2rem;
+    width: 100%;
+    max-width: 480px; /* Increased max-width for better layout */
+    margin: 1.5rem; /* Margin for small screens */
+    border: 1px solid #e2e8f0; /* Subtle border */
+}
+/* Enhanced Primary Button */
+.btn-primary {
+    background-image: linear-gradient(to right, #3b82f6, #2563eb); /* Blue gradient */
+    color: white;
+    border-radius: 0.75rem;
+    padding: 0.85rem 1.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease-in-out; /* Smoother transition */
+    box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3); /* Blue shadow */
+    border: none; /* No default border */
+    cursor: pointer;
+    position: relative; /* For pseudo-elements if needed */
+    overflow: hidden; /* For hover effects */
+}
+.btn-primary:hover {
+    transform: translateY(-3px); /* More pronounced lift */
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4); /* Larger shadow on hover */
+    background-image: linear-gradient(to right, #2563eb, #1d4ed8); /* Darker gradient on hover */
+}
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+}
+
+/* Specific button styles for dashboard, using Tailwind gradients directly in HTML for flexibility */
+/* Example: <button class="btn-primary w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"> */
+
+/* Enhanced Input Field */
+.input-field {
+    padding: 0.85rem 1.25rem;
+    border-radius: 0.75rem;
+    border: 1px solid #cbd5e1; /* Lighter gray border */
+    width: 100%;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    background-color: #f8fafc; /* Slightly off-white background */
+    color: #334155; /* Darker text */
+}
+.input-field:focus {
+    outline: none;
+    border-color: #3b82f6; /* Brighter blue on focus */
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3); /* More prominent blue shadow on focus */
+    background-color: #ffffff; /* White on focus */
+}
+
+/* Tab Button Styling */
+.tab-button {
+    padding: 0.85rem 1.75rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    flex: 1;
+    text-align: center;
+    border: none; /* Ensure no default border */
+    background-color: transparent; /* Transparent by default */
+}
+.tab-button.active {
+    background-color: #2563eb;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.tab-button:not(.active):hover {
+    background-color: #e2e8f0; /* Softer hover for inactive tabs */
+    color: #334155;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Table Styling */
+.table-container {
+    overflow-x: auto;
+    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Soft shadow for table */
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+th {
+    background-color: #f1f5f9; /* Slightly darker header background */
+    font-weight: 600;
+    color: #475569; /* Darker gray text */
+}
+tr:last-child td {
+    border-bottom: none;
+}
+tr:hover {
+    background-color: #f8fafc; /* Very light gray on row hover */
+}
+
+/* Danger Button */
+.btn-danger {
+    background-image: linear-gradient(to right, #ef4444, #dc2626); /* Red gradient */
+    color: white;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+    border: none;
+    cursor: pointer;
+}
+.btn-danger:hover {
+    background-image: linear-gradient(to right, #dc2626, #b91c1c); /* Darker red on hover */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(239, 68, 68, 0.4);
+}
+.btn-danger:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+/* Success Button */
+.btn-success {
+    background-image: linear-gradient(to right, #22c55e, #16a34a); /* Green gradient */
+    color: white;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
+    border: none;
+    cursor: pointer;
+}
+.btn-success:hover {
+    background-image: linear-gradient(to right, #16a34a, #15803d); /* Darker green on hover */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(34, 197, 94, 0.4);
+}
+.btn-success:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
+}
+
+/* Secondary Button */
+.btn-secondary {
+    background-image: linear-gradient(to right, #6b7280, #4b5563); /* Gray gradient */
+    color: white;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
+    border: none;
+    cursor: pointer;
+}
+.btn-secondary:hover {
+    background-image: linear-gradient(to right, #4b5563, #374151); /* Darker gray on hover */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(107, 114, 128, 0.4);
+}
+.btn-secondary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(107, 114, 128, 0.2);
+}
+
+/* Small Button (for table actions) */
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem; /* Smaller font size */
+    border-radius: 0.375rem; /* Slightly less rounded */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.btn-sm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Modal Content and Header */
+.modal-content {
+    background-color: #ffffff;
+    border-radius: 1.5rem;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25), 0 0px 15px -8px rgba(0, 0, 0, 0.12); /* Deeper, more spread shadow */
+    max-width: 90%;
+    width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 2rem;
+    border: 1px solid #e2e8f0; /* Subtle border */
+}
+.modal-header {
+    background-image: linear-gradient(to right, #3b82f6, #2563eb); /* Blue gradient */
+    color: white;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.75rem;
+    border-top-left-radius: 1.5rem;
+    border-top-right-radius: 1.5rem;
+    position: relative;
+    margin: -2rem -2rem 2rem -2rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow for header */
+}
+.modal-header .close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.8rem;
+    cursor: pointer;
+    line-height: 1;
+    transition: transform 0.2s ease-in-out;
+}
+.modal-header .close-button:hover {
+    transform: rotate(90deg); /* Spin on hover */
+}
+
+/* Specific message box styles */
+#messageBox.bg-red-100 {
+    background-color: #fee2e2; /* Lighter red */
+    color: #dc2626; /* Darker red text */
+    border-color: #fca5a5;
+}
+#messageBox.bg-green-100 {
+    background-color: #dcfce7; /* Lighter green */
+    color: #16a34a; /* Darker green text */
+    border-color: #86efac;
+}
+#messageBox.bg-blue-100 {
+    background-color: #e0f2fe; /* Lighter blue */
+    color: #2563eb; /* Darker blue text */
+    border-color: #93c5fd;
+}
+#transactionStatusMsg {
+    background-color: #fffbeb; /* Light orange/yellow */
+    color: #d97706; /* Darker orange text */
+    border-color: #fcd34d;
+}
