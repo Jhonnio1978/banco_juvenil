@@ -106,7 +106,7 @@ const cancelOngoingTransferBtn = document.getElementById('cancelOngoingTransferB
 const rulesConsentModal = document.getElementById('rulesConsentModal');
 const briefRulesTextContainer = document.getElementById('briefRulesTextContainer');
 const acceptRulesBtn = document.getElementById('acceptRulesBtn');
-const rejectRulesBtn = document.getElementById('rejectRulesBtn'); // Corrected ID: 'declineRulesBtn' -> 'rejectRulesBtn'
+const rejectRulesBtn = document.getElementById('rejectRulesBtn');
 
 // Store registration form data temporarily for rules consent
 let tempRegisterData = {};
@@ -234,7 +234,7 @@ const closeContactSupportBtn = document.getElementById('closeContactSupportBtn')
 // NEW: Open Savings Account Modal elements
 const openSavingsAccountModal = document.getElementById('openSavingsAccountModal');
 const cancelOpenSavingsAccountBtn = document.getElementById('cancelOpenSavingsAccountBtn');
-const savingsAccountForm = document.getElementById('savingsAccountForm'); // Corrected ID
+const savingsAccountForm = document.getElementById('savingsAccountForm');
 const savingsGoalInput = document.getElementById('savingsGoal');
 const initialDepositAmountInput = document.getElementById('initialDepositAmount');
 const initialDepositCurrencyInput = document.getElementById('initialDepositCurrency');
@@ -258,25 +258,25 @@ const announcementsList = document.getElementById('announcementsList'); // Refer
 const depositToSavingsModal = document.getElementById('depositToSavingsModal');
 const cancelDepositToSavingsBtn = document.getElementById('cancelDepositToSavingsBtn');
 const depositToSavingsForm = document.getElementById('depositToSavingsForm');
-const depositToSavingsAccountIdDisplay = document.getElementById('depositToSavingsAccountIdDisplay'); // Corrected ID
+const depositToSavingsAccountIdDisplay = document.getElementById('depositToSavingsAccountIdDisplay');
 const depositToSavingsAmountInput = document.getElementById('depositToSavingsAmount');
 const depositToSavingsCurrencyInput = document.getElementById('depositToSavingsCurrency');
 
 const withdrawFromSavingsModal = document.getElementById('withdrawFromSavingsModal');
 const cancelWithdrawFromSavingsBtn = document.getElementById('cancelWithdrawFromSavingsBtn');
 const withdrawFromSavingsForm = document.getElementById('withdrawFromSavingsForm');
-const withdrawFromSavingsAccountIdDisplay = document.getElementById('withdrawFromSavingsAccountIdDisplay'); // Corrected ID
-const withdrawFromSavingsAmountInput = document.getElementById('withdrawFromSavingsAmount'); // Corrected ID
-const withdrawFromSavingsCurrencyInput = document.getElementById('withdrawFromSavingsCurrency'); // Corrected ID
+const withdrawFromSavingsAccountIdDisplay = document.getElementById('withdrawFromSavingsAccountIdDisplay');
+const withdrawFromSavingsAmountInput = document.getElementById('withdrawFromSavingsAmount');
+const withdrawFromSavingsCurrencyInput = document.getElementById('withdrawFromSavingsCurrency');
 
 // NEW: Confirm Delete Savings Account Modal
 const confirmDeleteSavingsAccountModal = document.getElementById('confirmDeleteSavingsAccountModal');
 const cancelDeleteSavingsAccountBtn = document.getElementById('cancelDeleteSavingsAccountBtn');
 const cancelDeleteSavingsAccountBtn2 = document.getElementById('cancelDeleteSavingsAccountBtn2'); // Second cancel button
 const confirmDeleteSavingsAccountBtn = document.getElementById('confirmDeleteSavingsAccountBtn');
-const deleteSavingsAccountGoalDisplay = document.getElementById('deleteSavingsAccountGoalDisplay'); // Corrected ID
-const deleteSavingsAccountFeeDisplay = document.getElementById('deleteSavingsAccountFeeDisplay'); // Corrected ID
-const deleteSavingsAccountRemainingDisplay = document.getElementById('deleteSavingsAccountRemainingDisplay'); // Corrected ID
+const deleteSavingsAccountGoalDisplay = document.getElementById('deleteSavingsAccountGoalDisplay');
+const deleteSavingsAccountFeeDisplay = document.getElementById('deleteSavingsAccountFeeDisplay');
+const deleteSavingsAccountRemainingDisplay = document.getElementById('deleteSavingsAccountRemainingDisplay');
 
 // Variables to store data for savings account operations
 let currentSavingsAccountId = null;
@@ -289,13 +289,13 @@ let adminSavingsDebtsUnsubscribe = null; // New unsubscribe for admin savings de
 let savingsDebtsUnsubscribe = null; // New unsubscribe for client savings debts
 
 // NEW: Savings Debts Modal (Client)
-const savingsDebtsModal = document.getElementById('savingsDebtsModal'); // Corrected ID
-const closeSavingsDebtsModalBtn = document.getElementById('closeSavingsDebtsModalBtn'); // Corrected ID
+const savingsDebtsModal = document.getElementById('savingsDebtsModal');
+const closeSavingsDebtsModalBtn = document.getElementById('closeSavingsDebtsModalBtn');
 const savingsDebtsTableBody = document.getElementById('savingsDebtsTableBody');
 
 // NEW: Admin Savings Debts Modal
-const adminSavingsDebtsModal = document.getElementById('adminSavingsDebtsModal'); // Corrected ID
-const closeAdminSavingsDebtsModalBtn = document.getElementById('closeAdminSavingsDebtsModalBtn'); // Corrected ID
+const adminSavingsDebtsModal = document.getElementById('adminSavingsDebtsModal');
+const closeAdminSavingsDebtsModalBtn = document.getElementById('closeAdminSavingsDebtsModalBtn');
 const adminSavingsDebtsTableBody = document.getElementById('adminSavingsDebtsTableBody');
 
 
@@ -331,7 +331,7 @@ function addWeeks(date, weeks) {
  */
 function addMonths(date, months) {
     const result = new Date(date);
-    result.setMonth(result.getMonth() + months); // Corrected to use result.getMonth()
+    result.setMonth(result.getMonth() + months);
     return result;
 }
 
@@ -888,7 +888,7 @@ onAuthStateChanged(auth, async (user) => {
         loadAnnouncements();
 
         // Display dashboard and hide login/register forms and all modals
-        showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, gameRechargeModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal); // Corrected typo: contactContactSupportModal -> contactSupportModal
+        showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, gameRechargeModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
 
     } else {
         // User is signed out
@@ -1776,7 +1776,7 @@ function loadAdminPendingRequests() {
                         data-savings-goal="${request.savingsGoal || ''}"
                         data-initial-deposit-amount="${request.initialDepositAmount || 0}"
                         data-initial-deposit-currency="${request.initialDepositCurrency || ''}"
-                        data-preferred-savings-frequency="${request.preferredSavingsFrequency || ''}" // Corrected: removed parseFloat
+                        data-preferred-savings-frequency="${request.preferredSavingsFrequency || ''}"
                         data-periodic-contribution-amount="${request.periodicContributionAmount || 0}"
                         data-start-date="${request.startDate ? request.startDate.seconds * 1000 : ''}"
                         data-end-date="${request.endDate || ''}"
@@ -1825,7 +1825,7 @@ adminPendingRequestsTableBody.addEventListener('click', async (event) => {
             dataset.savingsGoal,
             parseFloat(dataset.initialDepositAmount),
             dataset.initialDepositCurrency,
-            dataset.preferredSavingsFrequency, // Corrected: removed parseFloat
+            dataset.preferredSavingsFrequency,
             parseFloat(dataset.periodicContributionAmount), // Pass periodicContributionAmount
             dataset.startDate, // Pass startDate
             dataset.endDate // Pass endDate
@@ -2497,7 +2497,7 @@ async function loadUserPendingRequests() {
                     typeDisplay = 'Apertura Cta. Ahorro';
                     amountToDisplay = (data.initialDepositAmount ?? 0);
                     currencyToDisplay = data.initialDepositCurrency;
-                    detailDisplay = `Objetivo: ${data.savingsGoal}, Frecuencia: ${data.preferredSavingsFrequency}, Cuota: ${data.periodicContributionAmount.toFixed(2)} ${data.preferredSavingsCurrency}, Fin: ${data.endDate || 'N/A'}`;
+                    detailDisplay = `Objetivo: ${data.savingsGoal}, Frecuencia: ${data.preferredSavingsFrequency}, Cuota: $${(data.periodicContributionAmount ?? 0).toFixed(2)} USD, Fin: ${data.endDate || 'N/A'}`;
                     break;
                 default:
                     typeDisplay = 'Desconocido';
@@ -2787,15 +2787,18 @@ async function attemptAutomaticSavingsCollection(userId, savingsAccountId, amoun
         if (userCurrentBalanceUSD >= amount) {
             // Sufficient funds: perform transfer
             let newUserBalanceUSD = userCurrentBalanceUSD - amount;
+            let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
+
             let newSavingsBalanceUSD = savingsCurrentBalanceUSD + amount;
+            let newSavingsBalanceDOP = newSavingsBalanceUSD * USD_TO_DOP_RATE;
 
             await updateDoc(userProfileRef, {
                 balanceUSD: newUserBalanceUSD,
-                balanceDOP: newUserBalanceUSD * USD_TO_DOP_RATE
+                balanceDOP: newUserBalanceDOP
             });
             await updateDoc(savingsAccountRef, {
                 balanceUSD: newSavingsBalanceUSD,
-                balanceDOP: newSavingsBalanceDOP * USD_TO_DOP_RATE, // Corrected: Use newSavingsBalanceUSD
+                balanceDOP: newSavingsBalanceDOP,
                 nextContributionDueDate: getNextDueDate(savingsData.preferredSavingsFrequency, today) // Update next due date
             });
 
@@ -3065,9 +3068,9 @@ function showConfirmDeleteSavingsAccountModal(accountId, savingsGoal, balanceUsd
     const feeAmount = balanceUsd * SAVINGS_DELETE_FEE_RATE;
     const remainingBalance = balanceUsd - feeAmount;
 
-    deleteSavingsAccountGoalDisplay.textContent = savingsGoal; // Corrected ID
-    deleteSavingsAccountFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`; // Corrected ID
-    deleteSavingsAccountRemainingDisplay.textContent = `$${remainingBalance.toFixed(2)} USD`; // Corrected ID
+    deleteSavingsAccountGoalDisplay.textContent = savingsGoal;
+    deleteSavingsAccountFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
+    deleteSavingsAccountRemainingDisplay.textContent = `$${remainingBalance.toFixed(2)} USD`;
 
     confirmDeleteSavingsAccountModal.classList.remove('hidden');
 }
@@ -3399,12 +3402,25 @@ viewSavingsDebtsBtn.addEventListener('click', () => {
 
 closeSavingsDebtsModalBtn.addEventListener('click', () => {
     closeModal(savingsDebtsModal);
+    // Unsubscribe from the listener when the modal is closed
+    if (savingsDebtsUnsubscribe) {
+        savingsDebtsUnsubscribe();
+        savingsDebtsUnsubscribe = null;
+        console.log("Client: Unsubscribed from savings debts listener on modal close.");
+    }
 });
 
 /**
  * Loads and displays the current user's savings debts.
  */
 async function loadSavingsDebts() {
+    // Unsubscribe from previous listener if it exists
+    if (savingsDebtsUnsubscribe) {
+        savingsDebtsUnsubscribe();
+        savingsDebtsUnsubscribe = null; // Reset
+        console.log("Client: Unsubscribed from previous savings debts listener.");
+    }
+
     savingsDebtsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Cargando deudas...</td></tr>';
 
     if (!currentUserId) {
@@ -3415,7 +3431,8 @@ async function loadSavingsDebts() {
     const debtsRef = collection(db, 'artifacts', appId, 'public', 'data', 'savings_debts');
     const q = query(debtsRef, where('userId', '==', currentUserId), where('status', 'in', ['pending', 'overdue']));
 
-    onSnapshot(q, async (snapshot) => {
+    // Assign the unsubscribe function to savingsDebtsUnsubscribe
+    savingsDebtsUnsubscribe = onSnapshot(q, async (snapshot) => {
         savingsDebtsTableBody.innerHTML = '';
         if (snapshot.empty) {
             savingsDebtsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">No tienes deudas de ahorro pendientes.</td></tr>';
@@ -3440,6 +3457,7 @@ async function loadSavingsDebts() {
                         data-amount-due="${debt.amountDue}"
                         data-currency="${debt.currency}"
                         data-savings-goal="${debt.savingsGoal}"
+                        data-savings-account-id="${debt.savingsAccountId}"
                         >Pagar</button>
                 </td>
             `;
@@ -3449,8 +3467,8 @@ async function loadSavingsDebts() {
         // Attach event listeners for "Pagar" buttons
         savingsDebtsTableBody.querySelectorAll('.pay-debt-btn').forEach(button => {
             button.onclick = async (event) => {
-                const { debtId, amountDue, currency, savingsGoal } = event.target.dataset;
-                await paySavingsDebt(debtId, parseFloat(amountDue), currency, savingsGoal);
+                const { debtId, amountDue, currency, savingsGoal, savingsAccountId } = event.target.dataset;
+                await paySavingsDebt(debtId, parseFloat(amountDue), currency, savingsGoal, savingsAccountId);
             };
         });
 
@@ -3466,33 +3484,60 @@ async function loadSavingsDebts() {
  * @param {number} amountDue The amount to pay.
  * @param {string} currency The currency of the debt.
  * @param {string} savingsGoal The goal of the associated savings account.
+ * @param {string} savingsAccountId The ID of the savings account associated with the debt.
  */
-async function paySavingsDebt(debtId, amountDue, currency, savingsGoal) {
+async function paySavingsDebt(debtId, amountDue, currency, savingsGoal, savingsAccountId) {
     hideMessage();
     try {
         const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
         const debtDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'savings_debts', debtId);
+        const savingsAccountRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts', savingsAccountId); // Reference to the savings account
 
         const userDocSnap = await getDoc(userProfileRef);
+        const savingsDocSnap = await getDoc(savingsAccountRef);
+
         if (!userDocSnap.exists()) {
             showMessage('Error: No se encontró tu perfil.', 'error');
             return;
         }
-        const userData = userDocSnap.data();
-        let userCurrentBalanceUSD = userData.balanceUSD || 0;
+        if (!savingsDocSnap.exists()) {
+            showMessage('Error: La cuenta de ahorro asociada a esta deuda ya no existe.', 'error');
+            return;
+        }
 
-        if (userCurrentBalanceUSD < amountDue) {
-            showMessage(`Saldo insuficiente en tu cuenta principal para pagar esta deuda de $${amountDue.toFixed(2)} ${currency}.`, 'error');
+        const userData = userDocSnap.data();
+        const savingsData = savingsDocSnap.data();
+
+        let userCurrentBalanceUSD = userData.balanceUSD || 0;
+        let savingsCurrentBalanceUSD = savingsData.balanceUSD || 0;
+
+        // Convert amountDue to USD if necessary for main account deduction
+        let amountDueInUSD = amountDue;
+        if (currency === 'DOP') {
+            amountDueInUSD = amountDue / USD_TO_DOP_RATE;
+        }
+
+        if (userCurrentBalanceUSD < amountDueInUSD) {
+            showMessage(`Saldo insuficiente en tu cuenta principal para pagar esta deuda de $${amountDue.toFixed(2)} ${currency}. Necesitas al menos $${amountDueInUSD.toFixed(2)} USD.`, 'error');
             return;
         }
 
         // Deduct from user's main balance
-        let newUserBalanceUSD = userCurrentBalanceUSD - amountDue;
+        let newUserBalanceUSD = userCurrentBalanceUSD - amountDueInUSD;
         let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
+
+        // Add to savings account balance
+        let newSavingsBalanceUSD = savingsCurrentBalanceUSD + amountDueInUSD;
+        let newSavingsBalanceDOP = newSavingsBalanceUSD * USD_TO_DOP_RATE;
 
         await updateDoc(userProfileRef, {
             balanceUSD: newUserBalanceUSD,
             balanceDOP: newUserBalanceDOP
+        });
+
+        await updateDoc(savingsAccountRef, {
+            balanceUSD: newSavingsBalanceUSD,
+            balanceDOP: newSavingsBalanceDOP
         });
 
         // Update debt status to paid
@@ -3508,6 +3553,7 @@ async function paySavingsDebt(debtId, amountDue, currency, savingsGoal) {
             amount: amountDue,
             currency: currency,
             savingsGoal: savingsGoal,
+            savingsAccountId: savingsAccountId, // Include savings account ID
             debtId: debtId,
             timestamp: serverTimestamp(),
             status: 'completed',
