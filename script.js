@@ -13,87 +13,88 @@ const firebaseConfig = {
 };
 const appId = "banco-juvenil-12903"; // Using projectId as appId for Firestore path consistency
 
-// Initialize Firebase
+// Inicializa Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let currentUser = null; // Stores the current authenticated user object
-let currentUserId = null; // Stores the UID of the current user (Firebase UID)
+let currentUser = null; // Almacena el objeto de usuario autenticado actual
+let currentUserId = null; // Almacena el UID del usuario actual (Firebase UID)
 let currentBalanceUSD = 0;
 let currentBalanceDOP = 0;
-let showCurrencyUSD = true; // Flag to toggle currency display
+let showCurrencyUSD = true; // Bandera para alternar la visualización de la moneda
 
-// Exchange rate (example, in a real app this would come from an API)
-const USD_TO_DOP_RATE = 58.0; // Example rate
-const COMMISSION_RATE = 0.03; // 3% commission for online shopping and streaming
-const WITHDRAWAL_FEE_RATE = 0.04; // 4% fee for withdrawals
-const SAVINGS_DELETE_FEE_RATE = 0.02; // 2% fee for deleting savings account
-const INDEMNIZATION_RATE = 0.05; // 5% indemnization for overdue savings debts
+// Tasa de cambio (ejemplo, en una aplicación real esto vendría de una API)
+const USD_TO_DOP_RATE = 58.0; // Tasa de ejemplo
+const COMMISSION_RATE = 0.03; // Comisión del 3% para compras en línea y streaming
+const WITHDRAWAL_FEE_RATE = 0.04; // Tarifa del 4% para retiros
+const SAVINGS_DELETE_FEE_RATE = 0.02; // Tarifa del 2% por eliminar cuenta de ahorro
+const INDEMNIZATION_RATE = 0.05; // Indemnización del 5% por deudas de ahorro vencidas
 
-// Admin email for prototype purposes
+// Email de administrador para propósitos de prototipo
 const ADMIN_EMAIL = `admin.jhonnio@${appId}.com`;
-const ADMIN_PHONE_NUMBER_FULL = '18293329545'; // Admin's WhatsApp number with country code
+const ADMIN_PHONE_NUMBER_FULL = '18293329545'; // Número de WhatsApp del administrador con código de país
 
-// Transfer specific variables
-let transferInterval = null; // To hold the interval ID for cancellation
-let currentTransferRecipientUid = null; // To store recipient UID for transfer confirmation
+// Variables específicas de transferencia
+let transferInterval = null; // Para guardar el ID del intervalo para su cancelación
+let currentTransferRecipientUid = null; // Para almacenar el UID del destinatario para la confirmación de la transferencia
 let currentTransferAmount = 0;
 let currentTransferCurrency = '';
-let currentTransferRecipientIdentifier = ''; // The ID or email the user typed
-let currentTransferRecipientDisplayName = ''; // The name displayed to the user
+let currentTransferRecipientIdentifier = ''; // El ID o email que el usuario escribió
+let currentTransferRecipientDisplayName = ''; // El nombre que se muestra al usuario
 
-// Global map to store user display names and phone numbers to avoid repeated Firestore lookups
+// Mapa global para almacenar nombres de visualización de usuarios y números de teléfono para evitar búsquedas repetidas en Firestore
 const userDisplayNamesCache = {};
-const userPhoneNumbersCache = {}; // New cache for phone numbers
+const userPhoneNumbersCache = {}; // Nuevo caché para números de teléfono
 
-// Global variable to store user's transaction data for summarization (no longer used for AI summary but kept for history loading)
+// Variable global para almacenar los datos de transacción del usuario para el resumen (ya no se usa para el resumen de IA, pero se mantiene para la carga del historial)
 let userTransactionsData = [];
 
-// UI Elements
+// Elementos de la interfaz de usuario
 const loginTab = document.getElementById('loginTab');
 const registerTab = document.getElementById('registerTab');
 const loginSection = document.getElementById('loginSection');
 const registerSection = document.getElementById('registerSection');
 const dashboardSection = document.getElementById('dashboardSection');
-const adminButtonsContainer = document.getElementById('adminButtonsContainer'); // Container for admin buttons
+const adminButtonsContainer = document.getElementById('adminButtonsContainer'); // Contenedor para botones de administrador
 
 const loginForm = document.getElementById('loginForm');
 const loginIdentifierInput = document.getElementById('loginIdentifier');
+const loginPassword = document.getElementById('loginPassword'); // Asegúrate de que este ID exista en tu HTML
 const registerForm = document.getElementById('registerForm');
 const registerNameInput = document.getElementById('registerName');
 const registerSurnameInput = document.getElementById('registerSurname');
 const registerAgeInput = document.getElementById('registerAge');
-const registerPhoneNumberInput = document.getElementById('registerPhoneNumber'); // NEW: Phone Number Input
+const registerPhoneNumberInput = document.getElementById('registerPhoneNumber'); // NUEVO: Entrada de número de teléfono
 const registerPasswordInput = document.getElementById('registerPassword');
 
 const logoutBtn = document.getElementById('logoutBtn');
 const dashboardUserName = document.getElementById('dashboardUserName');
-const dashboardDisplayId = document.getElementById('dashboardDisplayId'); // Simplified user ID for display
+const dashboardDisplayId = document.getElementById('dashboardDisplayId'); // ID de usuario simplificado para mostrar
 const accountBalance = document.getElementById('accountBalance');
 const toggleCurrencyBtn = document.getElementById('toggleCurrency');
-const profileAvatar = document.getElementById('profileAvatar'); // New: Profile Avatar
+const profileAvatar = document.getElementById('profileAvatar'); // Nuevo: Avatar de perfil
 
-// Buttons
+// Botones
 const adminFullHistoryBtn = document.getElementById('adminFullHistoryBtn');
-const viewFAQBtn = document.getElementById('viewFAQBtn'); // FAQ Button
-const onlineShoppingBtn = document.getElementById('onlineShoppingBtn'); // Online Shopping Button
-const streamingPaymentBtn = document.getElementById('streamingPaymentBtn'); // Streaming Payment Button
-const gameRechargeBtn = document.getElementById('gameRechargeBtn'); // NEW: Game Recharge Button
-const viewUserPendingRequestsBtn = document.getElementById('viewUserPendingRequestsBtn'); // User Pending Requests Button
-const viewAdminPendingRequestsBtn = document.getElementById('viewAdminPendingRequestsBtn'); // Admin Pending Requests Button
-const editProfileBtn = document.getElementById('editProfileBtn'); // Edit Profile Button
-const changePasswordBtn = document.getElementById('changePasswordBtn'); // Change Password Button
-const securityTipsBtn = document.getElementById('securityTipsBtn'); // Security Tips Button
-const aboutUsBtn = document.getElementById('aboutUsBtn'); // About Us Button
-const contactSupportBtn = document.getElementById('contactSupportBtn'); // NEW: Contact & Support Button
-const openSavingsAccountBtn = document.getElementById('openSavingsAccountBtn'); // NEW: Open Savings Account Button
-const viewSavingsAccountsBtn = document.getElementById('viewSavingsAccountsBtn'); // NEW: View Savings Accounts Button
-const editAnnouncementsBtn = document.getElementById('editAnnouncementsBtn'); // NEW: Edit Announcements Button
-const viewSavingsDebtsBtn = document.getElementById('viewSavingsDebtsBtn'); // NEW: View Savings Debts Button (Client)
-const viewAdminSavingsDebtsBtn = document.getElementById('viewAdminSavingsDebtsBtn'); // NEW: View Admin Savings Debts Button
+const viewFAQBtn = document.getElementById('viewFAQBtn'); // Botón de preguntas frecuentes
+const onlineShoppingBtn = document.getElementById('onlineShoppingBtn'); // Botón de compras en línea
+const streamingPaymentBtn = document.getElementById('streamingPaymentBtn'); // Botón de pago de streaming
+const gameRechargeBtn = document.getElementById('gameRechargeBtn'); // NUEVO: Botón de recarga de juegos
+const viewUserPendingRequestsBtn = document.getElementById('viewUserPendingRequestsBtn'); // Botón de solicitudes pendientes del usuario
+const viewAdminPendingRequestsBtn = document.getElementById('viewAdminPendingRequestsBtn'); // Botón de solicitudes pendientes del administrador
+const editProfileBtn = document.getElementById('editProfileBtn'); // Botón de editar perfil
+const changePasswordBtn = document.getElementById('changePasswordBtn'); // Botón de cambiar contraseña
+const securityTipsBtn = document.getElementById('securityTipsBtn'); // Botón de consejos de seguridad
+const aboutUsBtn = document.getElementById('aboutUsBtn'); // Botón de acerca de nosotros
+const contactSupportBtn = document.getElementById('contactSupportBtn'); // NUEVO: Botón de contacto y soporte
+const openSavingsAccountBtn = document.getElementById('openSavingsAccountBtn'); // NUEVO: Botón de abrir cuenta de ahorro
+const viewSavingsAccountsBtn = document.getElementById('viewSavingsAccountsBtn'); // NUEVO: Botón de ver cuentas de ahorro
+const editAnnouncementsBtn = document.getElementById('editAnnouncementsBtn'); // NUEVO: Botón de editar anuncios
+const viewSavingsDebtsBtn = document.getElementById('viewSavingsDebtsBtn'); // NUEVO: Botón de ver deudas de ahorro (cliente)
+const viewAdminSavingsDebtsBtn = document.getElementById('viewAdminSavingsDebtsBtn'); // NUEVO: Botón de ver deudas de ahorro del administrador
 
-const adminFullHistoryTableBodyModal = document.getElementById('adminFullHistoryTableBodyModal'); // Admin History (in modal)
+const adminFullHistoryTableBodyModal = document.getElementById('adminFullHistoryTableBodyModal'); // Historial del administrador (en modal)
 
 const messageBox = document.getElementById('messageBox');
 const messageText = document.getElementById('messageText');
@@ -102,16 +103,16 @@ const transactionStatusMsg = document.getElementById('transactionStatusMsg');
 const transactionStatusText = document.getElementById('transactionStatusText');
 const cancelOngoingTransferBtn = document.getElementById('cancelOngoingTransferBtn');
 
-// Rules Consent Modal elements
+// Elementos del modal de consentimiento de reglas
 const rulesConsentModal = document.getElementById('rulesConsentModal');
 const briefRulesTextContainer = document.getElementById('briefRulesTextContainer');
 const acceptRulesBtn = document.getElementById('acceptRulesBtn');
 const rejectRulesBtn = document.getElementById('rejectRulesBtn');
 
-// Store registration form data temporarily for rules consent
+// Almacena temporalmente los datos del formulario de registro para el consentimiento de las reglas
 let tempRegisterData = {};
 
-// Define brief rules text (updated to reflect new pending approval flows)
+// Define el texto de las reglas breves (actualizado para reflejar los nuevos flujos de aprobación pendientes)
 const briefRulesText = `
     <p class="mb-2"><strong>1. Seguridad de Cuenta:</strong> Tu contraseña es confidencial. Nunca la compartas. Eres responsable de la seguridad de tu ID de usuario y contraseña.</p>
     <p class="mb-2"><strong>2. Edad Mínima:</strong> Debes tener al menos 13 años para registrarte.</p>
@@ -126,12 +127,14 @@ const briefRulesText = `
     <p class="mb-2"><strong>11. Deudas de Ahorro:</strong> Las deudas por cuotas de ahorro no pagadas pueden generar una indemnización del ${INDEMNIZATION_RATE * 100}% del monto adeudado si no se pagan a tiempo. Esta indemnización se transferirá al administrador.</p>
 `;
 
-// Modals
+// Modales
 const transferMoneyBtn = document.getElementById('transferMoneyBtn');
 const transferModal = document.getElementById('transferModal');
 const cancelTransferModalBtn = document.getElementById('cancelTransferModalBtn');
 const transferForm = document.getElementById('transferForm');
 const transferRecipientIdInput = document.getElementById('transferRecipientId');
+const transferAmount = document.getElementById('transferAmount'); // Asegúrate de que este ID exista
+const transferCurrency = document.getElementById('transferCurrency'); // Asegúrate de que este ID exista
 const recipientNameDisplay = document.getElementById('recipientNameDisplay');
 const confirmTransferBtn = document.getElementById('confirmTransferBtn');
 
@@ -140,20 +143,25 @@ const depositModal = document.getElementById('depositModal');
 const cancelDeposit = document.getElementById('cancelDeposit');
 const depositForm = document.getElementById('depositForm');
 const depositSerialNumberInput = document.getElementById('depositSerialNumber');
+const depositAmount = document.getElementById('depositAmount'); // Asegúrate de que este ID exista
+const depositCurrency = document.getElementById('depositCurrency'); // Asegúrate de que este ID exista
 
 const withdrawMoneyBtn = document.getElementById('withdrawMoneyBtn');
 const withdrawModal = document.getElementById('withdrawModal');
 const cancelWithdraw = document.getElementById('cancelWithdraw');
 const withdrawForm = document.getElementById('withdrawForm');
+const withdrawAmount = document.getElementById('withdrawAmount'); // Asegúrate de que este ID exista
+const withdrawCurrency = document.getElementById('withdrawCurrency'); // Asegúrate de que este ID exista
 
 const userHistoryModal = document.getElementById('userHistoryModal');
 const userHistoryTableBody = document.getElementById('userHistoryTableBody');
 const closeUserHistoryModalBtn = document.getElementById('closeUserHistoryModalBtn');
+const viewHistoryBtn = document.getElementById('viewHistoryBtn'); // Asegúrate de que este ID exista
 
 const adminFullHistoryModal = document.getElementById('adminFullHistoryModal');
 const closeAdminFullHistoryModalBtn = document.getElementById('closeAdminFullHistoryModalBtn');
 
-// Admin Pending Requests Modal elements
+// Elementos del modal de solicitudes pendientes del administrador
 const adminPendingRequestsModal = document.getElementById('adminPendingRequestsModal');
 const closeAdminPendingRequestsModalBtn = document.getElementById('closeAdminPendingRequestsModalBtn');
 const adminPendingRequestsTableBody = document.getElementById('adminPendingRequestsTableBody');
@@ -167,7 +175,7 @@ const onlineShoppingForm = document.getElementById('onlineShoppingForm');
 const shoppingAmountInput = document.getElementById('shoppingAmount');
 const shoppingCurrencyInput = document.getElementById('shoppingCurrency');
 const productLinksInput = document.getElementById('productLinks');
-const shoppingCategoryInput = document.getElementById('shoppingCategory'); // Category Input
+const shoppingCategoryInput = document.getElementById('shoppingCategory'); // Entrada de categoría
 const shoppingFeeDisplay = document.getElementById('shoppingFeeDisplay');
 const shoppingTotalDisplay = document.getElementById('shoppingTotalDisplay');
 
@@ -178,11 +186,11 @@ const streamingServiceInput = document.getElementById('streamingService');
 const streamingAccountIdentifierInput = document.getElementById('streamingAccountIdentifier');
 const streamingAmountInput = document.getElementById('streamingAmount');
 const streamingCurrencyInput = document.getElementById('streamingCurrency');
-const streamingCategoryInput = document.getElementById('streamingCategory'); // Category Input
+const streamingCategoryInput = document.getElementById('streamingCategory'); // Entrada de categoría
 const streamingFeeDisplay = document.getElementById('streamingFeeDisplay');
 const streamingTotalDisplay = document.getElementById('streamingTotalDisplay');
 
-// NEW: Game Recharge Modal elements
+// NUEVO: Elementos del modal de recarga de juegos
 const gameRechargeModal = document.getElementById('gameRechargeModal');
 const cancelGameRecharge = document.getElementById('cancelGameRecharge');
 const gameRechargeForm = document.getElementById('gameRechargeForm');
@@ -202,16 +210,16 @@ const receiptModal = document.getElementById('receiptModal');
 const receiptContent = document.getElementById('receiptContent');
 const closeReceiptModalBtn = document.getElementById('closeReceiptModalBtn');
 
-// Edit Profile Modal elements
+// Elementos del modal de edición de perfil
 const editProfileModal = document.getElementById('editProfileModal');
 const cancelEditProfileBtn = document.getElementById('cancelEditProfileBtn');
 const editProfileForm = document.getElementById('editProfileForm');
 const editNameInput = document.getElementById('editName');
 const editSurnameInput = document.getElementById('editSurname');
 const editAgeInput = document.getElementById('editAge');
-const editPhoneNumberInput = document.getElementById('editPhoneNumber'); // NEW: Phone Number Input
+const editPhoneNumberInput = document.getElementById('editPhoneNumber'); // NUEVO: Entrada de número de teléfono
 
-// Change Password Modal elements
+// Elementos del modal de cambio de contraseña
 const changePasswordModal = document.getElementById('changePasswordModal');
 const cancelChangePasswordBtn = document.getElementById('cancelChangePasswordBtn');
 const changePasswordForm = document.getElementById('changePasswordForm');
@@ -219,19 +227,19 @@ const currentPasswordInput = document.getElementById('currentPassword');
 const newPasswordInput = document.getElementById('newPassword');
 const confirmNewPasswordInput = document.getElementById('confirmNewPassword');
 
-// Security Tips Modal elements
+// Elementos del modal de consejos de seguridad
 const securityTipsModal = document.getElementById('securityTipsModal');
 const closeSecurityTipsBtn = document.getElementById('closeSecurityTipsBtn');
 
-// About Us Modal elements
+// Elementos del modal de acerca de nosotros
 const aboutUsModal = document.getElementById('aboutUsModal');
 const closeAboutUsBtn = document.getElementById('closeAboutUsBtn');
 
-// Contact & Support Modal elements
+// Elementos del modal de contacto y soporte
 const contactSupportModal = document.getElementById('contactSupportModal');
 const closeContactSupportBtn = document.getElementById('closeContactSupportBtn');
 
-// NEW: Open Savings Account Modal elements
+// NUEVO: Elementos del modal de abrir cuenta de ahorro
 const openSavingsAccountModal = document.getElementById('openSavingsAccountModal');
 const cancelOpenSavingsAccountBtn = document.getElementById('cancelOpenSavingsAccountBtn');
 const savingsAccountForm = document.getElementById('savingsAccountForm');
@@ -239,22 +247,22 @@ const savingsGoalInput = document.getElementById('savingsGoal');
 const initialDepositAmountInput = document.getElementById('initialDepositAmount');
 const initialDepositCurrencyInput = document.getElementById('initialDepositCurrency');
 const preferredSavingsFrequencyInput = document.getElementById('preferredSavingsFrequency');
-const periodicContributionAmountInput = document.getElementById('periodicContributionAmount'); // NEW: Periodic Contribution Amount
-const savingsEndDateInput = document.getElementById('savingsEndDate'); // NEW: End Date Input
+const periodicContributionAmountInput = document.getElementById('periodicContributionAmount'); // NUEVO: Monto de contribución periódica
+const savingsEndDateInput = document.getElementById('savingsEndDate'); // NUEVO: Entrada de fecha de finalización
 
-// NEW: View Savings Accounts Modal elements
+// NUEVO: Elementos del modal de ver cuentas de ahorro
 const viewSavingsAccountsModal = document.getElementById('viewSavingsAccountsModal');
 const closeViewSavingsAccountsBtn = document.getElementById('closeViewSavingsAccountsBtn');
 const savingsAccountsTableBody = document.getElementById('savingsAccountsTableBody');
 
-// NEW: Edit Announcements Modal elements
+// NUEVO: Elementos del modal de editar anuncios
 const editAnnouncementsModal = document.getElementById('editAnnouncementsModal');
 const cancelEditAnnouncementsBtn = document.getElementById('cancelEditAnnouncementsBtn');
 const editAnnouncementsForm = document.getElementById('editAnnouncementsForm');
 const announcementsTextarea = document.getElementById('announcementsTextarea');
-const announcementsList = document.getElementById('announcementsList'); // Reference to the UL in dashboard
+const announcementsList = document.getElementById('announcementsList'); // Referencia a la UL en el panel de control
 
-// NEW: Deposit/Withdraw from Savings Modals
+// NUEVO: Modales de depósito/retiro de ahorros
 const depositToSavingsModal = document.getElementById('depositToSavingsModal');
 const cancelDepositToSavingsBtn = document.getElementById('cancelDepositToSavingsBtn');
 const depositToSavingsForm = document.getElementById('depositToSavingsForm');
@@ -269,43 +277,43 @@ const withdrawFromSavingsAccountIdDisplay = document.getElementById('withdrawFro
 const withdrawFromSavingsAmountInput = document.getElementById('withdrawFromSavingsAmount');
 const withdrawFromSavingsCurrencyInput = document.getElementById('withdrawFromSavingsCurrency');
 
-// NEW: Confirm Delete Savings Account Modal
+// NUEVO: Modal de confirmación de eliminación de cuenta de ahorro
 const confirmDeleteSavingsAccountModal = document.getElementById('confirmDeleteSavingsAccountModal');
 const cancelDeleteSavingsAccountBtn = document.getElementById('cancelDeleteSavingsAccountBtn');
-const cancelDeleteSavingsAccountBtn2 = document.getElementById('cancelDeleteSavingsAccountBtn2'); // Second cancel button
+const cancelDeleteSavingsAccountBtn2 = document.getElementById('cancelDeleteSavingsAccountBtn2'); // Segundo botón de cancelar
 const confirmDeleteSavingsAccountBtn = document.getElementById('confirmDeleteSavingsAccountBtn');
 const deleteSavingsAccountGoalDisplay = document.getElementById('deleteSavingsAccountGoalDisplay');
 const deleteSavingsAccountFeeDisplay = document.getElementById('deleteSavingsAccountFeeDisplay');
 const deleteSavingsAccountRemainingDisplay = document.getElementById('deleteSavingsAccountRemainingDisplay');
 
-// Variables to store data for savings account operations
+// Variables para almacenar datos para operaciones de cuenta de ahorro
 let currentSavingsAccountId = null;
 let currentSavingsAccountBalanceUSD = 0;
 let currentSavingsAccountGoal = '';
 
-// Variable to hold the unsubscribe function for admin pending requests listener
+// Variable para guardar la función de desuscripción para el oyente de solicitudes pendientes del administrador
 let adminPendingRequestsUnsubscribe = null;
-let adminSavingsDebtsUnsubscribe = null; // New unsubscribe for admin savings debts
-let savingsDebtsUnsubscribe = null; // New unsubscribe for client savings debts
+let adminSavingsDebtsUnsubscribe = null; // Nueva desuscripción para deudas de ahorro del administrador
+let savingsDebtsUnsubscribe = null; // Nueva desuscripción para deudas de ahorro del cliente
 
-// NEW: Savings Debts Modal (Client)
+// NUEVO: Modal de deudas de ahorro (cliente)
 const savingsDebtsModal = document.getElementById('savingsDebtsModal');
 const closeSavingsDebtsModalBtn = document.getElementById('closeSavingsDebtsModalBtn');
 const savingsDebtsTableBody = document.getElementById('savingsDebtsTableBody');
 
-// NEW: Admin Savings Debts Modal
+// NUEVO: Modal de deudas de ahorro del administrador
 const adminSavingsDebtsModal = document.getElementById('adminSavingsDebtsModal');
 const closeAdminSavingsDebtsModalBtn = document.getElementById('closeAdminSavingsDebtsModalBtn');
 const adminSavingsDebtsTableBody = document.getElementById('adminSavingsDebtsTableBody');
 
 
-// --- Utility Functions ---
+// --- Funciones de utilidad ---
 
 /**
- * Adds days to a given date.
- * @param {Date} date The starting date.
- * @param {number} days The number of days to add.
- * @returns {Date} The new date.
+ * Agrega días a una fecha dada.
+ * @param {Date} date La fecha inicial.
+ * @param {number} days El número de días a agregar.
+ * @returns {Date} La nueva fecha.
  */
 function addDays(date, days) {
     const result = new Date(date);
@@ -314,20 +322,20 @@ function addDays(date, days) {
 }
 
 /**
- * Adds weeks to a given date.
- * @param {Date} date The starting date.
- * @param {number} weeks The number of weeks to add.
- * @returns {Date} The new date.
+ * Agrega semanas a una fecha dada.
+ * @param {Date} date La fecha inicial.
+ * @param {number} weeks El número de semanas a agregar.
+ * @returns {Date} La nueva fecha.
  */
 function addWeeks(date, weeks) {
     return addDays(date, weeks * 7);
 }
 
 /**
- * Adds months to a given date.
- * @param {Date} date The starting date.
- * @param {number} months The number of months to add.
- * @returns {Date} The new date.
+ * Agrega meses a una fecha dada.
+ * @param {Date} date La fecha inicial.
+ * @param {number} months El número de meses a agregar.
+ * @returns {Date} La nueva fecha.
  */
 function addMonths(date, months) {
     const result = new Date(date);
@@ -336,9 +344,9 @@ function addMonths(date, months) {
 }
 
 /**
- * Formats a Date object to 'YYYY-MM-DD'.
- * @param {Date} date The date object.
- * @returns {string} Formatted date string.
+ * Formatea un objeto Date a 'YYYY-MM-DD'.
+ * @param {Date} date El objeto de fecha.
+ * @returns {string} Cadena de fecha formateada.
  */
 function formatDateToYYYYMMDD(date) {
     const year = date.getFullYear();
@@ -348,9 +356,9 @@ function formatDateToYYYYMMDD(date) {
 }
 
 /**
- * Displays a message in the UI message box.
- * @param {string} msg The message to display.
- * @param {string} type The type of message (success, error, info).
+ * Muestra un mensaje en el cuadro de mensajes de la interfaz de usuario.
+ * @param {string} msg El mensaje a mostrar.
+ * @param {string} type El tipo de mensaje (success, error, info).
  */
 function showMessage(msg, type = 'info') {
     messageText.textContent = msg;
@@ -367,25 +375,25 @@ function showMessage(msg, type = 'info') {
 }
 
 /**
- * Hides the UI message box.
+ * Oculta el cuadro de mensajes de la interfaz de usuario.
  */
 function hideMessage() {
     messageBox.classList.add('hidden');
 }
 
 /**
- * Displays a transaction status message.
- * @param {string} msg The message to display.
+ * Muestra un mensaje de estado de transacción.
+ * @param {string} msg El mensaje a mostrar.
  */
 function showTransactionStatus(msg) {
     transactionStatusText.textContent = msg;
     transactionStatusMsg.classList.remove('hidden');
-    // Show cancel button only if it's an actual transfer in progress
+    // Muestra el botón de cancelar solo si es una transferencia en curso
     cancelOngoingTransferBtn.classList.remove('hidden');
 }
 
 /**
- * Hides the transaction status message.
+ * Oculta el mensaje de estado de la transacción.
  */
 function hideTransactionStatus() {
     transactionStatusMsg.classList.add('hidden');
@@ -393,13 +401,13 @@ function hideTransactionStatus() {
 }
 
 /**
- * Shows a receipt modal with transaction details.
- * @param {Object} transaction The transaction object from Firestore.
+ * Muestra un modal de recibo con los detalles de la transacción.
+ * @param {Object} transaction El objeto de transacción de Firestore.
  */
 async function showReceipt(transaction) {
     let content = `<p class="font-bold text-lg mb-2">Recibo de Transacción</p>`;
     content += `<p><strong>Fecha:</strong> ${new Date(transaction.timestamp.seconds * 1000).toLocaleString()}</p>`;
-    content += `<p><strong>ID de Transacción:</strong> ${transaction.id}</p>`; // Use transaction ID
+    content += `<p><strong>ID de Transacción:</strong> ${transaction.id}</p>`; // Usa el ID de la transacción
 
     let typeDisplay = '';
     let amountDisplay = '';
@@ -407,7 +415,7 @@ async function showReceipt(transaction) {
     let feeDisplay = '';
     let otherDetails = '';
 
-    // Fetch sender/recipient names for transfers
+    // Obtener nombres de remitente/destinatario para transferencias
     if (transaction.type === 'transfer') {
         const senderName = await getUserDisplayName(transaction.senderId);
         const recipientName = await getUserDisplayName(transaction.recipientId);
@@ -454,7 +462,7 @@ async function showReceipt(transaction) {
         if (transaction.category) {
             otherDetails += `<p><strong>Categoría:</strong> ${transaction.category}</p>`;
         }
-    } else if (transaction.type === 'game_recharge') { // NEW: Game Recharge Receipt
+    } else if (transaction.type === 'game_recharge') { // NUEVO: Recibo de recarga de juegos
         typeDisplay = 'Recarga de Juego';
         amountDisplay = (transaction.totalAmountDeducted ?? 0).toFixed(2);
         currencyDisplay = 'USD';
@@ -500,7 +508,7 @@ async function showReceipt(transaction) {
     } else if (transaction.type === 'delete_savings_account') {
         typeDisplay = 'Eliminación Cuenta Ahorro';
         amountDisplay = (transaction.remainingBalanceTransferred ?? 0).toFixed(2);
-        currencyDisplay = 'USD'; // Remaining balance is always in USD
+        currencyDisplay = 'USD'; // El saldo restante siempre está en USD
         feeDisplay = `Tarifa (2%): $${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
         otherDetails += `<p><strong>Objetivo de Cuenta Eliminada:</strong> ${transaction.savingsGoal || 'N/A'}</p>`;
         otherDetails += `<p><strong>ID Cuenta Eliminada:</strong> ${transaction.savingsAccountId || 'N/A'}</p>`;
@@ -544,9 +552,9 @@ async function showReceipt(transaction) {
 }
 
 /**
- * Toggles visibility between sections.
- * @param {HTMLElement} showElement Element to show.
- * @param {HTMLElement} ...hideElements List of elements to hide.
+ * Alterna la visibilidad entre secciones.
+ * @param {HTMLElement} showElement Elemento a mostrar.
+ * @param {HTMLElement} ...hideElements Lista de elementos a ocultar.
  */
 function showSection(showElement, ...hideElements) {
     showElement.classList.remove('hidden');
@@ -554,50 +562,50 @@ function showSection(showElement, ...hideElements) {
 }
 
 /**
- * Toggles the active state of login/register tabs.
- * @param {string} activeTabId 'login' or 'register'.
+ * Alterna el estado activo de las pestañas de inicio de sesión/registro.
+ * @param {string} activeTabId 'login' o 'register'.
  */
 function toggleTabs(activeTabId) {
     if (activeTabId === 'login') {
         loginTab.classList.add('active');
         registerTab.classList.remove('active');
-        // Hide all main sections and modals
+        // Oculta todas las secciones principales y modales
         showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, gameRechargeModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
     } else {
         registerTab.classList.add('active');
         loginTab.classList.remove('active');
-        // Hide all main sections and modals
+        // Oculta todas las secciones principales y modales
         showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, gameRechargeModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
     }
-    hideMessage(); // Hide any previous messages when changing tabs
+    hideMessage(); // Oculta cualquier mensaje anterior al cambiar de pestaña
 }
 
 /**
- * Closes any open modal.
+ * Cierra cualquier modal abierto.
  */
 function closeModal(modalElement) {
     modalElement.classList.add('hidden');
 }
 
 /**
- * Generates a simple, readable ID for display purposes.
- * @param {string} name User's first name.
- * @param {string} surname User's last name.
- * @returns {string} A user-friendly display ID.
+ * Genera un ID simple y legible para fines de visualización.
+ * @param {string} name Primer nombre del usuario.
+ * @param {string} surname Apellido del usuario.
+ * @returns {string} Un ID de visualización amigable para el usuario.
  */
 function generateUserDisplayId(name, surname) {
     const initials = `${name.substring(0, 1).toUpperCase()}${surname.substring(0, 1).toUpperCase()}`;
-    const randomNumber = Math.floor(1000 + Math.random() * 9000); // 4-digit number
+    const randomNumber = Math.floor(1000 + Math.random() * 9000); // Número de 4 dígitos
     return `${initials}#${randomNumber}`;
 }
 
 /**
- * Fetches a user's display name from cache or Firestore.
- * @param {string} userId The Firebase UID of the user.
- * @returns {Promise<string>} The user's display name (Name Surname (ID#ABCD)) or a truncated ID.
+ * Obtiene el nombre de visualización de un usuario del caché o de Firestore.
+ * @param {string} userId El UID de Firebase del usuario.
+ * @returns {Promise<string>} El nombre de visualización del usuario (Nombre Apellido (ID#ABCD)) o un ID truncado.
  */
 async function getUserDisplayName(userId) {
-    // Check if userId matches the Firebase UID of the admin email
+    // Comprueba si el userId coincide con el UID de Firebase del email del administrador
     const adminQuery = query(collection(db, 'artifacts', appId, 'users'), where('email', '==', ADMIN_EMAIL));
     const adminSnapshot = await getDocs(adminQuery);
     if (!adminSnapshot.empty && adminSnapshot.docs[0].id === userId) {
@@ -617,15 +625,15 @@ async function getUserDisplayName(userId) {
             return displayName;
         }
     } catch (error) {
-        console.error("Error fetching user display name:", error);
+        console.error("Error al obtener el nombre de visualización del usuario:", error);
     }
-    return `ID: ${userId.substring(0, 5)}...`; // Fallback to truncated Firebase UID
+    return `ID: ${userId.substring(0, 5)}...`; // Vuelve al UID de Firebase truncado
 }
 
 /**
- * Fetches a user's phone number from cache or Firestore.
- * @param {string} userId The Firebase UID of the user.
- * @returns {Promise<string|null>} The user's phone number or null if not found.
+ * Obtiene el número de teléfono de un usuario del caché o de Firestore.
+ * @param {string} userId El UID de Firebase del usuario.
+ * @returns {Promise<string|null>} El número de teléfono del usuario o nulo si no se encuentra.
  */
 async function getUserPhoneNumber(userId) {
     if (userPhoneNumbersCache[userId]) {
@@ -641,17 +649,17 @@ async function getUserPhoneNumber(userId) {
             return phoneNumber;
         }
     } catch (error) {
-        console.error("Error fetching user phone number:", error);
+        console.error("Error al obtener el número de teléfono del usuario:", error);
     }
     return null;
 }
 
 
-// --- Firebase Authentication & Firestore Operations ---
+// --- Autenticación de Firebase y operaciones de Firestore ---
 
 /**
- * Handles new user registration form submission (initiates rules consent).
- * @param {Event} e Form submission event.
+ * Maneja el envío del formulario de registro de nuevos usuarios (inicia el consentimiento de las reglas).
+ * @param {Event} e Evento de envío del formulario.
  */
 registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -659,7 +667,7 @@ registerForm.addEventListener('submit', async (e) => {
     const name = registerNameInput.value.trim();
     const surname = registerSurnameInput.value.trim();
     const age = parseInt(registerAgeInput.value);
-    const phoneNumber = registerPhoneNumberInput.value.trim(); // Get phone number
+    const phoneNumber = registerPhoneNumberInput.value.trim(); // Obtener número de teléfono
     const password = registerPasswordInput.value;
 
     if (!name || !surname || !password || isNaN(age) || age <= 0 || !phoneNumber) {
@@ -667,56 +675,56 @@ registerForm.addEventListener('submit', async (e) => {
         return;
     }
 
-    // Store data temporarily for use after rules consent
+    // Almacena los datos temporalmente para usarlos después del consentimiento de las reglas
     tempRegisterData = { name, surname, age, phoneNumber, password };
 
-    // Show rules consent modal
+    // Muestra el modal de consentimiento de las reglas
     briefRulesTextContainer.innerHTML = briefRulesText;
     rulesConsentModal.classList.remove('hidden');
 });
 
 /**
- * Performs the actual user registration after rules consent.
- * @param {string} name User's name.
- * @param {string} surname User's surname.
- * @param {number} age User's age.
- * @param {string} phoneNumber User's phone number.
- * @param {string} password User's password.
+ * Realiza el registro real del usuario después del consentimiento de las reglas.
+ * @param {string} name Nombre del usuario.
+ * @param {string} surname Apellido del usuario.
+ * @param {number} age Edad del usuario.
+ * @param {string} phoneNumber Número de teléfono del usuario.
+ * @param {string} password Contraseña del usuario.
  */
 async function performRegistration(name, surname, age, phoneNumber, password) {
-    // Generate email for Firebase Auth (internal use primarily)
+    // Genera un email para Firebase Auth (uso interno principalmente)
     const generatedEmail = `${name.toLowerCase().replace(/\s/g, '')}.${surname.toLowerCase().replace(/\s/g, '')}@${appId}.com`;
-    // Generate a simple, user-friendly ID for display
+    // Genera un ID simple y amigable para el usuario para mostrar
     const userDisplayId = generateUserDisplayId(name, surname);
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, generatedEmail, password);
         const user = userCredential.user;
-        const userId = user.uid; // Firebase UID
+        const userId = user.uid; // UID de Firebase
 
         await setDoc(doc(db, 'artifacts', appId, 'users', userId), {
-            userId: userId, // Internal Firebase UID
-            userDisplayId: userDisplayId, // User-friendly display ID
+            userId: userId, // UID interno de Firebase
+            userDisplayId: userDisplayId, // ID de visualización amigable para el usuario
             name: name,
             surname: surname,
             age: age,
-            phoneNumber: phoneNumber, // Store phone number
-            email: generatedEmail, // Primary login email
+            phoneNumber: phoneNumber, // Almacena el número de teléfono
+            email: generatedEmail, // Email de inicio de sesión principal
             balanceUSD: 0,
             balanceDOP: 0,
             currencyPreference: 'USD',
-            hasPendingDeposit: false, // Keep this for specific deposit blocking
+            hasPendingDeposit: false, // Mantiene esto para el bloqueo de depósitos específicos
             createdAt: serverTimestamp()
         });
 
         showMessage(`¡Registro exitoso, ${name}! Tu ID de usuario para iniciar sesión es: ${generatedEmail}. Tu ID público es: ${userDisplayId}. Por favor, anótalo.`, 'success');
-        loginIdentifierInput.value = generatedEmail; // Pre-fill login field with generated email
-        loginPassword.value = password; // Pre-fill password
-        // No explicit toggleTabs('login') here, as onAuthStateChanged handles showing dashboard
-        // if login is successful after registration automatically.
+        loginIdentifierInput.value = generatedEmail; // Prellena el campo de inicio de sesión con el email generado
+        loginPassword.value = password; // Prellena la contraseña
+        // No hay un toggleTabs('login') explícito aquí, ya que onAuthStateChanged maneja la visualización del panel de control
+        // si el inicio de sesión es exitoso después del registro automáticamente.
 
     } catch (error) {
-        console.error("Error during registration:", error);
+        console.error("Error durante el registro:", error);
         let errorMessage = 'Error al registrar. Por favor, inténtalo de nuevo.';
         if (error.code === 'auth/email-already-in-use') {
             errorMessage = `Ya existe una cuenta con este nombre y apellido (o email ${generatedEmail}). Prueba a iniciar sesión o usa otro nombre/apellido.`;
@@ -729,19 +737,19 @@ async function performRegistration(name, surname, age, phoneNumber, password) {
         }
         showMessage(errorMessage, 'error');
     } finally {
-        tempRegisterData = {}; // Clear temporary data regardless of outcome
+        tempRegisterData = {}; // Borra los datos temporales independientemente del resultado
     }
 }
 
 
 /**
- * Handles user login, accepting email or Firebase UID.
- * @param {Event} e Form submission event.
+ * Maneja el inicio de sesión del usuario, aceptando email o UID de Firebase.
+ * @param {Event} e Evento de envío del formulario.
  */
 async function handleLogin(e) {
     e.preventDefault();
     hideMessage();
-    const identifier = loginIdentifierInput.value.trim(); // Can be email, userDisplayId, or Firebase UID
+    const identifier = loginIdentifierInput.value.trim(); // Puede ser email, userDisplayId o UID de Firebase
     const password = loginPassword.value;
     let emailToLogin = identifier;
 
@@ -751,17 +759,17 @@ async function handleLogin(e) {
     }
 
     try {
-        // If the identifier does not look like an email, try to find the email by userDisplayId or Firebase UID
+        // Si el identificador no parece un email, intenta encontrar el email por userDisplayId o UID de Firebase
         if (!identifier.includes('@')) {
             const usersCollectionRef = collection(db, 'artifacts', appId, 'users');
             let querySnapshot;
 
-            // 1. Try to find by userDisplayId (preferred for user-friendliness)
+            // 1. Intenta buscar por userDisplayId (preferido para la facilidad de uso)
             let q = query(usersCollectionRef, where('userDisplayId', '==', identifier));
             querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
-                // 2. If not found by userDisplayId, try to find by Firebase UID
+                // 2. Si no se encuentra por userDisplayId, intenta buscar por UID de Firebase
                 q = query(usersCollectionRef, where('userId', '==', identifier));
                 querySnapshot = await getDocs(q);
             }
@@ -770,7 +778,7 @@ async function handleLogin(e) {
                 showMessage('ID de usuario o contraseña incorrectos.', 'error');
                 return;
             }
-            // Found user, get their associated email for Firebase Auth
+            // Usuario encontrado, obtén su email asociado para Firebase Auth
             emailToLogin = querySnapshot.docs[0].data().email;
             if (!emailToLogin) {
                 showMessage('No se pudo encontrar el email asociado a este ID de usuario.', 'error');
@@ -778,12 +786,12 @@ async function handleLogin(e) {
             }
         }
 
-        // Attempt to sign in with the determined email and password
+        // Intenta iniciar sesión con el email y la contraseña determinados
         await signInWithEmailAndPassword(auth, emailToLogin, password);
-        // The onAuthStateChanged listener will handle UI update if login is successful
+        // El oyente onAuthStateChanged se encargará de la actualización de la interfaz de usuario si el inicio de sesión es exitoso
 
     } catch (error) {
-        console.error("Error during login:", error);
+        console.error("Error durante el inicio de sesión:", error);
         let errorMessage = 'Error al iniciar sesión. Verifica tu ID de usuario y contraseña.';
         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
             errorMessage = 'ID de usuario o contraseña incorrectos.';
@@ -797,20 +805,20 @@ async function handleLogin(e) {
 }
 
 /**
- * Handles user logout.
+ * Maneja el cierre de sesión del usuario.
  */
 async function handleLogout() {
     try {
         await signOut(auth);
-        // The onAuthStateChanged listener will handle UI update
+        // El oyente onAuthStateChanged se encargará de la actualización de la interfaz de usuario
     } catch (error) {
-        console.error("Error during logout:", error);
+        console.error("Error durante el cierre de sesión:", error);
         showMessage('Error al cerrar sesión. Por favor, inténtalo de nuevo.', 'error');
     }
 }
 
 /**
- * Updates the balance display in the UI.
+ * Actualiza la visualización del saldo en la interfaz de usuario.
  */
 function updateBalanceDisplay() {
     if (showCurrencyUSD) {
@@ -823,7 +831,7 @@ function updateBalanceDisplay() {
 }
 
 /**
- * Handles toggling currency display in the dashboard.
+ * Maneja el cambio de visualización de la moneda en el panel de control.
  */
 function toggleCurrencyDisplay() {
     showCurrencyUSD = !showCurrencyUSD;
@@ -831,33 +839,33 @@ function toggleCurrencyDisplay() {
 }
 
 /**
- * Listens for authentication state changes to update the UI.
+ * Escucha los cambios en el estado de autenticación para actualizar la interfaz de usuario.
  */
 onAuthStateChanged(auth, async (user) => {
-    hideMessage(); // Clear any messages
-    hideTransactionStatus(); // Clear any transaction status messages
+    hideMessage(); // Borra cualquier mensaje
+    hideTransactionStatus(); // Borra cualquier mensaje de estado de transacción
 
     if (user) {
-        // User is signed in
+        // El usuario ha iniciado sesión
         currentUser = user;
         currentUserId = user.uid;
 
-        // Listen for real-time updates to the user's profile in Firestore
-        // Path: artifacts/{appId}/users/{userId}
+        // Escucha las actualizaciones en tiempo real del perfil del usuario en Firestore
+        // Ruta: artifacts/{appId}/users/{userId}
         const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
         onSnapshot(userProfileRef, (docSnap) => {
             if (docSnap.exists()) {
                 const userData = docSnap.data();
                 dashboardUserName.textContent = userData.name || 'Usuario';
-                // Display the user-friendly ID, fallback to Firebase UID if not set
+                // Muestra el ID amigable para el usuario, si no está configurado, usa el UID de Firebase
                 dashboardDisplayId.textContent = userData.userDisplayId || userData.userId;
-                profileAvatar.textContent = (userData.name ? userData.name.substring(0,1) : 'U').toUpperCase(); // Set avatar initial
+                profileAvatar.textContent = (userData.name ? userData.name.substring(0,1) : 'U').toUpperCase(); // Establece la inicial del avatar
 
                 currentBalanceUSD = userData.balanceUSD || 0;
                 currentBalanceDOP = userData.balanceDOP || 0;
                 updateBalanceDisplay();
 
-                // Check for pending deposits and disable deposit button if necessary
+                // Comprueba si hay depósitos pendientes y deshabilita el botón de depósito si es necesario
                 if (userData.hasPendingDeposit) {
                     depositMoneyBtn.disabled = true;
                     depositMoneyBtn.textContent = 'Depósito Pendiente...';
@@ -867,58 +875,58 @@ onAuthStateChanged(auth, async (user) => {
                     depositMoneyBtn.textContent = 'Depositar Dinero';
                 }
 
-                // Show admin specific buttons if current user is admin
+                // Muestra los botones específicos del administrador si el usuario actual es administrador
                 if (currentUser.email === ADMIN_EMAIL) {
-                    adminButtonsContainer.classList.remove('hidden'); // Show container for admin buttons
+                    adminButtonsContainer.classList.remove('hidden'); // Muestra el contenedor para los botones del administrador
                 } else {
-                    adminButtonsContainer.classList.add('hidden'); // Hide for non-admin
+                    adminButtonsContainer.classList.add('hidden'); // Oculta para no administradores
                 }
 
             } else {
-                console.warn("User profile not found in Firestore for UID:", currentUserId);
-                // If user profile doesn't exist, sign out
+                console.warn("Perfil de usuario no encontrado en Firestore para el UID:", currentUserId);
+                // Si el perfil de usuario no existe, cierra la sesión
                 handleLogout();
             }
         }, (error) => {
-            console.error("Error listening to user profile:", error);
+            console.error("Error al escuchar el perfil del usuario:", error);
             showMessage("Error al cargar los datos de tu perfil. Intenta recargar la página.", 'error');
         });
 
-        // Load announcements when user logs in
+        // Carga los anuncios cuando el usuario inicia sesión
         loadAnnouncements();
 
-        // Display dashboard and hide login/register forms and all modals
+        // Muestra el panel de control y oculta los formularios de inicio de sesión/registro y todos los modales
         showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, gameRechargeModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
 
     } else {
-        // User is signed out
+        // El usuario ha cerrado sesión
         currentUser = null;
         currentUserId = null;
         dashboardUserName.textContent = '';
-        dashboardDisplayId.textContent = ''; // Clear display ID
-        profileAvatar.textContent = 'U'; // Reset avatar
+        dashboardDisplayId.textContent = ''; // Borra el ID de visualización
+        profileAvatar.textContent = 'U'; // Restablece el avatar
         accountBalance.textContent = '$0.00 USD';
         toggleCurrencyBtn.textContent = 'Cambiar a DOP';
-        showCurrencyUSD = true; // Reset currency display preference
-        toggleTabs('login'); // Go back to login tab
+        showCurrencyUSD = true; // Restablece la preferencia de visualización de moneda
+        toggleTabs('login'); // Vuelve a la pestaña de inicio de sesión
     }
 });
 
 
-// --- Transfer Money Functionality ---
+// --- Funcionalidad de transferencia de dinero ---
 
 /**
- * Shows the transfer money modal and resets its state.
+ * Muestra el modal de transferencia de dinero y restablece su estado.
  */
 transferMoneyBtn.addEventListener('click', () => {
     transferModal.classList.remove('hidden');
     transferForm.reset();
-    recipientNameDisplay.textContent = ''; // Clear previous recipient name
-    confirmTransferBtn.disabled = true; // Disable confirm button initially
+    recipientNameDisplay.textContent = ''; // Borra el nombre del destinatario anterior
+    confirmTransferBtn.disabled = true; // Deshabilita el botón de confirmar inicialmente
 });
 
 /**
- * Closes the transfer money modal.
+ * Cierra el modal de transferencia de dinero.
  */
 cancelTransferModalBtn.addEventListener('click', () => {
     closeModal(transferModal);
@@ -927,12 +935,12 @@ cancelTransferModalBtn.addEventListener('click', () => {
     confirmTransferBtn.disabled = true;
 });
 
-// Event listener for recipient ID input to fetch name
+// Oyente de eventos para la entrada del ID del destinatario para obtener el nombre
 transferRecipientIdInput.addEventListener('input', async () => {
     const identifier = transferRecipientIdInput.value.trim();
     recipientNameDisplay.textContent = 'Buscando usuario...';
     confirmTransferBtn.disabled = true;
-    currentTransferRecipientUid = null; // Reset UID on new input
+    currentTransferRecipientUid = null; // Restablece el UID en la nueva entrada
 
     if (!identifier) {
         recipientNameDisplay.textContent = '';
@@ -942,16 +950,16 @@ transferRecipientIdInput.addEventListener('input', async () => {
     let recipientData = null;
     let querySnapshot;
 
-    // 1. Try to find by email
+    // 1. Intenta buscar por email
     if (identifier.includes('@')) {
         const q = query(collection(db, 'artifacts', appId, 'users'), where('email', '==', identifier));
         querySnapshot = await getDocs(q);
     } else {
-        // 2. If not email, try to find by userDisplayId
+        // 2. Si no es un email, intenta buscar por userDisplayId
         const q = query(collection(db, 'artifacts', appId, 'users'), where('userDisplayId', '==', identifier));
         querySnapshot = await getDocs(q);
         if (querySnapshot.empty) {
-            // 3. Finally, try to find by Firebase UID
+            // 3. Finalmente, intenta buscar por UID de Firebase
             const q2 = query(collection(db, 'artifacts', appId, 'users'), where('userId', '==', identifier));
             querySnapshot = await getDocs(q2);
         }
@@ -959,19 +967,19 @@ transferRecipientIdInput.addEventListener('input', async () => {
 
     if (!querySnapshot.empty) {
         recipientData = querySnapshot.docs[0].data();
-        // Store the actual Firebase UID for transaction
+        // Almacena el UID real de Firebase para la transacción
         currentTransferRecipientUid = recipientData.userId;
-        // Store the identifier the user typed for messaging
+        // Almacena el identificador que el usuario escribió para los mensajes
         currentTransferRecipientIdentifier = identifier;
         currentTransferRecipientDisplayName = `${recipientData.name} ${recipientData.surname}`;
         recipientNameDisplay.textContent = `Usuario: ${currentTransferRecipientDisplayName}`;
         confirmTransferBtn.disabled = false;
 
-        // Prevent self-transfer
+        // Evita la auto-transferencia
         if (currentTransferRecipientUid === currentUserId) {
             recipientNameDisplay.textContent = '¡No puedes transferir dinero a tu propia cuenta!';
             confirmTransferBtn.disabled = true;
-            currentTransferRecipientUid = null; // Invalidate recipient
+            currentTransferRecipientUid = null; // Invalida el destinatario
         }
     } else {
         recipientNameDisplay.textContent = 'Usuario no encontrado.';
@@ -983,8 +991,8 @@ transferRecipientIdInput.addEventListener('input', async () => {
 
 
 /**
- * Handles transfer form submission.
- * In a real environment, this SHOULD BE A FIREBASE CLOUD FUNCTION for security.
+ * Maneja el envío del formulario de transferencia.
+ * En un entorno real, esto DEBERÍA SER UNA FUNCIÓN DE LA NUBE DE FIREBASE por seguridad.
  */
 transferForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1004,24 +1012,24 @@ transferForm.addEventListener('submit', async (e) => {
         return;
     }
 
-    // Check sender's balance (currentBalanceUSD and currentBalanceDOP are already updated by onSnapshot)
+    // Comprueba el saldo del remitente (currentBalanceUSD y currentBalanceDOP ya están actualizados por onSnapshot)
     let senderBalance = currentTransferCurrency === 'USD' ? currentBalanceUSD : currentBalanceDOP;
     if (currentTransferAmount > senderBalance) {
         showMessage('Saldo insuficiente para realizar esta transferencia.', 'error');
-        closeModal(transferModal); // Close modal on error
+        closeModal(transferModal); // Cierra el modal en caso de error
         return;
     }
 
     showMessage(`Iniciando transferencia de ${currentTransferAmount.toFixed(2)} ${currentTransferCurrency} a ${currentTransferRecipientDisplayName}... Por favor, espera 10 segundos.`, 'info');
-    closeModal(transferModal); // Close the modal immediately
+    closeModal(transferModal); // Cierra el modal inmediatamente
     showTransactionStatus(`Transferencia a ${currentTransferRecipientDisplayName} en proceso... (10 segundos restantes)`);
-    transferForm.reset(); // Reset form fields
-    recipientNameDisplay.textContent = ''; // Clear recipient name display
-    confirmTransferBtn.disabled = true; // Disable button after submission
+    transferForm.reset(); // Restablece los campos del formulario
+    recipientNameDisplay.textContent = ''; // Borra la visualización del nombre del destinatario
+    confirmTransferBtn.disabled = true; // Deshabilita el botón después del envío
 
     // --- SIMULACIÓN DE 10 SEGUNDOS DE ESPERA ---
-    let countdown = 10; // 10 seconds
-    cancelOngoingTransferBtn.classList.remove('hidden'); // Show cancel button for ongoing transfer
+    let countdown = 10; // 10 segundos
+    cancelOngoingTransferBtn.classList.remove('hidden'); // Muestra el botón de cancelar para la transferencia en curso
 
     transferInterval = setInterval(() => {
         countdown--;
@@ -1031,21 +1039,21 @@ transferForm.addEventListener('submit', async (e) => {
 
         if (countdown <= 0) {
             clearInterval(transferInterval);
-            transferInterval = null; // Clear interval ID
-            hideTransactionStatus(); // Hide status message
+            transferInterval = null; // Borra el ID del intervalo
+            hideTransactionStatus(); // Oculta el mensaje de estado
             performTransfer(currentUserId, currentTransferRecipientUid, currentTransferAmount, currentTransferCurrency, currentTransferRecipientDisplayName);
         }
-    }, 1000); // Update every second
+    }, 1000); // Actualiza cada segundo
 });
 
-// Cancel Ongoing Transfer button handler
+// Manejador del botón de cancelar transferencia en curso
 cancelOngoingTransferBtn.addEventListener('click', () => {
     if (transferInterval) {
         clearInterval(transferInterval);
-        transferInterval = null; // Clear interval ID
+        transferInterval = null; // Borra el ID del intervalo
         hideTransactionStatus();
         showMessage('Transferencia cancelada.', 'info');
-        // Reset any state related to the transfer
+        // Restablece cualquier estado relacionado con la transferencia
         currentTransferRecipientUid = null;
         currentTransferAmount = 0;
         currentTransferCurrency = '';
@@ -1056,26 +1064,26 @@ cancelOngoingTransferBtn.addEventListener('click', () => {
 
 
 /**
- * Executes the actual transfer logic after the delay.
- * In a real environment, this SHOULD BE A FIREBASE CLOUD FUNCTION for security.
- * @param {string} senderUid Firebase UID of the sender.
- * @param {string} actualRecipientUid Firebase UID of the recipient.
- * @param {number} amount Amount to transfer.
- * @param {string} currency Currency of the transfer (USD/DOP).
- * @param {string} recipientDisplayName The name displayed to the user for the recipient.
+ * Ejecuta la lógica de transferencia real después del retraso.
+ * En un entorno real, esto DEBERÍA SER UNA FUNCIÓN DE LA NUBE DE FIREBASE por seguridad.
+ * @param {string} senderUid UID de Firebase del remitente.
+ * @param {string} actualRecipientUid UID de Firebase del destinatario.
+ * @param {number} amount Cantidad a transferir.
+ * @param {string} currency Moneda de la transferencia (USD/DOP).
+ * @param {string} recipientDisplayName El nombre que se muestra al usuario para el destinatario.
  */
 async function performTransfer(senderUid, actualRecipientUid, amount, currency, recipientDisplayName) {
     try {
         const senderProfileRef = doc(db, 'artifacts', appId, 'users', senderUid);
         const recipientProfileRef = doc(db, 'artifacts', appId, 'users', actualRecipientUid);
 
-        // Get current balances for transaction (ideally this entire block would be atomic in Cloud Function)
+        // Obtener saldos actuales para la transacción (idealmente todo este bloque sería atómico en una función de la nube)
         const senderSnap = await getDoc(senderProfileRef);
         const recipientSnap = await getDoc(recipientProfileRef);
 
         if (!senderSnap.exists() || !recipientSnap.exists()) {
             showMessage('Error: No se encontraron los perfiles de remitente o destinatario para completar la transferencia.', 'error');
-            return; // Do not proceed with transfer if profiles not found
+            return; // No procede con la transferencia si no se encuentran los perfiles
         }
 
         const senderData = senderSnap.data();
@@ -1086,27 +1094,27 @@ async function performTransfer(senderUid, actualRecipientUid, amount, currency, 
         let recipientCurrentBalanceUSD = recipientData.balanceUSD || 0;
         let recipientCurrentBalanceDOP = recipientData.balanceDOP || 0;
 
-        // Convert amount to USD for internal calculation if currency is DOP
+        // Convierte la cantidad a USD para el cálculo interno si la moneda es DOP
         let amountInUSD = amount;
         if (currency === 'DOP') {
             amountInUSD = amount / USD_TO_DOP_RATE;
         }
 
-        // Double check sender's balance
+        // Vuelve a verificar el saldo del remitente
         if (senderCurrentBalanceUSD < amountInUSD) {
             showMessage('Error: Saldo insuficiente para completar la transferencia (posiblemente ya gastado o error de concurrencia).', 'error');
             return;
         }
 
-        // Update sender's balance
+        // Actualiza el saldo del remitente
         senderCurrentBalanceUSD -= amountInUSD;
         senderCurrentBalanceDOP = senderCurrentBalanceUSD * USD_TO_DOP_RATE;
 
-        // Update recipient's balance
+        // Actualiza el saldo del destinatario
         recipientCurrentBalanceUSD += amountInUSD;
         recipientCurrentBalanceDOP = recipientCurrentBalanceUSD * USD_TO_DOP_RATE;
 
-        // Perform updates in Firestore
+        // Realiza las actualizaciones en Firestore
         await updateDoc(senderProfileRef, {
             balanceUSD: senderCurrentBalanceUSD,
             balanceDOP: senderCurrentBalanceDOP
@@ -1117,8 +1125,8 @@ async function performTransfer(senderUid, actualRecipientUid, amount, currency, 
             balanceDOP: recipientCurrentBalanceDOP
         });
 
-        // Record the transaction in a public collection
-        // Path: artifacts/{appId}/public/data/transactions
+        // Registra la transacción en una colección pública
+        // Ruta: artifacts/{appId}/public/data/transactions
         const newTransactionRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
             senderId: senderUid,
             recipientId: actualRecipientUid,
@@ -1131,9 +1139,9 @@ async function performTransfer(senderUid, actualRecipientUid, amount, currency, 
         });
 
         showMessage(`Transferencia de ${amount.toFixed(2)} ${currency} a ${recipientDisplayName} completada exitosamente.`, 'success');
-        // Balances will be updated automatically by the onSnapshot listener
+        // Los saldos se actualizarán automáticamente por el oyente onSnapshot
 
-        // Show receipt for the sender
+        // Muestra el recibo para el remitente
         const transactionDoc = await getDoc(newTransactionRef);
         if (transactionDoc.exists()) {
             showReceipt({ id: transactionDoc.id, ...transactionDoc.data() });
@@ -1143,24 +1151,24 @@ async function performTransfer(senderUid, actualRecipientUid, amount, currency, 
         console.error("Error al completar la transferencia:", error);
         showMessage('Error al procesar la transferencia. Por favor, inténtalo de nuevo.', 'error');
     } finally {
-        // Ensure transaction status is hidden after completion or error
+        // Asegura que el estado de la transacción esté oculto después de la finalización o el error
         hideTransactionStatus();
     }
 }
 
 
-// --- Deposit Money Functionality ---
+// --- Funcionalidad de depósito de dinero ---
 
 /**
- * Shows the deposit money modal with an auto-generated serial number.
+ * Muestra el modal de depósito de dinero con un número de serie autogenerado.
  */
 depositMoneyBtn.addEventListener('click', () => {
-    depositSerialNumberInput.value = crypto.randomUUID().substring(0, 8).toUpperCase(); // Generate a shorter unique ID
+    depositSerialNumberInput.value = crypto.randomUUID().substring(0, 8).toUpperCase(); // Genera un ID único más corto
     depositModal.classList.remove('hidden');
 });
 
 /**
- * Closes the deposit money modal.
+ * Cierra el modal de depósito de dinero.
  */
 cancelDeposit.addEventListener('click', () => {
     closeModal(depositModal);
@@ -1168,8 +1176,8 @@ cancelDeposit.addEventListener('click', () => {
 });
 
 /**
- * Handles deposit form submission.
- * Requests are sent to pending_requests for admin approval.
+ * Maneja el envío del formulario de depósito.
+ * Las solicitudes se envían a pending_requests para la aprobación del administrador.
  */
 depositForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1190,7 +1198,7 @@ depositForm.addEventListener('submit', async (e) => {
     }
 
     try {
-        // Check if user already has a pending deposit (this specific flag is for deposits only)
+        // Comprueba si el usuario ya tiene un depósito pendiente (esta bandera específica es solo para depósitos)
         const userDocRef = doc(db, 'artifacts', appId, 'users', currentUserId);
         const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists() && userDocSnap.data().hasPendingDeposit) {
@@ -1200,18 +1208,18 @@ depositForm.addEventListener('submit', async (e) => {
              return;
         }
 
-        // Add deposit request to a unified 'pending_requests' collection
+        // Agrega la solicitud de depósito a una colección unificada 'pending_requests'
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
             userId: currentUserId,
-            type: 'deposit', // Indicate request type
+            type: 'deposit', // Indica el tipo de solicitud
             serialNumber: serialNumber,
             amount: amount,
             currency: currency,
             timestamp: serverTimestamp(),
-            status: 'pending' // Status for admin approval
+            status: 'pending' // Estado para la aprobación del administrador
         });
 
-        // Update user's profile to mark that they have a pending deposit
+        // Actualiza el perfil del usuario para marcar que tiene un depósito pendiente
         await updateDoc(userDocRef, {
             hasPendingDeposit: true
         });
@@ -1220,7 +1228,7 @@ depositForm.addEventListener('submit', async (e) => {
         closeModal(depositModal);
         depositForm.reset();
 
-        // Send WhatsApp message to admin
+        // Envía un mensaje de WhatsApp al administrador
         const userData = userDocSnap.data();
         const whatsappMessage = `
         Nueva solicitud de depósito pendiente:
@@ -1238,17 +1246,17 @@ depositForm.addEventListener('submit', async (e) => {
     }
 });
 
-// --- Withdraw Money Functionality ---
+// --- Funcionalidad de retiro de dinero ---
 
 /**
- * Shows the withdraw money modal.
+ * Muestra el modal de retiro de dinero.
  */
 withdrawMoneyBtn.addEventListener('click', () => {
     withdrawModal.classList.remove('hidden');
 });
 
 /**
- * Closes the withdraw money modal.
+ * Cierra el modal de retiro de dinero.
  */
 cancelWithdraw.addEventListener('click', () => {
     closeModal(withdrawModal);
@@ -1256,8 +1264,8 @@ cancelWithdraw.addEventListener('click', () => {
 });
 
 /**
- * Handles withdrawal form submission.
- * Requests are sent to pending_requests for admin approval.
+ * Maneja el envío del formulario de retiro.
+ * Las solicitudes se envían a pending_requests para la aprobación del administrador.
  */
 withdrawForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1272,7 +1280,7 @@ withdrawForm.addEventListener('submit', async (e) => {
         return;
     }
 
-    // Calculate estimated total including fee for display
+    // Calcula el total estimado incluyendo la tarifa para mostrar
     let amountInUSD = amount;
     if (currency === 'DOP') {
         amountInUSD = amount / USD_TO_DOP_RATE;
@@ -1280,29 +1288,29 @@ withdrawForm.addEventListener('submit', async (e) => {
     const estimatedFeeInUSD = amountInUSD * WITHDRAWAL_FEE_RATE;
     const totalRequiredForWithdrawalInUSD = amountInUSD + estimatedFeeInUSD;
 
-    // Check if current balance is sufficient for estimation (final check at confirmation)
+    // Comprueba si el saldo actual es suficiente para la estimación (verificación final en la confirmación)
     if (currentBalanceUSD < totalRequiredForWithdrawalInUSD) {
         showMessage(`Saldo insuficiente para cubrir el retiro de ${amount.toFixed(2)} ${currency} y la tarifa del 4%. Necesitas $${totalRequiredForWithdrawalInUSD.toFixed(2)} USD.`, 'error');
         return;
     }
 
     try {
-        // Add withdrawal request to a unified 'pending_requests' collection
+        // Agrega la solicitud de retiro a una colección unificada 'pending_requests'
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
             userId: currentUserId,
-            type: 'withdrawal', // Indicate request type
+            type: 'withdrawal', // Indica el tipo de solicitud
             amount: amount,
             currency: currency,
             timestamp: serverTimestamp(),
-            status: 'pending', // Status for admin approval
-            estimatedFee: estimatedFeeInUSD // Store estimated fee for admin review
+            status: 'pending', // Estado para la aprobación del administrador
+            estimatedFee: estimatedFeeInUSD // Almacena la tarifa estimada para la revisión del administrador
         });
 
         showMessage(`Solicitud de retiro de ${amount.toFixed(2)} ${currency} enviada. Esperando aprobación del banco. Se aplicará una tarifa del 4% al confirmar.`, 'success');
         closeModal(withdrawModal);
         withdrawForm.reset();
 
-        // Send WhatsApp message to admin
+        // Envía un mensaje de WhatsApp al administrador
         const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
         const userData = userDocSnap.data();
         const whatsappMessage = `
@@ -1321,7 +1329,7 @@ withdrawForm.addEventListener('submit', async (e) => {
     }
 });
 
-// --- Online Shopping Logic ---
+// --- Lógica de compras en línea ---
 onlineShoppingBtn.addEventListener('click', () => {
     onlineShoppingModal.classList.remove('hidden');
     onlineShoppingForm.reset();
@@ -1353,7 +1361,7 @@ function updateOnlineShoppingCalculation() {
     }
 
     const feeAmount = amountInUSD * COMMISSION_RATE;
-    const totalAmount = amountInUSD + feeAmount; // This is what the user *will pay* after admin confirmation
+    const totalAmount = amountInUSD + feeAmount; // Esto es lo que el usuario *pagará* después de la confirmación del administrador
 
     shoppingFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
     shoppingTotalDisplay.textContent = `$${totalAmount.toFixed(2)} USD`;
@@ -1366,7 +1374,7 @@ onlineShoppingForm.addEventListener('submit', async (e) => {
     const productAmount = parseFloat(shoppingAmountInput.value);
     const productCurrency = shoppingCurrencyInput.value;
     const productLinks = productLinksInput.value.trim();
-    const shoppingCategory = shoppingCategoryInput.value; // Get category
+    const shoppingCategory = shoppingCategoryInput.value; // Obtener categoría
 
     if (isNaN(productAmount) || productAmount <= 0) {
         showMessage('Por favor, ingresa un monto estimado válido para los productos.', 'error');
@@ -1388,19 +1396,19 @@ onlineShoppingForm.addEventListener('submit', async (e) => {
     }
 
     const feeAmount = amountInUSD * COMMISSION_RATE;
-    const totalToDeductInUSD = amountInUSD + feeAmount; // This is the total amount the user will pay
+    const totalToDeductInUSD = amountInUSD + feeAmount; // Este es el monto total que el usuario pagará
 
     try {
-        // Add online purchase request to 'pending_requests'
+        // Agrega la solicitud de compra en línea a 'pending_requests'
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
             userId: currentUserId,
             type: 'online_purchase',
             productAmount: productAmount,
             productCurrency: productCurrency,
             productLinks: productLinks,
-            feeAmount: feeAmount, // Store calculated fee
-            totalAmountToDeduct: totalToDeductInUSD, // Store total to deduct
-            category: shoppingCategory, // Store category
+            feeAmount: feeAmount, // Almacena la tarifa calculada
+            totalAmountToDeduct: totalToDeductInUSD, // Almacena el total a deducir
+            category: shoppingCategory, // Almacena la categoría
             timestamp: serverTimestamp(),
             status: 'pending'
         });
@@ -1409,7 +1417,7 @@ onlineShoppingForm.addEventListener('submit', async (e) => {
         closeModal(onlineShoppingModal);
         onlineShoppingForm.reset();
 
-        // Send WhatsApp message to admin
+        // Envía un mensaje de WhatsApp al administrador
         const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
         const userData = userDocSnap.data();
         const whatsappMessage = `
@@ -1432,7 +1440,7 @@ onlineShoppingForm.addEventListener('submit', async (e) => {
     }
 });
 
-// --- Streaming Payment Logic ---
+// --- Lógica de pago de streaming ---
 streamingPaymentBtn.addEventListener('click', () => {
     streamingPaymentModal.classList.remove('hidden');
     streamingPaymentForm.reset();
@@ -1464,7 +1472,7 @@ function updateStreamingPaymentCalculation() {
     }
 
     const feeAmount = amountInUSD * COMMISSION_RATE;
-    const totalAmount = amountInUSD + feeAmount; // This is what the user *will pay* after admin confirmation
+    const totalAmount = amountInUSD + feeAmount; // Esto es lo que el usuario *pagará* después de la confirmación del administrador
 
     streamingFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
     streamingTotalDisplay.textContent = `$${totalAmount.toFixed(2)} USD`;
@@ -1478,7 +1486,7 @@ streamingPaymentForm.addEventListener('submit', async (e) => {
     const accountIdentifier = streamingAccountIdentifierInput.value.trim();
     const subscriptionAmount = parseFloat(streamingAmountInput.value);
     const subscriptionCurrency = streamingCurrencyInput.value;
-    const streamingCategory = streamingCategoryInput.value; // Get category
+    const streamingCategory = streamingCategoryInput.value; // Obtener categoría
 
     if (!service || !accountIdentifier || isNaN(subscriptionAmount) || subscriptionAmount <= 0) {
         showMessage('Por favor, completa todos los campos para el pago del servicio de streaming.', 'error');
@@ -1495,10 +1503,10 @@ streamingPaymentForm.addEventListener('submit', async (e) => {
     }
 
     const feeAmount = amountInUSD * COMMISSION_RATE;
-    const totalToDeductInUSD = amountInUSD + feeAmount; // This is the total amount the user will pay
+    const totalToDeductInUSD = amountInUSD + feeAmount; // Este es el monto total que el usuario pagará
 
     try {
-        // Add streaming payment request to 'pending_requests'
+        // Agrega la solicitud de pago de streaming a 'pending_requests'
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
             userId: currentUserId,
             type: 'streaming_payment',
@@ -1508,7 +1516,7 @@ streamingPaymentForm.addEventListener('submit', async (e) => {
             subscriptionCurrency: subscriptionCurrency,
             feeAmount: feeAmount,
             totalAmountToDeduct: totalToDeductInUSD,
-            category: streamingCategory, // Store category
+            category: streamingCategory, // Almacena la categoría
             timestamp: serverTimestamp(),
             status: 'pending'
         });
@@ -1517,7 +1525,7 @@ streamingPaymentForm.addEventListener('submit', async (e) => {
         closeModal(streamingPaymentModal);
         streamingPaymentForm.reset();
 
-        // Send WhatsApp message to admin
+        // Envía un mensaje de WhatsApp al administrador
         const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
         const userData = userDocSnap.data();
         const whatsappMessage = `
@@ -1540,7 +1548,7 @@ streamingPaymentForm.addEventListener('submit', async (e) => {
     }
 });
 
-// --- NEW: Game Recharge Logic ---
+// --- NUEVO: Lógica de recarga de juegos ---
 gameRechargeBtn.addEventListener('click', () => {
     gameRechargeModal.classList.remove('hidden');
     gameRechargeForm.reset();
@@ -1572,7 +1580,7 @@ function updateGameRechargeCalculation() {
     }
 
     const feeAmount = amountInUSD * COMMISSION_RATE;
-    const totalAmount = amountInUSD + feeAmount; // This is what the user *will pay* after admin confirmation
+    const totalAmount = amountInUSD + feeAmount; // Esto es lo que el usuario *pagará* después de la confirmación del administrador
 
     gameRechargeFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
     gameRechargeTotalDisplay.textContent = `$${totalAmount.toFixed(2)} USD`;
@@ -1595,14 +1603,14 @@ gameRechargeForm.addEventListener('submit', async (e) => {
 
     let amountInUSD = rechargeAmount;
     if (rechargeCurrency === 'DOP') {
-        amountInUSD = rechargeAmount / USD_TO_DOP_RATE;
+        amountInUSD = amount / USD_TO_DOP_RATE;
     }
 
     const feeAmount = amountInUSD * COMMISSION_RATE;
-    const totalToDeductInUSD = amountInUSD + feeAmount; // This is the total amount the user will pay
+    const totalToDeductInUSD = amountInUSD + feeAmount; // Este es el monto total que el usuario pagará
 
     try {
-        // Add game recharge request to 'pending_requests'
+        // Agrega la solicitud de recarga de juegos a 'pending_requests'
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
             userId: currentUserId,
             type: 'game_recharge',
@@ -1621,7 +1629,7 @@ gameRechargeForm.addEventListener('submit', async (e) => {
         closeModal(gameRechargeModal);
         gameRechargeForm.reset();
 
-        // Send WhatsApp message to admin
+        // Envía un mensaje de WhatsApp al administrador
         const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
         const userData = userDocSnap.data();
         const whatsappMessage = `
@@ -1645,7 +1653,7 @@ gameRechargeForm.addEventListener('submit', async (e) => {
 });
 
 
-// --- Admin Pending Requests Functionality (Unified) ---
+// --- Funcionalidad de solicitudes pendientes del administrador (Unificado) ---
 
 viewAdminPendingRequestsBtn.addEventListener('click', () => {
     adminPendingRequestsModal.classList.remove('hidden');
@@ -1654,32 +1662,32 @@ viewAdminPendingRequestsBtn.addEventListener('click', () => {
 
 closeAdminPendingRequestsModalBtn.addEventListener('click', () => {
     closeModal(adminPendingRequestsModal);
-    // Unsubscribe from the listener when the modal is closed
+    // Desuscribirse del oyente cuando se cierra el modal
     if (adminPendingRequestsUnsubscribe) {
         adminPendingRequestsUnsubscribe();
         adminPendingRequestsUnsubscribe = null;
-        console.log("Admin: Unsubscribed from pending requests listener on modal close.");
+        console.log("Admin: Desuscrito del oyente de solicitudes pendientes al cerrar el modal.");
     }
 });
 
 /**
- * Loads and displays all pending requests for the admin.
+ * Carga y muestra todas las solicitudes pendientes para el administrador.
  */
 function loadAdminPendingRequests() {
-    // Unsubscribe from previous listener if it exists
+    // Desuscribirse del oyente anterior si existe
     if (adminPendingRequestsUnsubscribe) {
         adminPendingRequestsUnsubscribe();
-        adminPendingRequestsUnsubscribe = null; // Reset
-        console.log("Admin: Unsubscribed from previous pending requests listener.");
+        adminPendingRequestsUnsubscribe = null; // Restablecer
+        console.log("Admin: Desuscrito del oyente de solicitudes pendientes anterior.");
     }
 
     adminPendingRequestsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando solicitudes pendientes...</td></tr>';
     const pendingRequestsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests');
     const q = query(pendingRequestsCollectionRef, where('status', '==', 'pending'));
 
-    // Assign the unsubscribe function to adminPendingRequestsUnsubscribe
+    // Asigna la función de desuscripción a adminPendingRequestsUnsubscribe
     adminPendingRequestsUnsubscribe = onSnapshot(q, async (snapshot) => {
-        adminPendingRequestsTableBody.innerHTML = ''; // Clear table for new data
+        adminPendingRequestsTableBody.innerHTML = ''; // Borra la tabla para nuevos datos
         if (snapshot.empty) {
             adminPendingRequestsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay solicitudes pendientes.</td></tr>';
             return;
@@ -1714,17 +1722,17 @@ function loadAdminPendingRequests() {
                     break;
                 case 'online_purchase':
                     typeDisplay = 'Compra Online';
-                    amountDisplay = (request.totalAmountToDeduct ?? 0).toFixed(2); // Show total amount to be deducted
-                    currencyDisplay = 'USD'; // Assuming totalToDeduct is in USD
-                    detailsDisplay = `Prod. Cant: ${(request.productAmount ?? 0).toFixed(2)} ${request.productCurrency}, Tarifa (3%): $${(request.feeAmount ?? 0).toFixed(2)} USD. Cat: ${request.category || 'N/A'}. Links: ${request.productLinks.substring(0, 50)}...`;
+                    amountDisplay = (request.totalAmountToDeduct ?? 0).toFixed(2); // Muestra el monto total a deducir
+                    currencyDisplay = 'USD'; // Asumiendo que totalToDeduct está en USD
+                    detailsDisplay = `Cant. Prod: ${(request.productAmount ?? 0).toFixed(2)} ${request.productCurrency}, Tarifa (3%): $${(request.feeAmount ?? 0).toFixed(2)} USD. Cat: ${request.category || 'N/A'}. Enlaces: ${request.productLinks.substring(0, 50)}...`;
                     break;
                 case 'streaming_payment':
                     typeDisplay = 'Pago Streaming';
-                    amountDisplay = (request.totalAmountToDeduct ?? 0).toFixed(2); // Show total amount to be deducted
-                    currencyDisplay = 'USD'; // Assuming totalToDeduct is in USD
+                    amountDisplay = (request.totalAmountToDeduct ?? 0).toFixed(2); // Muestra el monto total a deducir
+                    currencyDisplay = 'USD'; // Asumiendo que totalToDeduct está en USD
                     detailsDisplay = `Servicio: ${request.service}, Cuenta: ${request.accountIdentifier}, Tarifa (3%): $${(request.feeAmount ?? 0).toFixed(2)} USD. Cat: ${request.category || 'N/A'}.`;
                     break;
-                case 'game_recharge': // NEW: Admin Pending Request Display for Game Recharge
+                case 'game_recharge': // NUEVO: Visualización de solicitud pendiente de administrador para recarga de juegos
                     typeDisplay = 'Recarga de Juego';
                     amountDisplay = (request.totalAmountToDeduct ?? 0).toFixed(2);
                     currencyDisplay = 'USD';
@@ -1791,12 +1799,12 @@ function loadAdminPendingRequests() {
             adminPendingRequestsTableBody.appendChild(row);
         }
     }, (error) => {
-        console.error("Error loading admin pending requests:", error);
+        console.error("Error al cargar las solicitudes pendientes del administrador:", error);
         adminPendingRequestsTableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error al cargar solicitudes pendientes.</td></tr>`;
     });
 }
 
-// Event delegation for confirm/reject buttons in admin pending requests table
+// Delegación de eventos para los botones de confirmar/rechazar en la tabla de solicitudes pendientes del administrador
 adminPendingRequestsTableBody.addEventListener('click', async (event) => {
     const target = event.target;
     if (target.classList.contains('confirm-request-btn')) {
@@ -1815,10 +1823,10 @@ adminPendingRequestsTableBody.addEventListener('click', async (event) => {
             dataset.accountIdentifier,
             parseFloat(dataset.subscriptionAmount),
             dataset.subscriptionCurrency,
-            dataset.gameName, // NEW
-            dataset.playerId, // NEW
-            parseFloat(dataset.rechargeAmount), // NEW
-            dataset.rechargeCurrency, // NEW
+            dataset.gameName, // NUEVO
+            dataset.playerId, // NUEVO
+            parseFloat(dataset.rechargeAmount), // NUEVO
+            dataset.rechargeCurrency, // NUEVO
             parseFloat(dataset.feeAmount),
             parseFloat(dataset.totalAmountToDeduct),
             dataset.category,
@@ -1826,9 +1834,9 @@ adminPendingRequestsTableBody.addEventListener('click', async (event) => {
             parseFloat(dataset.initialDepositAmount),
             dataset.initialDepositCurrency,
             dataset.preferredSavingsFrequency,
-            parseFloat(dataset.periodicContributionAmount), // Pass periodicContributionAmount
-            dataset.startDate, // Pass startDate
-            dataset.endDate // Pass endDate
+            parseFloat(dataset.periodicContributionAmount), // Pasa periodicContributionAmount
+            dataset.startDate, // Pasa startDate
+            dataset.endDate // Pasa endDate
         );
     } else if (target.classList.contains('reject-request-btn')) {
         const dataset = target.dataset;
@@ -1838,17 +1846,17 @@ adminPendingRequestsTableBody.addEventListener('click', async (event) => {
 
 
 /**
- * Confirms a pending request, handles money transfer, and records transaction.
+ * Confirma una solicitud pendiente, maneja la transferencia de dinero y registra la transacción.
  */
 async function confirmRequest(
             requestId, type, userId, amount, currency, serialNumber,
             productAmount, productCurrency, productLinks,
             service, accountIdentifier, subscriptionAmount, subscriptionCurrency,
-            gameName, playerId, rechargeAmount, rechargeCurrency, // NEW Game Recharge parameters
+            gameName, playerId, rechargeAmount, rechargeCurrency, // Parámetros NUEVOS de recarga de juegos
             feeAmount, totalAmountToDeduct, category,
-            savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, startDate, endDate // New parameters
+            savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, startDate, endDate // Nuevos parámetros
         ) {
-            console.log("Confirming request:", { requestId, type, userId, amount, currency, serialNumber, productAmount, productCurrency, productLinks, service, accountIdentifier, subscriptionAmount, subscriptionCurrency, gameName, playerId, rechargeAmount, rechargeCurrency, feeAmount, totalAmountToDeduct, category, savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, startDate, endDate });
+            console.log("Confirmando solicitud:", { requestId, type, userId, amount, currency, serialNumber, productAmount, productCurrency, productLinks, service, accountIdentifier, subscriptionAmount, subscriptionCurrency, gameName, playerId, rechargeAmount, rechargeCurrency, feeAmount, totalAmountToDeduct, category, savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, startDate, endDate });
             try {
                 const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
                 const requestDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_requests', requestId);
@@ -1856,7 +1864,7 @@ async function confirmRequest(
                 const userDocSnap = await getDoc(userProfileRef);
 
                 if (!userDocSnap.exists()) {
-                    console.error("Error: User profile not found for request:", userId);
+                    console.error("Error: Perfil de usuario no encontrado para la solicitud:", userId);
                     showMessage('Error: Usuario no encontrado para la solicitud.', 'error');
                     return;
                 }
@@ -1871,7 +1879,7 @@ async function confirmRequest(
                 if (!adminSnapshot.empty) {
                     adminId = adminSnapshot.docs[0].id;
                 } else {
-                    console.warn("Admin account not found. Fees might not be transferred to admin.");
+                    console.warn("Cuenta de administrador no encontrada. Las tarifas podrían no transferirse al administrador.");
                 }
 
                 let transactionType = type;
@@ -1939,9 +1947,9 @@ async function confirmRequest(
                         currencyToRecordInTransaction = 'USD';
                         typeDisplay = 'Compra Online';
 
-                        // --- CAMBIO AQUÍ: Solo transferimos la tarifa (feeAmount) al admin ---
+                        // --- CAMBIO AQUÍ: Solo transferimos la tarifa (feeAmount) al administrador ---
                         if (adminId && feeAmount > 0) {
-                            console.log("Transferring online purchase FEE to admin:", feeAmount, "USD");
+                            console.log("Transfiriendo TARIFA de compra en línea al administrador:", feeAmount, "USD");
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
                             let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
@@ -1960,9 +1968,9 @@ async function confirmRequest(
                         currencyToRecordInTransaction = 'USD';
                         typeDisplay = 'Pago Streaming';
 
-                        // --- CAMBIO AQUÍ: Solo transferimos la tarifa (feeAmount) al admin ---
+                        // --- CAMBIO AQUÍ: Solo transferimos la tarifa (feeAmount) al administrador ---
                         if (adminId && feeAmount > 0) {
-                            console.log("Transferring streaming payment FEE to admin:", feeAmount, "USD");
+                            console.log("Transfiriendo TARIFA de pago de streaming al administrador:", feeAmount, "USD");
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
                             let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
@@ -1981,9 +1989,9 @@ async function confirmRequest(
                         currencyToRecordInTransaction = 'USD';
                         typeDisplay = 'Recarga de Juego';
 
-                        // --- CAMBIO AQUÍ: Solo transferimos la tarifa (feeAmount) al admin ---
+                        // --- CAMBIO AQUÍ: Solo transferimos la tarifa (feeAmount) al administrador ---
                         if (adminId && feeAmount > 0) {
-                            console.log("Transferring game recharge FEE to admin:", feeAmount, "USD");
+                            console.log("Transfiriendo TARIFA de recarga de juego al administrador:", feeAmount, "USD");
                             const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
                             const adminData = (await getDoc(adminProfileRef)).data();
                             let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
@@ -2040,7 +2048,7 @@ async function confirmRequest(
                         typeDisplay = 'Apertura Cta. Ahorro';
                         break;
                     default:
-                        console.error("Error: Unknown request type:", type);
+                        console.error("Error: Tipo de solicitud desconocido:", type);
                         showMessage('Tipo de solicitud desconocido.', 'error');
                         typeDisplay = 'Desconocido';
                         return;
@@ -2086,7 +2094,7 @@ async function confirmRequest(
         }
 
 /**
- * Rejects a pending request.
+ * Rechaza una solicitud pendiente.
  */
 async function rejectRequest(requestId, type, userId) {
     try {
@@ -2097,7 +2105,7 @@ async function rejectRequest(requestId, type, userId) {
             rejectedAt: serverTimestamp()
         });
 
-        // For deposits, reset the hasPendingDeposit flag so user can request again
+        // Para los depósitos, restablece la bandera hasPendingDeposit para que el usuario pueda solicitar de nuevo
         if (type === 'deposit') {
             const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
             await updateDoc(userProfileRef, {
@@ -2115,7 +2123,7 @@ async function rejectRequest(requestId, type, userId) {
 
 
 /**
- * Loads and displays the current user's transaction history.
+ * Carga y muestra el historial de transacciones del usuario actual.
  */
 async function loadUserHistory() {
     userHistoryTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Cargando historial...</td></tr>';
@@ -2128,18 +2136,18 @@ async function loadUserHistory() {
 
     onSnapshot(q, async (snapshot) => {
         userHistoryTableBody.innerHTML = '';
-        userTransactionsData = []; // Clear previous data
+        userTransactionsData = []; // Borra los datos anteriores
 
         for (const docEntry of snapshot.docs) {
             const transaction = { id: docEntry.id, ...docEntry.data() };
 
-            // Filter for current user's completed transactions
+            // Filtra las transacciones completadas del usuario actual
             if ((transaction.type === 'deposit' || transaction.type === 'withdrawal' || transaction.type === 'online_purchase' || transaction.type === 'streaming_payment' || transaction.type === 'game_recharge' || transaction.type === 'savings_account_open' || transaction.type === 'deposit_to_savings' || transaction.type === 'withdraw_from_savings' || transaction.type === 'delete_savings_account' || transaction.type === 'automatic_savings_collection' || transaction.type === 'savings_debt_payment' || transaction.type === 'savings_indemnization_applied') && transaction.userId === currentUserId) {
                 userTransactionsData.push(transaction);
             } else if (transaction.type === 'transfer' && (transaction.senderId === currentUserId || transaction.recipientId === currentUserId)) {
                 userTransactionsData.push(transaction);
             }
-            // Do NOT include 'withdrawal_fee' in user's history as it's an internal admin transaction
+            // NO incluyas 'withdrawal_fee' en el historial del usuario, ya que es una transacción interna del administrador
         }
 
         if (userTransactionsData.length === 0) {
@@ -2147,7 +2155,7 @@ async function loadUserHistory() {
             return;
         }
 
-        // Sort transactions by timestamp descending (newest first)
+        // Ordena las transacciones por marca de tiempo descendente (las más recientes primero)
         userTransactionsData.sort((a, b) => {
             const timestampA = a.timestamp && typeof a.timestamp.seconds !== 'undefined' ? a.timestamp.seconds : 0;
             const timestampB = b.timestamp && typeof b.timestamp.seconds !== 'undefined' ? b.timestamp.seconds : 0;
@@ -2190,14 +2198,14 @@ async function loadUserHistory() {
                 case 'online_purchase':
                     typeDisplay = 'Compra Online';
                     detailsDisplay = `Cat: ${transaction.category || 'N/A'}, Total prod: ${(transaction.productAmount ?? 0).toFixed(2)} ${transaction.productCurrency}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
-                    amountDisplay = `-${(transaction.totalAmountDeducted ?? 0).toFixed(2)} ${transaction.currency}`; // This is the total deducted
+                    amountDisplay = `-${(transaction.totalAmountDeducted ?? 0).toFixed(2)} ${transaction.currency}`; // Este es el total deducido
                     break;
                 case 'streaming_payment':
                     typeDisplay = 'Pago Streaming';
                     detailsDisplay = `Servicio: ${transaction.service}, Cat: ${transaction.category || 'N/A'}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
-                    amountDisplay = `-${(transaction.totalAmountDeducted ?? 0).toFixed(2)} ${transaction.currency}`; // This is the total deducted
+                    amountDisplay = `-${(transaction.totalAmountDeducted ?? 0).toFixed(2)} ${transaction.currency}`; // Este es el total deducido
                     break;
-                case 'game_recharge': // NEW: User History Display for Game Recharge
+                case 'game_recharge': // NUEVO: Visualización de historial de usuario para recarga de juegos
                     typeDisplay = 'Recarga de Juego';
                     detailsDisplay = `Juego: ${transaction.gameName}, ID Jugador: ${transaction.playerId}, Tipo: ${transaction.category || 'N/A'}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
                     amountDisplay = `-${(transaction.totalAmountDeducted ?? 0).toFixed(2)} ${transaction.currency}`;
@@ -2251,7 +2259,7 @@ async function loadUserHistory() {
             userHistoryTableBody.appendChild(row);
         }
 
-        // Attach event listeners for "Ver Recibo" buttons
+        // Adjunta oyentes de eventos para los botones "Ver Recibo"
         document.querySelectorAll('.view-receipt-btn').forEach(button => {
             button.onclick = async (event) => {
                 const transactionId = event.target.dataset.transactionId;
@@ -2266,29 +2274,29 @@ async function loadUserHistory() {
         });
 
     }, (error) => {
-        console.error("Error loading user history:", error);
+        console.error("Error al cargar el historial del usuario:", error);
         userHistoryTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-4">Error al cargar tu historial.</td></tr>`;
     });
 }
 
 
 /**
- * Loads and displays the full transaction history for all users in the admin modal.
+ * Carga y muestra el historial completo de transacciones para todos los usuarios en el modal del administrador.
  */
 async function loadAdminFullHistory() {
-    console.log("Admin: loadAdminFullHistory() called.");
+    console.log("Admin: loadAdminFullHistory() llamado.");
     adminFullHistoryTableBodyModal.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando historial completo...</td></tr>';
     const transactionsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'transactions');
     const q = query(transactionsCollectionRef, where('status', '==', 'completed'));
 
     onSnapshot(q, async (snapshot) => {
-        console.log("Admin: onSnapshot for admin full history triggered.");
-        console.log("Admin: Snapshot size for full history:", snapshot.size);
+        console.log("Admin: onSnapshot para el historial completo del administrador activado.");
+        console.log("Admin: Tamaño de la instantánea para el historial completo:", snapshot.size);
 
         adminFullHistoryTableBodyModal.innerHTML = '';
         if (snapshot.empty) {
             adminFullHistoryTableBodyModal.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay transacciones en el historial.</td></tr>';
-            console.log("Admin: No transactions found for admin history.");
+            console.log("Admin: No se encontraron transacciones para el historial del administrador.");
             return;
         }
 
@@ -2297,7 +2305,7 @@ async function loadAdminFullHistory() {
             allTransactions.push({ id: docEntry.id, ...docEntry.data() });
         }
 
-        // Sort transactions by timestamp descending (newest first)
+        // Ordena las transacciones por marca de tiempo descendente (las más recientes primero)
         allTransactions.sort((a, b) => {
             const timestampA = a.timestamp && typeof a.timestamp.seconds !== 'undefined' ? a.timestamp.seconds : 0;
             const timestampB = b.timestamp && typeof b.timestamp.seconds !== 'undefined' ? b.timestamp.seconds : 0;
@@ -2341,25 +2349,25 @@ async function loadAdminFullHistory() {
                     const feePayer = await getUserDisplayName(transaction.payerId);
                     const feeReceiver = await getUserDisplayName(transaction.receiverId);
                     usersInvolved = `${feePayer} (paga) -> ${feeReceiver} (recibe)`;
-                    amountValue = (transaction.amount ?? 0); // This is the fee amount
+                    amountValue = (transaction.amount ?? 0); // Este es el monto de la tarifa
                     currencyValue = 'USD';
                     details = `ID Solicitud Original: ${transaction.originalRequestId || 'N/A'}`;
                     break;
                 case 'online_purchase':
                     typeDisplay = 'Compra Online';
                     usersInvolved = await getUserDisplayName(transaction.userId);
-                    amountValue = (transaction.totalAmountDeducted ?? 0); // Show total deducted from user
+                    amountValue = (transaction.totalAmountDeducted ?? 0); // Muestra el total deducido del usuario
                     currencyValue = 'USD';
-                    details = `Cat: ${transaction.category || 'N/A'}. Links: ${transaction.productLinks ? transaction.productLinks.substring(0, 50) + '...' : 'N/A'}. Total prod: ${(transaction.productAmount ?? 0).toFixed(2)} ${transaction.productCurrency}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
+                    details = `Cat: ${transaction.category || 'N/A'}. Enlaces: ${transaction.productLinks ? transaction.productLinks.substring(0, 50) + '...' : 'N/A'}. Total prod: ${(transaction.productAmount ?? 0).toFixed(2)} ${transaction.productCurrency}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
                     break;
                 case 'streaming_payment':
                     typeDisplay = 'Pago Streaming';
                     usersInvolved = await getUserDisplayName(transaction.userId);
-                    amountValue = (transaction.totalAmountDeducted ?? 0); // Show total deducted from user
+                    amountValue = (transaction.totalAmountDeducted ?? 0); // Muestra el total deducido del usuario
                     currencyValue = 'USD';
                     details = `Servicio: ${transaction.service}, Cat: ${transaction.category || 'N/A'}, Cuenta: ${transaction.accountIdentifier}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
                     break;
-                case 'game_recharge': // NEW: Admin History Display for Game Recharge
+                case 'game_recharge': // NUEVO: Visualización de historial de administrador para recarga de juegos
                     typeDisplay = 'Recarga de Juego';
                     usersInvolved = await getUserDisplayName(transaction.userId);
                     amountValue = (transaction.totalAmountDeducted ?? 0);
@@ -2435,17 +2443,17 @@ async function loadAdminFullHistory() {
                 <td>${transaction.status}</td>
                 <td>${details}</td>
             `;
-            adminFullHistoryTableBodyModal.appendChild(row); // Append to modal's tbody
+            adminFullHistoryTableBodyModal.appendChild(row); // Agrega al tbody del modal
         }
-        console.log(`Admin: Loaded ${snapshot.docs.length} total transactions for admin history.`);
+        console.log(`Admin: Se cargaron ${snapshot.docs.length} transacciones totales para el historial del administrador.`);
     }, (error) => {
-        console.error("Admin: Error loading admin full history:", error);
+        console.error("Admin: Error al cargar el historial completo del administrador:", error);
         adminFullHistoryTableBodyModal.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error al cargar el historial completo.</td></tr>`;
     });
 }
 
 /**
- * Loads and displays the current user's pending deposits and withdrawals, and other pending requests.
+ * Carga y muestra los depósitos y retiros pendientes del usuario actual, y otras solicitudes pendientes.
  */
 async function loadUserPendingRequests() {
     userPendingRequestsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Cargando solicitudes...</td></tr>';
@@ -2454,7 +2462,7 @@ async function loadUserPendingRequests() {
     const userPendingQuery = query(pendingRequestsRef, where('userId', '==', currentUserId), where('status', '==', 'pending'));
 
     onSnapshot(userPendingQuery, async (snapshot) => {
-        userPendingRequestsTableBody.innerHTML = ''; // Clear table for new data
+        userPendingRequestsTableBody.innerHTML = ''; // Borra la tabla para nuevos datos
         const allPendingRequests = [];
 
         snapshot.forEach(docEntry => {
@@ -2477,17 +2485,17 @@ async function loadUserPendingRequests() {
                     break;
                 case 'online_purchase':
                     typeDisplay = 'Compra Online';
-                    amountToDisplay = (data.totalAmountToDeduct ?? 0); // Show total that will be deducted
+                    amountToDisplay = (data.totalAmountToDeduct ?? 0); // Muestra el total que se deducirá
                     currencyToDisplay = 'USD';
                     detailDisplay = `Cat: ${data.category || 'N/A'}, Total prod: ${(data.productAmount ?? 0).toFixed(2)} ${data.productCurrency}, Tarifa: ${(data.feeAmount ?? 0).toFixed(2)} USD`;
                     break;
                 case 'streaming_payment':
                     typeDisplay = 'Pago Streaming';
-                    amountToDisplay = (data.totalAmountToDeduct ?? 0); // Show total that will be deducted
+                    amountToDisplay = (data.totalAmountToDeduct ?? 0); // Muestra el total que se deducirá
                     currencyToDisplay = 'USD';
                     detailDisplay = `Servicio: ${data.service}, Cat: ${data.category || 'N/A'}, Tarifa: ${(data.feeAmount ?? 0).toFixed(2)} USD`;
                     break;
-                case 'game_recharge': // NEW: User Pending Request Display for Game Recharge
+                case 'game_recharge': // NUEVO: Visualización de solicitud pendiente del usuario para recarga de juegos
                     typeDisplay = 'Recarga de Juego';
                     amountToDisplay = (data.totalAmountToDeduct ?? 0);
                     currencyToDisplay = 'USD';
@@ -2521,7 +2529,7 @@ async function loadUserPendingRequests() {
             return;
         }
 
-        // Sort by timestamp descending
+        // Ordena por marca de tiempo descendente
         allPendingRequests.sort((a, b) => {
             const timestampA = a.timestamp && typeof a.timestamp.seconds !== 'undefined' ? a.timestamp.seconds : 0;
             const timestampB = b.timestamp && typeof b.timestamp.seconds !== 'undefined' ? b.timestamp.seconds : 0;
@@ -2545,16 +2553,16 @@ async function loadUserPendingRequests() {
             userPendingRequestsTableBody.appendChild(row);
         }
     }, (error) => {
-        console.error("Error loading user pending requests:", error);
+        console.error("Error al cargar las solicitudes pendientes del usuario:", error);
         userPendingRequestsTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-4">Error al cargar solicitudes pendientes.</td></tr>`;
     });
 }
 
-// --- NEW: Open Savings Account Functionality ---
+// --- NUEVO: Funcionalidad de abrir cuenta de ahorro ---
 openSavingsAccountBtn.addEventListener('click', () => {
     openSavingsAccountModal.classList.remove('hidden');
     savingsAccountForm.reset();
-    // Set min date for savingsEndDate to today
+    // Establece la fecha mínima para savingsEndDate en hoy
     const today = new Date();
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -2575,8 +2583,8 @@ savingsAccountForm.addEventListener('submit', async (e) => {
     const initialDepositAmount = parseFloat(initialDepositAmountInput.value);
     const initialDepositCurrency = initialDepositCurrencyInput.value;
     const preferredSavingsFrequency = preferredSavingsFrequencyInput.value;
-    const periodicContributionAmount = parseFloat(periodicContributionAmountInput.value); // Get periodic contribution
-    const savingsEndDate = savingsEndDateInput.value; // Get end date
+    const periodicContributionAmount = parseFloat(periodicContributionAmountInput.value); // Obtener contribución periódica
+    const savingsEndDate = savingsEndDateInput.value; // Obtener fecha de finalización
 
     if (!savingsGoal || isNaN(initialDepositAmount) || initialDepositAmount <= 0 || !preferredSavingsFrequency || isNaN(periodicContributionAmount) || periodicContributionAmount < 0 || !savingsEndDate) {
         showMessage('Por favor, completa todos los campos correctamente para tu cuenta de ahorro.', 'error');
@@ -2594,7 +2602,7 @@ savingsAccountForm.addEventListener('submit', async (e) => {
     }
 
     try {
-        // Add savings account opening request to 'pending_requests'
+        // Agrega la solicitud de apertura de cuenta de ahorro a 'pending_requests'
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
             userId: currentUserId,
             type: 'savings_account_open',
@@ -2602,9 +2610,9 @@ savingsAccountForm.addEventListener('submit', async (e) => {
             initialDepositAmount: initialDepositAmount,
             initialDepositCurrency: initialDepositCurrency,
             preferredSavingsFrequency: preferredSavingsFrequency,
-            periodicContributionAmount: periodicContributionAmount, // Store periodic contribution
-            startDate: serverTimestamp(), // Automatically set start date
-            endDate: savingsEndDate, // Store provided end date
+            periodicContributionAmount: periodicContributionAmount, // Almacena la contribución periódica
+            startDate: serverTimestamp(), // Establece automáticamente la fecha de inicio
+            endDate: savingsEndDate, // Almacena la fecha de finalización proporcionada
             timestamp: serverTimestamp(),
             status: 'pending'
         });
@@ -2613,7 +2621,7 @@ savingsAccountForm.addEventListener('submit', async (e) => {
         closeModal(openSavingsAccountModal);
         savingsAccountForm.reset();
 
-        // Send WhatsApp message to admin
+        // Envía un mensaje de WhatsApp al administrador
         const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
         const userData = userDocSnap.data();
         const whatsappMessage = `
@@ -2635,7 +2643,7 @@ savingsAccountForm.addEventListener('submit', async (e) => {
     }
 });
 
-// --- NEW: View Savings Accounts Functionality ---
+// --- NUEVO: Funcionalidad de ver cuentas de ahorro ---
 viewSavingsAccountsBtn.addEventListener('click', () => {
     viewSavingsAccountsModal.classList.remove('hidden');
     loadSavingsAccounts();
@@ -2646,7 +2654,7 @@ closeViewSavingsAccountsBtn.addEventListener('click', () => {
 });
 
 /**
- * Loads and displays the user's savings accounts and handles automatic collection.
+ * Carga y muestra las cuentas de ahorro del usuario y maneja la recolección automática.
  */
 async function loadSavingsAccounts() {
     savingsAccountsTableBody.innerHTML = '<tr><td colspan="10" class="text-center text-gray-500 py-4">Cargando cuentas de ahorro...</td></tr>';
@@ -2666,7 +2674,7 @@ async function loadSavingsAccounts() {
         }
 
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Normalize to start of day for comparison
+        today.setHours(0, 0, 0, 0); // Normaliza al inicio del día para la comparación
 
         for (const docEntry of snapshot.docs) {
             const account = docEntry.data();
@@ -2676,18 +2684,18 @@ async function loadSavingsAccounts() {
             const endDateDisplay = account.endDate || 'N/A';
             const nextContributionDueDateDisplay = account.nextContributionDueDate ? new Date(account.nextContributionDueDate.seconds * 1000).toLocaleDateString() : 'N/A';
 
-            // --- Automatic Collection Logic ---
+            // --- Lógica de recolección automática ---
             if (account.status === 'active' && account.preferredSavingsFrequency !== 'Ocasional' && account.periodicContributionAmount > 0) {
                 const nextDueDate = account.nextContributionDueDate ? new Date(account.nextContributionDueDate.seconds * 1000) : null;
                 const lastAttemptDate = account.lastContributionAttemptDate ? new Date(account.lastContributionAttemptDate.seconds * 1000) : null;
 
-                // Normalize nextDueDate and lastAttemptDate to start of day for accurate comparison
+                // Normaliza nextDueDate y lastAttemptDate al inicio del día para una comparación precisa
                 if (nextDueDate) nextDueDate.setHours(0, 0, 0, 0);
                 if (lastAttemptDate) lastAttemptDate.setHours(0, 0, 0, 0);
 
-                // Check if a payment is due AND it hasn't been attempted today
+                // Comprueba si un pago está vencido Y no se ha intentado hoy
                 if (nextDueDate && today >= nextDueDate && (!lastAttemptDate || today > lastAttemptDate)) {
-                    console.log(`Attempting automatic collection for savings account ${savingsAccountId} (Goal: ${account.savingsGoal})`);
+                    console.log(`Intentando recolección automática para la cuenta de ahorro ${savingsAccountId} (Objetivo: ${account.savingsGoal})`);
                     await attemptAutomaticSavingsCollection(currentUserId, savingsAccountId, account.periodicContributionAmount, account.savingsGoal);
                 }
             }
@@ -2723,7 +2731,7 @@ async function loadSavingsAccounts() {
             savingsAccountsTableBody.appendChild(row);
         }
 
-        // Attach event listeners for new buttons using delegation
+        // Adjunta oyentes de eventos para los nuevos botones usando delegación
         savingsAccountsTableBody.querySelectorAll('.deposit-to-savings-btn').forEach(button => {
             button.onclick = (event) => {
                 const { accountId, savingsGoal } = event.target.dataset;
@@ -2744,20 +2752,20 @@ async function loadSavingsAccounts() {
         });
 
     }, (error) => {
-        console.error("Error loading savings accounts:", error);
+        console.error("Error al cargar las cuentas de ahorro:", error);
         savingsAccountsTableBody.innerHTML = `<tr><td colspan="10" class="text-center text-red-500 py-4">Error al cargar cuentas de ahorro.</td></tr>`;
     });
 }
 
 /**
- * Attempts to automatically collect savings contribution.
- * @param {string} userId The user's Firebase UID.
- * @param {string} savingsAccountId The ID of the savings account.
- * @param {number} amount The amount to collect.
- * @param {string} savingsGoal The goal of the savings account.
+ * Intenta recolectar automáticamente la contribución de ahorro.
+ * @param {string} userId El UID de Firebase del usuario.
+ * @param {string} savingsAccountId El ID de la cuenta de ahorro.
+ * @param {number} amount La cantidad a recolectar.
+ * @param {string} savingsGoal El objetivo de la cuenta de ahorro.
  */
 async function attemptAutomaticSavingsCollection(userId, savingsAccountId, amount, savingsGoal) {
-    console.log(`Attempting automatic collection for user ${userId}, account ${savingsAccountId}, amount ${amount}`);
+    console.log(`Intentando recolección automática para el usuario ${userId}, cuenta ${savingsAccountId}, monto ${amount}`);
     try {
         const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
         const savingsAccountRef = doc(db, 'artifacts', appId, 'users', userId, 'savings_accounts', savingsAccountId);
@@ -2766,7 +2774,7 @@ async function attemptAutomaticSavingsCollection(userId, savingsAccountId, amoun
         const savingsDocSnap = await getDoc(savingsAccountRef);
 
         if (!userDocSnap.exists() || !savingsDocSnap.exists()) {
-            console.error("User or savings account not found during automatic collection attempt.");
+            console.error("Usuario o cuenta de ahorro no encontrados durante el intento de recolección automática.");
             return;
         }
 
@@ -2779,13 +2787,13 @@ async function attemptAutomaticSavingsCollection(userId, savingsAccountId, amoun
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Update lastContributionAttemptDate regardless of success/failure
+        // Actualiza lastContributionAttemptDate independientemente del éxito/fracaso
         await updateDoc(savingsAccountRef, {
             lastContributionAttemptDate: serverTimestamp()
         });
 
         if (userCurrentBalanceUSD >= amount) {
-            // Sufficient funds: perform transfer
+            // Fondos suficientes: realiza la transferencia
             let newUserBalanceUSD = userCurrentBalanceUSD - amount;
             let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
 
@@ -2799,7 +2807,7 @@ async function attemptAutomaticSavingsCollection(userId, savingsAccountId, amoun
             await updateDoc(savingsAccountRef, {
                 balanceUSD: newSavingsBalanceUSD,
                 balanceDOP: newSavingsBalanceDOP,
-                nextContributionDueDate: getNextDueDate(savingsData.preferredSavingsFrequency, today) // Update next due date
+                nextContributionDueDate: getNextDueDate(savingsData.preferredSavingsFrequency, today) // Actualiza la próxima fecha de vencimiento
             });
 
             await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
@@ -2814,13 +2822,13 @@ async function attemptAutomaticSavingsCollection(userId, savingsAccountId, amoun
                 description: `Cobro automático de ahorro para "${savingsGoal}"`
             });
             showMessage(`¡Cobro automático de $${amount.toFixed(2)} USD para "${savingsGoal}" realizado con éxito!`, 'success');
-            console.log(`Automatic collection for ${savingsGoal} successful.`);
+            console.log(`Recolección automática para ${savingsGoal} exitosa.`);
 
         } else {
-            // Insufficient funds: record a debt
-            console.log(`Insufficient funds for automatic collection for ${savingsGoal}. Recording debt.`);
+            // Fondos insuficientes: registra una deuda
+            console.log(`Fondos insuficientes para la recolección automática de ${savingsGoal}. Registrando deuda.`);
 
-            // Check if a debt for this period already exists and is pending/overdue
+            // Comprueba si ya existe una deuda para este período y está pendiente/vencida
             const existingDebtsQuery = query(
                 collection(db, 'artifacts', appId, 'public', 'data', 'savings_debts'),
                 where('userId', '==', userId),
@@ -2830,8 +2838,8 @@ async function attemptAutomaticSavingsCollection(userId, savingsAccountId, amoun
             const existingDebtsSnap = await getDocs(existingDebtsQuery);
 
             if (existingDebtsSnap.empty) {
-                // Create new debt entry
-                const dueDateForDebt = addDays(today, 7); // 7 days to pay the debt
+                // Crea una nueva entrada de deuda
+                const dueDateForDebt = addDays(today, 7); // 7 días para pagar la deuda
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'savings_debts'), {
                     userId: userId,
                     savingsAccountId: savingsAccountId,
@@ -2839,36 +2847,36 @@ async function attemptAutomaticSavingsCollection(userId, savingsAccountId, amoun
                     amountDue: amount,
                     currency: 'USD',
                     dueDate: dueDateForDebt,
-                    status: 'pending', // 'pending' for payment, 'overdue' if past dueDate, 'paid', 'penalized'
+                    status: 'pending', // 'pending' para pago, 'overdue' si pasó la fecha de vencimiento, 'paid', 'penalized'
                     penaltyApplied: false,
                     createdAt: serverTimestamp(),
                     lastUpdated: serverTimestamp()
                 });
                 showMessage(`No hay suficiente saldo para el cobro automático de "${savingsGoal}". Se ha registrado una deuda de $${amount.toFixed(2)} USD. Tienes hasta el ${dueDateForDebt.toLocaleDateString()} para pagar.`, 'error');
             } else {
-                console.log(`Debt for ${savingsGoal} already exists for this period. No new debt created.`);
+                console.log(`Ya existe una deuda para ${savingsGoal} para este período. No se creó ninguna deuda nueva.`);
                 showMessage(`Ya tienes una deuda pendiente para tu cuenta de ahorro "${savingsGoal}".`, 'info');
             }
 
-            // Update next contribution due date even if debt is created, to prevent re-attempting same period
+            // Actualiza la próxima fecha de vencimiento de la contribución incluso si se crea la deuda, para evitar volver a intentar el mismo período
             await updateDoc(savingsAccountRef, {
                 nextContributionDueDate: getNextDueDate(savingsData.preferredSavingsFrequency, today)
             });
         }
     } catch (error) {
-        console.error("Error during automatic savings collection:", error);
+        console.error("Error durante la recolección automática de ahorros:", error);
         showMessage(`Error en el cobro automático para "${savingsGoal}". Intenta de nuevo más tarde.`, 'error');
     }
 }
 
 /**
- * Calculates the next contribution due date based on frequency.
- * @param {string} frequency The preferred savings frequency.
- * @param {Date} lastDate The last date a contribution was due or attempted.
- * @returns {Date} The next due date.
+ * Calcula la próxima fecha de vencimiento de la contribución en función de la frecuencia.
+ * @param {string} frequency La frecuencia de ahorro preferida.
+ * @param {Date} lastDate La última fecha en que se venció o se intentó una contribución.
+ * @returns {Date} La próxima fecha de vencimiento.
  */
 function getNextDueDate(frequency, lastDate) {
-    let nextDate = new Date(lastDate); // Start from the last attempted/due date
+    let nextDate = new Date(lastDate); // Comienza desde la última fecha intentada/vencida
     if (frequency === 'Diaria') {
         nextDate = addDays(nextDate, 1);
     } else if (frequency === 'Semanal') {
@@ -2881,7 +2889,7 @@ function getNextDueDate(frequency, lastDate) {
     return nextDate;
 }
 
-// --- NEW: Deposit to Savings Modal Functions ---
+// --- NUEVO: Funciones del modal de depósito en ahorros ---
 function showDepositToSavingsModal(accountId, savingsGoal) {
     currentSavingsAccountId = accountId;
     depositToSavingsAccountIdDisplay.textContent = `${savingsGoal} (${accountId.substring(0, 8)}...)`;
@@ -2930,11 +2938,11 @@ depositToSavingsForm.addEventListener('submit', async (e) => {
         const userData = userDocSnap.data();
         const savingsData = savingsDocSnap.data();
 
-        // Deduct from main account
+        // Deduce de la cuenta principal
         let newUserBalanceUSD = userData.balanceUSD - amountInUSD;
         let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
 
-        // Add to savings account
+        // Agrega a la cuenta de ahorro
         let newSavingsBalanceUSD = savingsData.balanceUSD + amountInUSD;
         let newSavingsBalanceDOP = newSavingsBalanceUSD * USD_TO_DOP_RATE;
 
@@ -2948,7 +2956,7 @@ depositToSavingsForm.addEventListener('submit', async (e) => {
             balanceDOP: newSavingsBalanceDOP
         });
 
-        // Record transaction
+        // Registra la transacción
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
             userId: currentUserId,
             type: 'deposit_to_savings',
@@ -2964,16 +2972,16 @@ depositToSavingsForm.addEventListener('submit', async (e) => {
         showMessage(`¡Depósito de ${amount.toFixed(2)} ${currency} a tu cuenta de ahorro realizado con éxito!`, 'success');
         closeModal(depositToSavingsModal);
     } catch (error) {
-        console.error("Error depositing to savings account:", error);
+        console.error("Error al depositar en la cuenta de ahorro:", error);
         showMessage('Error al depositar en la cuenta de ahorro. Intenta de nuevo.', 'error');
     }
 });
 
-// --- NEW: Withdraw from Savings Modal Functions ---
+// --- NUEVO: Funciones del modal de retiro de ahorros ---
 function showWithdrawFromSavingsModal(accountId, savingsGoal, balanceUsd) {
     currentSavingsAccountId = accountId;
     currentSavingsAccountGoal = savingsGoal;
-    currentSavingsAccountBalanceUSD = balanceUsd; // Store for validation
+    currentSavingsAccountBalanceUSD = balanceUsd; // Almacena para validación
     withdrawFromSavingsAccountIdDisplay.textContent = `${savingsGoal} (${accountId.substring(0, 8)}...)`;
     withdrawFromSavingsModal.classList.remove('hidden');
     withdrawFromSavingsForm.reset();
@@ -3020,11 +3028,11 @@ withdrawFromSavingsForm.addEventListener('submit', async (e) => {
         const userData = userDocSnap.data();
         const savingsData = savingsDocSnap.data();
 
-        // Deduct from savings account
+        // Deduce de la cuenta de ahorro
         let newSavingsBalanceUSD = savingsData.balanceUSD - amountInUSD;
         let newSavingsBalanceDOP = newSavingsBalanceUSD * USD_TO_DOP_RATE;
 
-        // Add to main account
+        // Agrega a la cuenta principal
         let newUserBalanceUSD = userData.balanceUSD + amountInUSD;
         let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
 
@@ -3038,7 +3046,7 @@ withdrawFromSavingsForm.addEventListener('submit', async (e) => {
             balanceDOP: newSavingsBalanceDOP
         });
 
-        // Record transaction
+        // Registra la transacción
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
             userId: currentUserId,
             type: 'withdraw_from_savings',
@@ -3054,16 +3062,16 @@ withdrawFromSavingsForm.addEventListener('submit', async (e) => {
         showMessage(`¡Retiro de ${amount.toFixed(2)} ${currency} de tu cuenta de ahorro realizado con éxito!`, 'success');
         closeModal(withdrawFromSavingsModal);
     } catch (error) {
-        console.error("Error withdrawing from savings account:", error);
+        console.error("Error al retirar de la cuenta de ahorro:", error);
         showMessage('Error al retirar de la cuenta de ahorro. Intenta de nuevo.', 'error');
     }
 });
 
-// --- NEW: Delete Savings Account Functions ---
+// --- NUEVO: Funciones de eliminación de cuenta de ahorro ---
 function showConfirmDeleteSavingsAccountModal(accountId, savingsGoal, balanceUsd) {
     currentSavingsAccountId = accountId;
     currentSavingsAccountGoal = savingsGoal;
-    currentSavingsAccountBalanceUSD = balanceUsd; // Store for calculation
+    currentSavingsAccountBalanceUSD = balanceUsd; // Almacena para el cálculo
 
     const feeAmount = balanceUsd * SAVINGS_DELETE_FEE_RATE;
     const remainingBalance = balanceUsd - feeAmount;
@@ -3078,7 +3086,7 @@ function showConfirmDeleteSavingsAccountModal(accountId, savingsGoal, balanceUsd
 cancelDeleteSavingsAccountBtn.addEventListener('click', () => {
     closeModal(confirmDeleteSavingsAccountModal);
 });
-cancelDeleteSavingsAccountBtn2.addEventListener('click', () => { // Second cancel button
+cancelDeleteSavingsAccountBtn2.addEventListener('click', () => { // Segundo botón de cancelar
     closeModal(confirmDeleteSavingsAccountModal);
 });
 
@@ -3109,7 +3117,7 @@ confirmDeleteSavingsAccountBtn.addEventListener('click', async () => {
         const feeAmount = savingsBalanceUSD * SAVINGS_DELETE_FEE_RATE;
         const remainingBalanceToTransfer = savingsBalanceUSD - feeAmount;
 
-        // Update main account balance
+        // Actualiza el saldo de la cuenta principal
         let newUserBalanceUSD = userData.balanceUSD + remainingBalanceToTransfer;
         let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
 
@@ -3118,7 +3126,7 @@ confirmDeleteSavingsAccountBtn.addEventListener('click', async () => {
             balanceDOP: newUserBalanceDOP
         });
 
-        // Transfer fee to admin
+        // Transfiere la tarifa al administrador
         let adminId = null;
         const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
         const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
@@ -3129,16 +3137,16 @@ confirmDeleteSavingsAccountBtn.addEventListener('click', async () => {
             const adminData = (await getDoc(adminProfileRef)).data();
             let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
             await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
-            console.log("Savings account deletion fee transferred to admin and recorded.");
+            console.log("Tarifa de eliminación de cuenta de ahorro transferida al administrador y registrada.");
         } else {
-            console.warn("Admin account not found. Savings account deletion fee might not be transferred.");
+            console.warn("Cuenta de administrador no encontrada. La tarifa de eliminación de cuenta de ahorro podría no transferirse.");
         }
 
 
-        // Delete the savings account document
+        // Elimina el documento de la cuenta de ahorro
         await deleteDoc(savingsAccountRef);
 
-        // Record transaction for deletion
+        // Registra la transacción de eliminación
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
             userId: currentUserId,
             type: 'delete_savings_account',
@@ -3153,18 +3161,18 @@ confirmDeleteSavingsAccountBtn.addEventListener('click', async () => {
 
         showMessage(`¡Cuenta de ahorro "${currentSavingsAccountGoal}" eliminada con éxito! Se transfirieron $${remainingBalanceToTransfer.toFixed(2)} USD a tu cuenta principal (después de la tarifa de $${feeAmount.toFixed(2)} USD).`, 'success');
         closeModal(confirmDeleteSavingsAccountModal);
-        // The loadSavingsAccounts() onSnapshot listener will automatically refresh the table
+        // El oyente onSnapshot de loadSavingsAccounts() actualizará automáticamente la tabla
     } catch (error) {
-        console.error("Error deleting savings account:", error);
+        console.error("Error al eliminar la cuenta de ahorro:", error);
         showMessage('Error al eliminar la cuenta de ahorro. Intenta de nuevo.', 'error');
     }
 });
 
 
-// --- NEW: Admin Edit Announcements Functionality ---
+// --- NUEVO: Funcionalidad de editar anuncios del administrador ---
 editAnnouncementsBtn.addEventListener('click', async () => {
     editAnnouncementsModal.classList.remove('hidden');
-    await loadAnnouncementsForEdit(); // Load current announcements into the textarea
+    await loadAnnouncementsForEdit(); // Carga los anuncios actuales en el área de texto
 });
 
 cancelEditAnnouncementsBtn.addEventListener('click', () => {
@@ -3184,25 +3192,25 @@ editAnnouncementsForm.addEventListener('submit', async (e) => {
         await setDoc(announcementsDocRef, {
             items: newAnnouncementsArray,
             lastUpdated: serverTimestamp()
-        }, { merge: true }); // Use merge to avoid overwriting other fields if they exist
+        }, { merge: true }); // Usa merge para evitar sobrescribir otros campos si existen
 
         showMessage('¡Anuncios actualizados exitosamente!', 'success');
         closeModal(editAnnouncementsModal);
     } catch (error) {
-        console.error("Error updating announcements:", error);
+        console.error("Error al actualizar los anuncios:", error);
         showMessage('Error al actualizar los anuncios. Intenta de nuevo.', 'error');
     }
 });
 
 /**
- * Loads announcements into the dashboard list and the edit textarea.
- * Uses onSnapshot for real-time updates on the dashboard.
+ * Carga los anuncios en la lista del panel de control y en el área de texto de edición.
+ * Usa onSnapshot para actualizaciones en tiempo real en el panel de control.
  */
 function loadAnnouncements() {
     const announcementsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'announcements');
 
     onSnapshot(announcementsDocRef, (docSnap) => {
-        announcementsList.innerHTML = ''; // Clear existing list
+        announcementsList.innerHTML = ''; // Borra la lista existente
         if (docSnap.exists()) {
             const data = docSnap.data();
             if (data.items && Array.isArray(data.items) && data.items.length > 0) {
@@ -3218,13 +3226,13 @@ function loadAnnouncements() {
             announcementsList.innerHTML = '<li>No hay anuncios importantes en este momento.</li>';
         }
     }, (error) => {
-        console.error("Error loading announcements:", error);
+        console.error("Error al cargar los anuncios:", error);
         announcementsList.innerHTML = '<li>Error al cargar anuncios.</li>';
     });
 }
 
 /**
- * Loads announcements specifically for the edit modal textarea.
+ * Carga los anuncios específicamente para el área de texto del modal de edición.
  */
 async function loadAnnouncementsForEdit() {
     try {
@@ -3233,16 +3241,16 @@ async function loadAnnouncementsForEdit() {
         if (docSnap.exists() && docSnap.data().items && Array.isArray(docSnap.data().items)) {
             announcementsTextarea.value = docSnap.data().items.join('\n');
         } else {
-            announcementsTextarea.value = ''; // Clear if no announcements or wrong format
+            announcementsTextarea.value = ''; // Borra si no hay anuncios o el formato es incorrecto
         }
     } catch (error) {
-        console.error("Error loading announcements for edit:", error);
+        console.error("Error al cargar los anuncios para editar:", error);
         announcementsTextarea.value = 'Error al cargar anuncios para editar.';
     }
 }
 
 
-// --- Edit Profile Functions ---
+// --- Funciones de edición de perfil ---
 editProfileBtn.addEventListener('click', async () => {
     if (!currentUser) {
         showMessage('Debes iniciar sesión para editar tu perfil.', 'error');
@@ -3256,13 +3264,13 @@ editProfileBtn.addEventListener('click', async () => {
             editNameInput.value = userData.name || '';
             editSurnameInput.value = userData.surname || '';
             editAgeInput.value = userData.age || '';
-            editPhoneNumberInput.value = userData.phoneNumber || ''; // Populate phone number
+            editPhoneNumberInput.value = userData.phoneNumber || ''; // Rellena el número de teléfono
             editProfileModal.classList.remove('hidden');
         } else {
             showMessage('No se pudieron cargar los datos de tu perfil.', 'error');
         }
     } catch (error) {
-        console.error("Error loading profile for editing:", error);
+        console.error("Error al cargar el perfil para editar:", error);
         showMessage('Error al cargar los datos de tu perfil. Intenta de nuevo.', 'error');
     }
 });
@@ -3279,7 +3287,7 @@ editProfileForm.addEventListener('submit', async (e) => {
     const name = editNameInput.value.trim();
     const surname = editSurnameInput.value.trim();
     const age = parseInt(editAgeInput.value);
-    const phoneNumber = editPhoneNumberInput.value.trim(); // Get phone number
+    const phoneNumber = editPhoneNumberInput.value.trim(); // Obtener número de teléfono
 
     if (!name || !surname || isNaN(age) || age <= 0 || !phoneNumber) {
         showMessage('Por favor, completa todos los campos correctamente.', 'error');
@@ -3292,17 +3300,17 @@ editProfileForm.addEventListener('submit', async (e) => {
             name: name,
             surname: surname,
             age: age,
-            phoneNumber: phoneNumber // Update phone number
+            phoneNumber: phoneNumber // Actualiza el número de teléfono
         });
         showMessage('¡Perfil actualizado exitosamente!', 'success');
         closeModal(editProfileModal);
     } catch (error) {
-        console.error("Error updating profile:", error);
+        console.error("Error al actualizar el perfil:", error);
         showMessage('Error al actualizar el perfil. Intenta de nuevo.', 'error');
     }
 });
 
-// --- Change Password Functions ---
+// --- Funciones de cambio de contraseña ---
 changePasswordBtn.addEventListener('click', () => {
     if (!currentUser) {
         showMessage('Debes iniciar sesión para cambiar tu contraseña.', 'error');
@@ -3343,18 +3351,18 @@ changePasswordForm.addEventListener('submit', async (e) => {
     }
 
     try {
-        // Re-authenticate user with current password
+        // Volver a autenticar al usuario con la contraseña actual
         const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
         await reauthenticateWithCredential(currentUser, credential);
 
-        // Update password
+        // Actualizar contraseña
         await updatePassword(currentUser, newPassword);
 
         showMessage('¡Contraseña actualizada exitosamente!', 'success');
         closeModal(changePasswordModal);
         changePasswordForm.reset();
     } catch (error) {
-        console.error("Error changing password:", error);
+        console.error("Error al cambiar la contraseña:", error);
         let errorMessage = 'Error al cambiar la contraseña. Por favor, inténtalo de nuevo.';
         if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
             errorMessage = 'La contraseña actual es incorrecta.';
@@ -3367,7 +3375,7 @@ changePasswordForm.addEventListener('submit', async (e) => {
     }
 });
 
-// --- Security Tips Functions ---
+// --- Funciones de consejos de seguridad ---
 securityTipsBtn.addEventListener('click', () => {
     securityTipsModal.classList.remove('hidden');
 });
@@ -3376,7 +3384,7 @@ closeSecurityTipsBtn.addEventListener('click', () => {
     closeModal(securityTipsModal);
 });
 
-// --- About Us Functions ---
+// --- Funciones de acerca de nosotros ---
 aboutUsBtn.addEventListener('click', () => {
     aboutUsModal.classList.remove('hidden');
 });
@@ -3385,7 +3393,7 @@ closeAboutUsBtn.addEventListener('click', () => {
     closeModal(aboutUsModal);
 });
 
-// --- Contact & Support Functions ---
+// --- Funciones de contacto y soporte ---
 contactSupportBtn.addEventListener('click', () => {
     contactSupportModal.classList.remove('hidden');
 });
@@ -3394,7 +3402,7 @@ closeContactSupportBtn.addEventListener('click', () => {
     closeModal(contactSupportModal);
 });
 
-// --- NEW: Client Savings Debts Functions ---
+// --- NUEVO: Funciones de deudas de ahorro del cliente ---
 viewSavingsDebtsBtn.addEventListener('click', () => {
     savingsDebtsModal.classList.remove('hidden');
     loadSavingsDebts();
@@ -3402,23 +3410,23 @@ viewSavingsDebtsBtn.addEventListener('click', () => {
 
 closeSavingsDebtsModalBtn.addEventListener('click', () => {
     closeModal(savingsDebtsModal);
-    // Unsubscribe from the listener when the modal is closed
+    // Desuscribirse del oyente cuando se cierra el modal
     if (savingsDebtsUnsubscribe) {
         savingsDebtsUnsubscribe();
         savingsDebtsUnsubscribe = null;
-        console.log("Client: Unsubscribed from savings debts listener on modal close.");
+        console.log("Cliente: Desuscrito del oyente de deudas de ahorro al cerrar el modal.");
     }
 });
 
 /**
- * Loads and displays the current user's savings debts.
+ * Carga y muestra las deudas de ahorro del usuario actual.
  */
 async function loadSavingsDebts() {
-    // Unsubscribe from previous listener if it exists
+    // Desuscribirse del oyente anterior si existe
     if (savingsDebtsUnsubscribe) {
         savingsDebtsUnsubscribe();
-        savingsDebtsUnsubscribe = null; // Reset
-        console.log("Client: Unsubscribed from previous savings debts listener.");
+        savingsDebtsUnsubscribe = null; // Restablecer
+        console.log("Cliente: Desuscrito del oyente de deudas de ahorro anterior.");
     }
 
     savingsDebtsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Cargando deudas...</td></tr>';
@@ -3431,7 +3439,7 @@ async function loadSavingsDebts() {
     const debtsRef = collection(db, 'artifacts', appId, 'public', 'data', 'savings_debts');
     const q = query(debtsRef, where('userId', '==', currentUserId), where('status', 'in', ['pending', 'overdue']));
 
-    // Assign the unsubscribe function to savingsDebtsUnsubscribe
+    // Asigna la función de desuscripción a savingsDebtsUnsubscribe
     savingsDebtsUnsubscribe = onSnapshot(q, async (snapshot) => {
         savingsDebtsTableBody.innerHTML = '';
         if (snapshot.empty) {
@@ -3464,7 +3472,7 @@ async function loadSavingsDebts() {
             savingsDebtsTableBody.appendChild(row);
         }
 
-        // Attach event listeners for "Pagar" buttons
+        // Adjunta oyentes de eventos para los botones "Pagar"
         savingsDebtsTableBody.querySelectorAll('.pay-debt-btn').forEach(button => {
             button.onclick = async (event) => {
                 const { debtId, amountDue, currency, savingsGoal, savingsAccountId } = event.target.dataset;
@@ -3473,25 +3481,25 @@ async function loadSavingsDebts() {
         });
 
     }, (error) => {
-        console.error("Error loading savings debts:", error);
+        console.error("Error al cargar las deudas de ahorro:", error);
         savingsDebtsTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-4">Error al cargar deudas de ahorro.</td></tr>`;
     });
 }
 
 /**
- * Handles paying a savings debt.
- * @param {string} debtId The ID of the debt document.
- * @param {number} amountDue The amount to pay.
- * @param {string} currency The currency of the debt.
- * @param {string} savingsGoal The goal of the associated savings account.
- * @param {string} savingsAccountId The ID of the savings account associated with the debt.
+ * Maneja el pago de una deuda de ahorro.
+ * @param {string} debtId El ID del documento de deuda.
+ * @param {number} amountDue La cantidad a pagar.
+ * @param {string} currency La moneda de la deuda.
+ * @param {string} savingsGoal El objetivo de la cuenta de ahorro asociada.
+ * @param {string} savingsAccountId El ID de la cuenta de ahorro asociada a la deuda.
  */
 async function paySavingsDebt(debtId, amountDue, currency, savingsGoal, savingsAccountId) {
     hideMessage();
     try {
         const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
         const debtDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'savings_debts', debtId);
-        const savingsAccountRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts', savingsAccountId); // Reference to the savings account
+        const savingsAccountRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts', savingsAccountId); // Referencia a la cuenta de ahorro
 
         const userDocSnap = await getDoc(userProfileRef);
         const savingsDocSnap = await getDoc(savingsAccountRef);
@@ -3511,7 +3519,7 @@ async function paySavingsDebt(debtId, amountDue, currency, savingsGoal, savingsA
         let userCurrentBalanceUSD = userData.balanceUSD || 0;
         let savingsCurrentBalanceUSD = savingsData.balanceUSD || 0;
 
-        // Convert amountDue to USD if necessary for main account deduction
+        // Convierte amountDue a USD si es necesario para la deducción de la cuenta principal
         let amountDueInUSD = amountDue;
         if (currency === 'DOP') {
             amountDueInUSD = amountDue / USD_TO_DOP_RATE;
@@ -3522,11 +3530,11 @@ async function paySavingsDebt(debtId, amountDue, currency, savingsGoal, savingsA
             return;
         }
 
-        // Deduct from user's main balance
+        // Deduce del saldo principal del usuario
         let newUserBalanceUSD = userCurrentBalanceUSD - amountDueInUSD;
         let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
 
-        // Add to savings account balance
+        // Agrega al saldo de la cuenta de ahorro
         let newSavingsBalanceUSD = savingsCurrentBalanceUSD + amountDueInUSD;
         let newSavingsBalanceDOP = newSavingsBalanceUSD * USD_TO_DOP_RATE;
 
@@ -3540,20 +3548,20 @@ async function paySavingsDebt(debtId, amountDue, currency, savingsGoal, savingsA
             balanceDOP: newSavingsBalanceDOP
         });
 
-        // Update debt status to paid
+        // Actualiza el estado de la deuda a pagada
         await updateDoc(debtDocRef, {
             status: 'paid',
             paidAt: serverTimestamp()
         });
 
-        // Record transaction
+        // Registra la transacción
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
             userId: currentUserId,
             type: 'savings_debt_payment',
             amount: amountDue,
             currency: currency,
             savingsGoal: savingsGoal,
-            savingsAccountId: savingsAccountId, // Include savings account ID
+            savingsAccountId: savingsAccountId, // Incluye el ID de la cuenta de ahorro
             debtId: debtId,
             timestamp: serverTimestamp(),
             status: 'completed',
@@ -3561,14 +3569,14 @@ async function paySavingsDebt(debtId, amountDue, currency, savingsGoal, savingsA
         });
 
         showMessage(`¡Deuda de $${amountDue.toFixed(2)} ${currency} para "${savingsGoal}" pagada con éxito!`, 'success');
-        closeModal(savingsDebtsModal); // Close the modal after payment
+        closeModal(savingsDebtsModal); // Cierra el modal después del pago
     } catch (error) {
-        console.error("Error paying savings debt:", error);
+        console.error("Error al pagar la deuda de ahorro:", error);
         showMessage('Error al pagar la deuda de ahorro. Intenta de nuevo.', 'error');
     }
 }
 
-// --- NEW: Admin Savings Debts Functions ---
+// --- NUEVO: Funciones de deudas de ahorro del administrador ---
 viewAdminSavingsDebtsBtn.addEventListener('click', () => {
     adminSavingsDebtsModal.classList.remove('hidden');
     loadAdminSavingsDebts();
@@ -3579,18 +3587,18 @@ closeAdminSavingsDebtsModalBtn.addEventListener('click', () => {
     if (adminSavingsDebtsUnsubscribe) {
         adminSavingsDebtsUnsubscribe();
         adminSavingsDebtsUnsubscribe = null;
-        console.log("Admin: Unsubscribed from admin savings debts listener on modal close.");
+        console.log("Admin: Desuscrito del oyente de deudas de ahorro del administrador al cerrar el modal.");
     }
 });
 
 /**
- * Loads and displays all pending/overdue savings debts for the admin.
+ * Carga y muestra todas las deudas de ahorro pendientes/vencidas para el administrador.
  */
 function loadAdminSavingsDebts() {
     if (adminSavingsDebtsUnsubscribe) {
         adminSavingsDebtsUnsubscribe();
         adminSavingsDebtsUnsubscribe = null;
-        console.log("Admin: Unsubscribed from previous admin savings debts listener.");
+        console.log("Admin: Desuscrito del oyente de deudas de ahorro del administrador anterior.");
     }
 
     adminSavingsDebtsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando deudas...</td></tr>';
@@ -3609,7 +3617,7 @@ function loadAdminSavingsDebts() {
             allDebts.push({ id: docEntry.id, ...docEntry.data() });
         }
 
-        // Sort by dueDate descending
+        // Ordena por dueDate descendente
         allDebts.sort((a, b) => {
             const dueDateA = a.dueDate && typeof a.dueDate.seconds !== 'undefined' ? a.dueDate.seconds : 0;
             const dueDateB = b.dueDate && typeof b.dueDate.seconds !== 'undefined' ? b.dueDate.seconds : 0;
@@ -3626,9 +3634,9 @@ function loadAdminSavingsDebts() {
 
             let statusDisplay = debt.status === 'pending' ? 'Pendiente' : (debt.status === 'overdue' ? 'Vencida' : debt.status);
             if (dueDate && today > dueDate && debt.status === 'pending') {
-                // Mark as overdue if past due date and still pending
+                // Marca como vencida si pasó la fecha de vencimiento y aún está pendiente
                 statusDisplay = 'Vencida';
-                // Optionally update status in Firestore here, but for simplicity, just display it
+                // Opcionalmente, actualiza el estado en Firestore aquí, pero para simplificar, solo lo muestra
                 // await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'savings_debts', debt.id), { status: 'overdue' });
             }
 
@@ -3667,7 +3675,7 @@ function loadAdminSavingsDebts() {
             adminSavingsDebtsTableBody.appendChild(row);
         }
 
-        // Attach event listeners for admin debt actions
+        // Adjunta oyentes de eventos para las acciones de deuda del administrador
         adminSavingsDebtsTableBody.querySelectorAll('.apply-indemnization-btn').forEach(button => {
             button.onclick = async (event) => {
                 const { debtId, userId, amountDue, savingsGoal } = event.target.dataset;
@@ -3682,17 +3690,17 @@ function loadAdminSavingsDebts() {
         });
 
     }, (error) => {
-        console.error("Error loading admin savings debts:", error);
+        console.error("Error al cargar las deudas de ahorro del administrador:", error);
         adminSavingsDebtsTableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error al cargar deudas de ahorro.</td></tr>`;
     });
 }
 
 /**
- * Applies indemnization for an overdue debt.
- * @param {string} debtId The ID of the debt document.
- * @param {string} userId The user's Firebase UID.
- * @param {number} amountDue The original amount due for the debt.
- * @param {string} savingsGoal The goal of the associated savings account.
+ * Aplica la indemnización por una deuda vencida.
+ * @param {string} debtId El ID del documento de deuda.
+ * @param {string} userId El UID de Firebase del usuario.
+ * @param {number} amountDue La cantidad original adeudada por la deuda.
+ * @param {string} savingsGoal El objetivo de la cuenta de ahorro asociada.
  */
 async function applyIndemnization(debtId, userId, amountDue, savingsGoal) {
     hideMessage();
@@ -3715,7 +3723,7 @@ async function applyIndemnization(debtId, userId, amountDue, savingsGoal) {
             return;
         }
 
-        // Deduct penalty from user's main account
+        // Deduce la penalización del saldo principal del usuario
         let newUserBalanceUSD = userCurrentBalanceUSD - penaltyAmount;
         let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
 
@@ -3724,7 +3732,7 @@ async function applyIndemnization(debtId, userId, amountDue, savingsGoal) {
             balanceDOP: newUserBalanceDOP
         });
 
-        // Add penalty to admin's account
+        // Agrega la penalización a la cuenta del administrador
         let adminId = null;
         const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
         const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
@@ -3736,20 +3744,20 @@ async function applyIndemnization(debtId, userId, amountDue, savingsGoal) {
             let adminNewBalanceUSD = (adminData.balanceUSD || 0) + penaltyAmount;
             await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
         } else {
-            console.warn("Admin account not found. Indemnization might not be transferred.");
+            console.warn("Cuenta de administrador no encontrada. La indemnización podría no transferirse.");
         }
 
-        // Update debt status
+        // Actualiza el estado de la deuda
         await updateDoc(debtDocRef, {
-            status: 'penalized', // New status for penalized debts
+            status: 'penalized', // Nuevo estado para deudas penalizadas
             penaltyApplied: true,
             penaltyAmount: penaltyAmount,
             penalizedAt: serverTimestamp()
         });
 
-        // Record transaction for indemnization
+        // Registra la transacción de indemnización
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-            userId: userId, // User who paid the penalty
+            userId: userId, // Usuario que pagó la penalización
             payerId: userId,
             receiverId: adminId,
             type: 'savings_indemnization_applied',
@@ -3765,17 +3773,17 @@ async function applyIndemnization(debtId, userId, amountDue, savingsGoal) {
         showMessage(`¡Indemnización de $${penaltyAmount.toFixed(2)} USD aplicada a ${await getUserDisplayName(userId)} por la deuda de "${savingsGoal}"!`, 'success');
 
     } catch (error) {
-        console.error("Error applying indemnization:", error);
+        console.error("Error al aplicar la indemnización:", error);
         showMessage('Error al aplicar la indemnización. Intenta de nuevo.', 'error');
     }
 }
 
 /**
- * Allows admin to manually mark a debt as paid (e.g., if paid offline).
- * @param {string} debtId The ID of the debt document.
- * @param {string} userId The user's Firebase UID.
- * @param {number} amountDue The original amount due for the debt.
- * @param {string} savingsGoal The goal of the associated savings account.
+ * Permite al administrador marcar manualmente una deuda como pagada (por ejemplo, si se pagó fuera de línea).
+ * @param {string} debtId El ID del documento de deuda.
+ * @param {string} userId El UID de Firebase del usuario.
+ * @param {number} amountDue La cantidad original adeudada por la deuda.
+ * @param {string} savingsGoal El objetivo de la cuenta de ahorro asociada.
  */
 async function resolveSavingsDebtManually(debtId, userId, amountDue, savingsGoal) {
     hideMessage();
@@ -3784,13 +3792,13 @@ async function resolveSavingsDebtManually(debtId, userId, amountDue, savingsGoal
         await updateDoc(debtDocRef, {
             status: 'paid',
             paidAt: serverTimestamp(),
-            resolvedManually: true // Indicate manual resolution
+            resolvedManually: true // Indica resolución manual
         });
 
-        // Record a transaction for manual resolution (no money movement here, just status update)
+        // Registra una transacción para la resolución manual (no hay movimiento de dinero aquí, solo actualización de estado)
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
             userId: userId,
-            type: 'savings_debt_payment', // Use this type but clarify it's manual
+            type: 'savings_debt_payment', // Usa este tipo pero aclara que es manual
             amount: amountDue,
             currency: 'USD',
             savingsGoal: savingsGoal,
@@ -3803,15 +3811,42 @@ async function resolveSavingsDebtManually(debtId, userId, amountDue, savingsGoal
         showMessage(`Deuda #${debtId.substring(0,8)}... para "${savingsGoal}" marcada como pagada manualmente.`, 'info');
 
     } catch (error) {
-        console.error("Error resolving savings debt manually:", error);
+        console.error("Error al resolver la deuda de ahorro manualmente:", error);
         showMessage('Error al marcar la deuda como pagada. Intenta de nuevo.', 'error');
     }
 }
 
 
-// --- Event Listeners ---
-window.onload = () => {
-     // onAuthStateChanged will handle the user's login state automatically
+// --- Oyentes de eventos ---
+window.onload = async () => {
+    // Autenticación inicial con el token personalizado proporcionado por Canvas
+    // Si no hay token, intenta el inicio de sesión anónimo (para usuarios no autenticados)
+    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+        try {
+            await signInWithCustomToken(auth, __initial_auth_token);
+            console.log("Autenticación con token personalizado exitosa.");
+        } catch (error) {
+            console.error("Error al iniciar sesión con token personalizado:", error);
+            // Si falla el token personalizado, intenta el inicio de sesión anónimo
+            try {
+                await signInAnonymously(auth);
+                console.log("Inicio de sesión anónimo exitoso.");
+            } catch (anonError) {
+                console.error("Error al iniciar sesión anónimamente:", anonError);
+                showMessage("Error de autenticación inicial. Por favor, recarga la página.", 'error');
+            }
+        }
+    } else {
+        // Si no hay token personalizado, intenta el inicio de sesión anónimo
+        try {
+            await signInAnonymously(auth);
+            console.log("Inicio de sesión anónimo exitoso (no se proporcionó token personalizado).");
+        } catch (anonError) {
+            console.error("Error al iniciar sesión anónimamente:", anonError);
+            showMessage("Error de autenticación inicial. Por favor, recarga la página.", 'error');
+        }
+    }
+    // onAuthStateChanged manejará el estado de inicio de sesión del usuario automáticamente
 };
 
 
@@ -3823,49 +3858,49 @@ loginForm.addEventListener('submit', handleLogin);
 logoutBtn.addEventListener('click', handleLogout);
 toggleCurrencyBtn.addEventListener('click', toggleCurrencyDisplay);
 
-// Rules Consent buttons
+// Botones de consentimiento de reglas
 acceptRulesBtn.addEventListener('click', () => {
     rulesConsentModal.classList.add('hidden');
-    // Proceed with registration using stored data
+    // Procede con el registro usando los datos almacenados
     performRegistration(tempRegisterData.name, tempRegisterData.surname, tempRegisterData.age, tempRegisterData.phoneNumber, tempRegisterData.password);
 });
 
 rejectRulesBtn.addEventListener('click', () => {
     rulesConsentModal.classList.add('hidden');
     showMessage('Debes aceptar las reglas para registrarte en el Banco Juvenil.', 'error');
-    registerForm.reset(); // Clear the form if rules are rejected
-    tempRegisterData = {}; // Clear temporary data
+    registerForm.reset(); // Borra el formulario si se rechazan las reglas
+    tempRegisterData = {}; // Borra los datos temporales
 });
 
-// User History Modal buttons
+// Botones del modal de historial de usuario
 viewHistoryBtn.addEventListener('click', () => {
     userHistoryModal.classList.remove('hidden');
-    loadUserHistory(); // Load user-specific history
+    loadUserHistory(); // Carga el historial específico del usuario
 });
 closeUserHistoryModalBtn.addEventListener('click', () => {
     closeModal(userHistoryModal);
 });
 
-// Admin Full History Modal buttons
+// Botones del modal de historial completo del administrador
 adminFullHistoryBtn.addEventListener('click', () => {
     adminFullHistoryModal.classList.remove('hidden');
-    loadAdminFullHistory(); // Load full admin history
+    loadAdminFullHistory(); // Carga el historial completo del administrador
 });
 closeAdminFullHistoryModalBtn.addEventListener('click', () => {
     closeModal(adminFullHistoryModal);
 });
 
-// Admin Pending Requests Modal button (Unified)
+// Botón del modal de solicitudes pendientes del administrador (Unificado)
 viewAdminPendingRequestsBtn.addEventListener('click', () => {
     adminPendingRequestsModal.classList.remove('hidden');
     loadAdminPendingRequests();
 });
-// This listener is now handled at the top of the file to manage unsubscribe
+// Este oyente ahora se maneja al principio del archivo para gestionar la desuscripción
 // closeAdminPendingRequestsModalBtn.addEventListener('click', () => {
 //     closeModal(adminPendingRequestsModal);
 // });
 
-// FAQ Modal buttons
+// Botones del modal de preguntas frecuentes
 viewFAQBtn.addEventListener('click', () => {
     faqModal.classList.remove('hidden');
 });
@@ -3873,27 +3908,27 @@ closeFAQModalBtn.addEventListener('click', () => {
     closeModal(faqModal);
 });
 
-// Online Shopping Buttons
+// Botones de compras en línea
 onlineShoppingBtn.addEventListener('click', () => {
     onlineShoppingModal.classList.remove('hidden');
-    onlineShoppingForm.reset(); // Reset form when opened
-    updateOnlineShoppingCalculation(); // Initial calculation display
+    onlineShoppingForm.reset(); // Restablece el formulario cuando se abre
+    updateOnlineShoppingCalculation(); // Visualización del cálculo inicial
 });
 cancelOnlineShopping.addEventListener('click', () => {
     closeModal(onlineShoppingModal);
 });
 
-// Streaming Payment Buttons
+// Botones de pago de streaming
 streamingPaymentBtn.addEventListener('click', () => {
     streamingPaymentModal.classList.remove('hidden');
-    streamingPaymentForm.reset(); // Reset form when opened
-    updateStreamingPaymentCalculation(); // Initial calculation display
+    streamingPaymentForm.reset(); // Restablece el formulario cuando se abre
+    updateStreamingPaymentCalculation(); // Visualización del cálculo inicial
 });
 cancelStreamingPayment.addEventListener('click', () => {
     closeModal(streamingPaymentModal);
 });
 
-// User Pending Requests Button
+// Botón de solicitudes pendientes del usuario
 viewUserPendingRequestsBtn.addEventListener('click', () => {
     userPendingRequestsModal.classList.remove('hidden');
     loadUserPendingRequests();
@@ -3902,12 +3937,12 @@ closeUserPendingRequestsModalBtn.addEventListener('click', () => {
     closeModal(userPendingRequestsModal);
 });
 
-// Receipt Modal Button
+// Botón del modal de recibo
 closeReceiptModalBtn.addEventListener('click', () => {
     closeModal(receiptModal);
 });
 
-// NEW: Open Savings Account Event Listeners
+// NUEVO: Oyentes de eventos de abrir cuenta de ahorro
 openSavingsAccountBtn.addEventListener('click', () => {
     openSavingsAccountModal.classList.remove('hidden');
     savingsAccountForm.reset();
@@ -3915,9 +3950,9 @@ openSavingsAccountBtn.addEventListener('click', () => {
 cancelOpenSavingsAccountBtn.addEventListener('click', () => {
     closeModal(openSavingsAccountModal);
 });
-// The submit event listener for savingsAccountForm is already defined globally.
+// El oyente de eventos de envío para savingsAccountForm ya está definido globalmente.
 
-// NEW: View Savings Accounts Event Listeners
+// NUEVO: Oyentes de eventos de ver cuentas de ahorro
 viewSavingsAccountsBtn.addEventListener('click', () => {
     viewSavingsAccountsModal.classList.remove('hidden');
     loadSavingsAccounts();
@@ -3926,7 +3961,7 @@ closeViewSavingsAccountsBtn.addEventListener('click', () => {
     closeModal(viewSavingsAccountsModal);
 });
 
-// NEW: Edit Announcements Event Listeners
+// NUEVO: Oyentes de eventos de editar anuncios
 editAnnouncementsBtn.addEventListener('click', async () => {
     editAnnouncementsModal.classList.remove('hidden');
     await loadAnnouncementsForEdit();
@@ -3934,19 +3969,19 @@ editAnnouncementsBtn.addEventListener('click', async () => {
 cancelEditAnnouncementsBtn.addEventListener('click', () => {
     closeModal(editAnnouncementsModal);
 });
-// The submit event listener for editAnnouncementsForm is already defined globally.
+// El oyente de eventos de envío para editAnnouncementsForm ya está definido globalmente.
 
-// NEW: Deposit to Savings Modal Event Listeners
+// NUEVO: Oyentes de eventos del modal de depósito en ahorros
 cancelDepositToSavingsBtn.addEventListener('click', () => {
     closeModal(depositToSavingsModal);
 });
 
-// NEW: Withdraw from Savings Modal Event Listeners
+// NUEVO: Oyentes de eventos del modal de retiro de ahorros
 cancelWithdrawFromSavingsBtn.addEventListener('click', () => {
     closeModal(withdrawFromSavingsModal);
 });
 
-// NEW: Confirm Delete Savings Account Modal Event Listeners
+// NUEVO: Oyentes de eventos del modal de confirmación de eliminación de cuenta de ahorro
 cancelDeleteSavingsAccountBtn.addEventListener('click', () => {
     closeModal(confirmDeleteSavingsAccountModal);
 });
