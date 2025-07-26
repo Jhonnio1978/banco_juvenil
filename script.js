@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebas
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, serverTimestamp, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
-// Your web app's Firebase configuration - provided by the user
+// TU CONFIGURACIÓN DE FIREBASE - PROPORCIONADA POR TI
 const firebaseConfig = {
     apiKey: "AIzaSyDfUxqjfr1UYo9KN1HwibNIXyAKSZCqYbw",
     authDomain: "banco-juvenil-12903.firebaseapp.com",
@@ -11,7 +11,9 @@ const firebaseConfig = {
     messagingSenderId: "421654654501",
     appId: "1:421654654501:web:c315e4d67c9289f6d619cc"
 };
-const appId = "banco-juvenil-12903"; // Using projectId as appId for Firestore path consistency
+
+// Usando projectId como appId para la consistencia de la ruta de Firestore
+const appId = "banco-juvenil-12903"; 
 
 // Inicializa Firebase
 const app = initializeApp(firebaseConfig);
@@ -31,7 +33,7 @@ const WITHDRAWAL_FEE_RATE = 0.04; // Tarifa del 4% para retiros
 const SAVINGS_DELETE_FEE_RATE = 0.02; // Tarifa del 2% por eliminar cuenta de ahorro
 const INDEMNIZATION_RATE = 0.05; // Indemnización del 5% por deudas de ahorro vencidas
 
-// Email de administrador para propósitos de prototipo
+// Email de administrador para propósitos de prototipo - ACTUALIZADO CON TU PROJECT ID
 const ADMIN_EMAIL = `admin.jhonnio@${appId}.com`;
 const ADMIN_PHONE_NUMBER_FULL = '18293329545'; // Número de WhatsApp del administrador con código de país
 
@@ -3819,34 +3821,10 @@ async function resolveSavingsDebtManually(debtId, userId, amountDue, savingsGoal
 
 // --- Oyentes de eventos ---
 window.onload = async () => {
-    // Autenticación inicial con el token personalizado proporcionado por Canvas
-    // Si no hay token, intenta el inicio de sesión anónimo (para usuarios no autenticados)
-    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-        try {
-            await signInWithCustomToken(auth, __initial_auth_token);
-            console.log("Autenticación con token personalizado exitosa.");
-        } catch (error) {
-            console.error("Error al iniciar sesión con token personalizado:", error);
-            // Si falla el token personalizado, intenta el inicio de sesión anónimo
-            try {
-                await signInAnonymously(auth);
-                console.log("Inicio de sesión anónimo exitoso.");
-            } catch (anonError) {
-                console.error("Error al iniciar sesión anónimamente:", anonError);
-                showMessage("Error de autenticación inicial. Por favor, recarga la página.", 'error');
-            }
-        }
-    } else {
-        // Si no hay token personalizado, intenta el inicio de sesión anónimo
-        try {
-            await signInAnonymously(auth);
-            console.log("Inicio de sesión anónimo exitoso (no se proporcionó token personalizado).");
-        } catch (anonError) {
-            console.error("Error al iniciar sesión anónimamente:", anonError);
-            showMessage("Error de autenticación inicial. Por favor, recarga la página.", 'error');
-        }
-    }
-    // onAuthStateChanged manejará el estado de inicio de sesión del usuario automáticamente
+    // No se realiza ninguna autenticación automática al cargar la página.
+    // Se espera que el usuario inicie sesión o se registre a través de los formularios.
+    // onAuthStateChanged se activará una vez que el usuario se autentique.
+    console.log("Aplicación cargada. Esperando inicio de sesión o registro.");
 };
 
 
@@ -3946,6 +3924,12 @@ closeReceiptModalBtn.addEventListener('click', () => {
 openSavingsAccountBtn.addEventListener('click', () => {
     openSavingsAccountModal.classList.remove('hidden');
     savingsAccountForm.reset();
+    // Establece la fecha mínima para savingsEndDate en hoy
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    savingsEndDateInput.min = `${year}-${month}-${day}`;
 });
 cancelOpenSavingsAccountBtn.addEventListener('click', () => {
     closeModal(openSavingsAccountModal);
