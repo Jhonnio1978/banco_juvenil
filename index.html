@@ -30,535 +30,445 @@
             box-shadow: 0 15px 30px -8px rgba(0, 0, 0, 0.15), 0 0px 12px -6px rgba(0, 0, 0, 0.08); /* Deeper, softer shadow */
             padding: 2rem;
             width: 100%;
-            max-width: 480px; /* Increased max-width for better layout */
-            margin: 1.5rem; /* Margin for small screens */
-            border: 1px solid #e2e8f0; /* Subtle border */
+            max-width: 500px; /* Max width for cards */
+            margin: 1rem; /* Margin for small screens */
+            box-sizing: border-box; /* Include padding in width */
         }
-        /* Enhanced Primary Button */
-        .btn-primary {
-            background-image: linear-gradient(to right, #3b82f6, #2563eb); /* Blue gradient */
-            color: white;
-            border-radius: 0.75rem;
-            padding: 0.85rem 1.75rem;
-            font-weight: 600;
-            transition: all 0.3s ease-in-out; /* Smoother transition */
-            box-shadow: 0 6px 12px rgba(59, 130, 246, 0.3); /* Blue shadow */
-            border: none; /* No default border */
-            cursor: pointer;
-            position: relative; /* For pseudo-elements if needed */
-            overflow: hidden; /* For hover effects */
-        }
-        .btn-primary:hover {
-            transform: translateY(-3px); /* More pronounced lift */
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4); /* Larger shadow on hover */
-            background-image: linear-gradient(to right, #2563eb, #1d4ed8); /* Darker gradient on hover */
-        }
-        .btn-primary:active {
-            transform: translateY(0);
-            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
-        }
-
-        /* Specific button styles for dashboard, using Tailwind gradients directly in HTML for flexibility */
-        /* Example: <button class="btn-primary w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"> */
-
-        /* Enhanced Input Field */
-        .input-field {
-            padding: 0.85rem 1.25rem;
-            border-radius: 0.75rem;
-            border: 1px solid #cbd5e1; /* Lighter gray border */
-            width: 100%;
-            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            background-color: #f8fafc; /* Slightly off-white background */
-            color: #334155; /* Darker text */
-        }
-        .input-field:focus {
-            outline: none;
-            border-color: #3b82f6; /* Brighter blue on focus */
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3); /* More prominent blue shadow on focus */
-            background-color: #ffffff; /* White on focus */
-        }
-
-        /* Tab Button Styling */
         .tab-button {
-            padding: 0.85rem 1.75rem;
+            padding: 0.75rem 1.5rem;
             border-radius: 0.75rem;
-            font-weight: 500;
-            color: #6b7280;
+            font-weight: 600;
             transition: all 0.2s ease-in-out;
             cursor: pointer;
-            flex: 1;
-            text-align: center;
-            border: none; /* Ensure no default border */
-            background-color: transparent; /* Transparent by default */
+            background-color: #e0f2fe; /* Light blue */
+            color: #3b82f6; /* Blue text */
         }
         .tab-button.active {
-            background-color: #2563eb;
-            color: white;
+            background-color: #3b82f6; /* Blue */
+            color: #ffffff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        .tab-button:not(.active):hover {
-            background-color: #e2e8f0; /* Softer hover for inactive tabs */
-            color: #334155;
+        .tab-button:hover:not(.active) {
+            background-color: #bfdbfe; /* Lighter blue on hover */
         }
-
-        .hidden {
-            display: none;
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            box-sizing: border-box;
         }
-
-        /* Table Styling */
-        .table-container {
-            overflow-x: auto;
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            padding: 0.75rem 1.5rem;
             border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Soft shadow for table */
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+        .btn-success {
+            background-color: #22c55e;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .btn-success:hover {
+            background-color: #16a34a;
+        }
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh; /* Limit modal height */
+            overflow-y: auto; /* Enable scrolling for long content */
+            position: relative;
+        }
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        .close-btn:hover {
+            color: #374151;
+        }
+        .message-box {
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 90%;
+            max-width: 400px;
+        }
+        .message-box button {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: inherit;
+            margin-left: 1rem;
+        }
+        .transaction-status-msg {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            background-color: #fff3cd; /* Amarillo suave */
+            color: #664d03; /* Amarillo oscuro */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 90%;
+            max-width: 400px;
+        }
+        .profile-avatar {
+            width: 4rem;
+            height: 4rem;
+            background-color: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0 auto 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .table-container {
+            overflow-x: auto; /* Enable horizontal scrolling for tables on small screens */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
         }
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 1rem;
         }
         th, td {
-            padding: 1rem;
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
             text-align: left;
-            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap; /* Prevent text wrapping in table cells */
         }
         th {
-            background-color: #f1f5f9; /* Slightly darker header background */
+            background-color: #f3f4f6;
             font-weight: 600;
-            color: #475569; /* Darker gray text */
+            color: #374151;
         }
-        tr:last-child td {
-            border-bottom: none;
+        tr:nth-child(even) {
+            background-color: #f9fafb;
         }
-        tr:hover {
-            background-color: #f8fafc; /* Very light gray on row hover */
-        }
-
-        /* Danger Button */
-        .btn-danger {
-            background-image: linear-gradient(to right, #ef4444, #dc2626); /* Red gradient */
-            color: white;
-            border-radius: 0.5rem;
-            padding: 0.6rem 1.2rem;
-            font-weight: 600;
-            transition: all 0.3s ease-in-out;
-            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
-            border: none;
-            cursor: pointer;
-        }
-        .btn-danger:hover {
-            background-image: linear-gradient(to right, #dc2626, #b91c1c); /* Darker red on hover */
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(239, 68, 68, 0.4);
-        }
-        .btn-danger:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
-        }
-
-        /* Success Button */
-        .btn-success {
-            background-image: linear-gradient(to right, #22c55e, #16a34a); /* Green gradient */
-            color: white;
-            border-radius: 0.5rem;
-            padding: 0.6rem 1.2rem;
-            font-weight: 600;
-            transition: all 0.3s ease-in-out;
-            box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
-            border: none;
-            cursor: pointer;
-        }
-        .btn-success:hover {
-            background-image: linear-gradient(to right, #16a34a, #15803d); /* Darker green on hover */
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(34, 197, 94, 0.4);
-        }
-        .btn-success:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
-        }
-
-        /* Secondary Button */
-        .btn-secondary {
-            background-image: linear-gradient(to right, #6b7280, #4b5563); /* Gray gradient */
-            color: white;
-            border-radius: 0.5rem;
-            padding: 0.6rem 1.2rem;
-            font-weight: 600;
-            transition: all 0.3s ease-in-out;
-            box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
-            border: none;
-            cursor: pointer;
-        }
-        .btn-secondary:hover {
-            background-image: linear-gradient(to right, #4b5563, #374151); /* Darker gray on hover */
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(107, 114, 128, 0.4);
-        }
-        .btn-secondary:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(107, 114, 128, 0.2);
-        }
-
-        /* Small Button (for table actions) */
         .btn-sm {
             padding: 0.4rem 0.8rem;
-            font-size: 0.875rem; /* Smaller font size */
-            border-radius: 0.375rem; /* Slightly less rounded */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 0.875rem;
+            border-radius: 0.4rem;
         }
-        .btn-sm:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Modal Content and Header */
-        .modal-content {
-            background-color: #ffffff;
-            border-radius: 1.5rem;
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25), 0 0px 15px -8px rgba(0, 0, 0, 0.12); /* Deeper, more spread shadow */
-            max-width: 90%;
-            width: 700px;
-            max-height: 90vh;
-            overflow-y: auto;
-            padding: 2rem;
-            border: 1px solid #e2e8f0; /* Subtle border */
-        }
-        .modal-header {
-            background-image: linear-gradient(to right, #3b82f6, #2563eb); /* Blue gradient */
-            color: white;
-            padding: 1.5rem 2rem;
-            text-align: center;
-            font-weight: 700;
-            font-size: 1.75rem;
-            border-top-left-radius: 1.5rem;
-            border-top-right-radius: 1.5rem;
-            position: relative;
-            margin: -2rem -2rem 2rem -2rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow for header */
-        }
-        .modal-header .close-button {
-            position: absolute;
-            top: 1rem;
-            right: 1.5rem;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.8rem;
-            cursor: pointer;
-            line-height: 1;
-            transition: transform 0.2s ease-in-out;
-        }
-        .modal-header .close-button:hover {
-            transform: rotate(90deg); /* Spin on hover */
-        }
-
-        /* Specific message box styles */
-        #messageBox.bg-red-100 {
-            background-color: #fee2e2; /* Lighter red */
-            color: #dc2626; /* Darker red text */
-            border-color: #fca5a5;
-        }
-        #messageBox.bg-green-100 {
-            background-color: #dcfce7; /* Lighter green */
-            color: #16a34a; /* Darker green text */
-            border-color: #86efac;
-        }
-        #messageBox.bg-blue-100 {
-            background-color: #e0f2fe; /* Lighter blue */
-            color: #2563eb; /* Darker blue text */
-            border-color: #93c5fd;
-        }
-        #transactionStatusMsg {
-            background-color: #fffbeb; /* Light orange/yellow */
-            color: #d97706; /* Darker orange text */
-            border-color: #fcd34d;
+        /* Responsive adjustments */
+        @media (min-width: 640px) {
+            .card {
+                margin: 2rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card">
-            <h1 class="text-4xl font-bold text-center text-gray-800 mb-8">Banco Juvenil</h1>
+            <h1 class="text-3xl font-bold text-center text-blue-700 mb-6">Banco Juvenil</h1>
 
-            <div class="flex justify-center mb-6 bg-blue-50 rounded-xl p-1">
-                <button id="loginTab" class="tab-button active">Iniciar Sesión</button>
+            <!-- Login/Register Tabs -->
+            <div class="flex justify-center mb-6">
+                <button id="loginTab" class="tab-button active mr-2">Iniciar Sesión</button>
                 <button id="registerTab" class="tab-button">Registrarse</button>
             </div>
 
-            <!-- Login Form -->
-            <div id="loginSection">
-                <p class="text-center text-gray-600 mb-6 text-lg">¡Bienvenido de nuevo, campeón!</p>
-                <form id="loginForm" class="space-y-5">
-                    <div>
-                        <label for="loginIdentifier" class="block text-gray-700 text-sm font-semibold mb-2">ID de Usuario (Email o ID único)</label>
-                        <input type="text" id="loginIdentifier" class="input-field" placeholder="ej. JU#1234 o tu email" required>
-                    </div>
-                    <div>
-                        <label for="loginPassword" class="block text-gray-700 text-sm font-semibold mb-2">Contraseña</label>
-                        <input type="password" id="loginPassword" class="input-field" placeholder="********" required>
-                    </div>
-                    <button type="submit" class="btn-primary w-full">Iniciar Sesión</button>
+            <!-- Login Section -->
+            <div id="loginSection" class="block">
+                <form id="loginForm" class="flex flex-col">
+                    <label for="loginIdentifier" class="text-gray-700 font-medium mb-1">Email o ID de Usuario:</label>
+                    <input type="text" id="loginIdentifier" class="input-field" placeholder="ej. usuario@banco.com o AB#1234" required>
+
+                    <label for="loginPassword" class="text-gray-700 font-medium mb-1">Contraseña:</label>
+                    <input type="password" id="loginPassword" class="input-field" placeholder="********" required>
+
+                    <button type="submit" class="btn-primary w-full mt-4">Iniciar Sesión</button>
                 </form>
             </div>
 
-            <!-- Registration Form -->
+            <!-- Register Section -->
             <div id="registerSection" class="hidden">
-                <p class="text-center text-gray-600 mb-6 text-lg">¡Únete a la familia del Banco Juvenil!</p>
-                <form id="registerForm" class="space-y-5">
-                    <div>
-                        <label for="registerName" class="block text-gray-700 text-sm font-semibold mb-2">Nombre</label>
-                        <input type="text" id="registerName" class="input-field" placeholder="Juan" required>
-                    </div>
-                    <div>
-                        <label for="registerSurname" class="block text-gray-700 text-sm font-semibold mb-2">Apellido</label>
-                        <input type="text" id="registerSurname" class="input-field" placeholder="Pérez" required>
-                    </div>
-                    <div>
-                        <label for="registerAge" class="block text-gray-700 text-sm font-semibold mb-2">Edad</label>
-                        <input type="number" id="registerAge" class="input-field" placeholder="18" min="0" required>
-                    </div>
-                    <div>
-                        <label for="registerPhoneNumber" class="block text-gray-700 text-sm font-semibold mb-2">Número de Teléfono (para avisos de ahorro)</label>
-                        <input type="tel" id="registerPhoneNumber" class="input-field" placeholder="Ej: 8091234567" pattern="[0-9]{10}" title="Número de teléfono de 10 dígitos" required>
-                    </div>
-                    <div>
-                        <label for="registerPassword" class="block text-gray-700 text-sm font-semibold mb-2">Contraseña</label>
-                        <input type="password" id="registerPassword" class="input-field" placeholder="********" required>
-                    </div>
-                    <button type="submit" class="btn-primary w-full">Registrarse</button>
+                <form id="registerForm" class="flex flex-col">
+                    <label for="registerName" class="text-gray-700 font-medium mb-1">Nombre:</label>
+                    <input type="text" id="registerName" class="input-field" placeholder="Tu nombre" required>
+
+                    <label for="registerSurname" class="text-gray-700 font-medium mb-1">Apellido:</label>
+                    <input type="text" id="registerSurname" class="input-field" placeholder="Tu apellido" required>
+
+                    <label for="registerAge" class="text-gray-700 font-medium mb-1">Edad:</label>
+                    <input type="number" id="registerAge" class="input-field" placeholder="Tu edad" required min="13">
+
+                    <label for="registerPhoneNumber" class="text-gray-700 font-medium mb-1">Número de Teléfono (WhatsApp):</label>
+                    <input type="tel" id="registerPhoneNumber" class="input-field" placeholder="ej. 18091234567" required>
+
+                    <label for="registerPassword" class="text-gray-700 font-medium mb-1">Contraseña:</label>
+                    <input type="password" id="registerPassword" class="input-field" placeholder="********" required>
+
+                    <button type="submit" class="btn-primary w-full mt-4">Registrarse</button>
                 </form>
             </div>
 
-            <!-- Message Box -->
-            <div id="messageBox" class="mt-6 p-4 rounded-lg text-sm hidden" role="alert">
-                <p id="messageText"></p>
-                <button id="closeMessage" class="float-right text-gray-600 hover:text-gray-900 font-bold ml-4">&times;</button>
+            <!-- Dashboard Section -->
+            <div id="dashboardSection" class="hidden">
+                <div class="profile-avatar" id="profileAvatar">U</div>
+                <h2 class="text-2xl font-bold text-center text-blue-700 mb-2" id="dashboardUserName"></h2>
+                <p class="text-center text-gray-600 mb-4" id="dashboardDisplayId"></p>
+
+                <div class="bg-blue-100 p-4 rounded-xl mb-6 text-center">
+                    <p class="text-gray-700 text-lg">Saldo Actual:</p>
+                    <p class="text-3xl font-bold text-blue-800 mt-1" id="accountBalance">$0.00 USD</p>
+                    <button id="toggleCurrency" class="btn-secondary btn-sm mt-3">Cambiar a DOP</button>
+                </div>
+
+                <!-- Announcements Section -->
+                <div class="bg-yellow-50 p-4 rounded-xl mb-6 border border-yellow-200">
+                    <h3 class="text-xl font-semibold text-yellow-800 mb-2">Anuncios Importantes</h3>
+                    <ul id="announcementsList" class="list-disc list-inside text-gray-700">
+                        <li>Cargando anuncios...</li>
+                    </ul>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button id="depositMoneyBtn" class="btn-primary">Depositar Dinero</button>
+                    <button id="withdrawMoneyBtn" class="btn-primary">Retirar Dinero</button>
+                    <button id="transferMoneyBtn" class="btn-primary">Transferir Dinero</button>
+                    <button id="viewHistoryBtn" class="btn-primary">Ver Historial</button>
+                    <button id="openSavingsAccountBtn" class="btn-primary">Abrir Cuenta de Ahorro</button>
+                    <button id="viewSavingsAccountsBtn" class="btn-primary">Ver Cuentas de Ahorro</button>
+                    <button id="viewSavingsDebtsBtn" class="btn-primary">Ver Mis Deudas de Ahorro</button>
+                    <button id="onlineShoppingBtn" class="btn-primary">Compras en Línea</button>
+                    <button id="streamingPaymentBtn" class="btn-primary">Pago de Streaming</button>
+                    <button id="gameRechargeBtn" class="btn-primary">Recarga de Juegos</button>
+                    <button id="viewUserPendingRequestsBtn" class="btn-primary">Mis Solicitudes Pendientes</button>
+                    <button id="editProfileBtn" class="btn-secondary">Editar Perfil</button>
+                    <button id="changePasswordBtn" class="btn-secondary">Cambiar Contraseña</button>
+                    <button id="securityTipsBtn" class="btn-secondary">Consejos de Seguridad</button>
+                    <button id="aboutUsBtn" class="btn-secondary">Acerca de Nosotros</button>
+                    <button id="contactSupportBtn" class="btn-secondary">Contacto y Soporte</button>
+                </div>
+
+                <!-- Admin Specific Buttons (Hidden by default) -->
+                <div id="adminButtonsContainer" class="hidden mt-6 pt-4 border-t border-gray-200">
+                    <h3 class="text-xl font-bold text-blue-700 mb-4 text-center">Funciones de Administrador</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button id="adminFullHistoryBtn" class="btn-danger">Ver Historial Completo</button>
+                        <button id="viewAdminPendingRequestsBtn" class="btn-danger">Ver Solicitudes Pendientes</button>
+                        <button id="editAnnouncementsBtn" class="btn-danger">Editar Anuncios</button>
+                        <button id="viewAdminSavingsDebtsBtn" class="btn-danger">Ver Deudas de Ahorro (Admin)</button>
+                    </div>
+                </div>
+
+                <button id="logoutBtn" class="btn-secondary w-full mt-6">Cerrar Sesión</button>
             </div>
+        </div>
+    </div>
 
-            <!-- User Dashboard (Hidden initially) -->
-            <div id="dashboardSection" class="hidden mt-8 text-center">
-                <div class="flex items-center justify-center mb-4">
-                    <div class="w-16 h-16 bg-blue-200 rounded-full flex items-center justify-center text-blue-800 text-3xl font-bold mr-4">
-                        <span id="profileAvatar">U</span>
-                    </div>
-                    <div>
-                        <h2 class="text-3xl font-semibold text-gray-800">Bienvenido, <span id="dashboardUserName"></span>!</h2>
-                        <p class="text-lg text-gray-700">Tu ID de Usuario: <span id="dashboardDisplayId" class="font-mono bg-gray-100 p-2 rounded-md text-sm"></span></p>
-                    </div>
-                </div>
+    <!-- Message Box -->
+    <div id="messageBox" class="message-box hidden">
+        <span id="messageText"></span>
+        <button id="closeMessage" class="close-btn">×</button>
+    </div>
 
-                <div class="mt-6 p-6 bg-blue-100 border border-blue-300 rounded-xl text-blue-800">
-                    <h3 class="text-xl font-bold mb-2">Saldo Actual:</h3>
-                    <p id="accountBalance" class="text-4xl font-extrabold text-blue-700">$0.00 USD</p>
-                    <button id="toggleCurrency" class="mt-3 text-blue-600 hover:underline text-sm">Cambiar a DOP</button>
-                </div>
-                <div class="mt-8 space-y-4">
-                    <button id="transferMoneyBtn" class="btn-primary w-full">Transferir Dinero</button>
-                    <button id="depositMoneyBtn" class="btn-primary w-full">Depositar Dinero</button>
-                    <button id="withdrawMoneyBtn" class="btn-primary w-full">Retirar Dinero</button>
-                    <button id="viewHistoryBtn" class="btn-primary w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">Ver Historial de Movimientos</button>
+    <!-- Transaction Status Message (for transfers) -->
+    <div id="transactionStatusMsg" class="transaction-status-msg hidden">
+        <span id="transactionStatusText"></span>
+        <button id="cancelOngoingTransferBtn" class="btn-danger btn-sm hidden">Cancelar</button>
+    </div>
 
-                    <!-- User-specific Pending Requests Button -->
-                    <button id="viewUserPendingRequestsBtn" class="btn-primary w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800">Ver Mis Solicitudes Pendientes</button>
+    <!-- Modals -->
 
-                    <!-- Online Shopping Button -->
-                    <button id="onlineShoppingBtn" class="btn-primary w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800">Comprar por Internet</button>
-                    <!-- Streaming Service Button -->
-                    <button id="streamingPaymentBtn" class="btn-primary w-full bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800">Pagar Servicio de Streaming</button>
-                    <!-- NEW: Game Recharge Button -->
-                    <button id="gameRechargeBtn" class="btn-primary w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700">Recargar Juegos 🎮</button>
+    <!-- Rules Consent Modal -->
+    <div id="rulesConsentModal" class="modal hidden">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Reglas y Términos de Servicio</h2>
+            <div id="briefRulesTextContainer" class="text-gray-700 mb-6 max-h-60 overflow-y-auto pr-2">
+                <!-- Rules text will be inserted here by JS -->
+            </div>
+            <div class="flex justify-end space-x-4">
+                <button id="rejectRulesBtn" class="btn-danger">Rechazar</button>
+                <button id="acceptRulesBtn" class="btn-success">Aceptar</button>
+            </div>
+        </div>
+    </div>
 
-                    <!-- NEW: Open Savings Account Button -->
-                    <button id="openSavingsAccountBtn" class="btn-primary w-full bg-gradient-to-r from-lime-600 to-lime-700 hover:from-lime-700 hover:to-lime-800">Abrir Cuenta de Ahorro 💰</button>
-                    <!-- NEW: View Savings Accounts Button -->
-                    <button id="viewSavingsAccountsBtn" class="btn-primary w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800">Ver Mis Cuentas de Ahorro 📈</button>
-                    <!-- NEW: View Savings Debts Button (Client) -->
-                    <button id="viewSavingsDebtsBtn" class="btn-primary w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800">Ver Mis Deudas de Ahorro 💸</button>
+    <!-- Transfer Money Modal -->
+    <div id="transferModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="cancelTransferModalBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Transferir Dinero</h2>
+            <form id="transferForm" class="flex flex-col">
+                <label for="transferRecipientId" class="text-gray-700 font-medium mb-1">ID de Destinatario (Email, ID de Usuario o UID):</label>
+                <input type="text" id="transferRecipientId" class="input-field" placeholder="ej. usuario@banco.com o AB#1234" required>
+                <p id="recipientNameDisplay" class="text-sm text-gray-600 mb-2"></p>
 
+                <label for="transferAmount" class="text-gray-700 font-medium mb-1">Monto:</label>
+                <input type="number" id="transferAmount" class="input-field" step="0.01" min="0.01" required>
 
-                    <!-- Edit Profile Button -->
-                    <button id="editProfileBtn" class="btn-primary w-full bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800">Editar Perfil</button>
-                    <!-- NEW: Change Password Button -->
-                    <button id="changePasswordBtn" class="btn-primary w-full bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900">Cambiar Contraseña</button>
-                    <!-- NEW: Security Tips Button -->
-                    <button id="securityTipsBtn" class="btn-primary w-full bg-gradient-to-r from-red-700 to-red-800 hover:from-red-800 hover:to-red-900">Consejos de Seguridad</button>
-                    <!-- NEW: About Us Button -->
-                    <button id="aboutUsBtn" class="btn-primary w-full bg-gradient-to-r from-green-700 to-green-800 hover:from-green-800 hover:to-green-900">Acerca de Nosotros</button>
-                    <!-- NEW: Contact & Support Button -->
-                    <button id="contactSupportBtn" class="btn-primary w-full bg-gradient-to-r from-indigo-700 to-indigo-800 hover:from-indigo-800 hover:to-indigo-900">Contacto y Soporte</button>
+                <label for="transferCurrency" class="text-gray-700 font-medium mb-1">Moneda:</label>
+                <select id="transferCurrency" class="input-field" required>
+                    <option value="USD">USD</option>
+                    <option value="DOP">DOP</option>
+                </select>
 
+                <button type="submit" id="confirmTransferBtn" class="btn-primary w-full mt-4" disabled>Confirmar Transferencia</button>
+            </form>
+        </div>
+    </div>
 
-                    <!-- Admin specific buttons, initially hidden -->
-                    <div id="adminButtonsContainer" class="hidden space-y-4 mt-6 border-t pt-4 border-gray-200">
-                        <h3 class="text-xl font-bold text-gray-700 border-b pb-2 mb-4">Funciones de Administrador</h3>
-                        <button id="viewAdminPendingRequestsBtn" class="btn-primary w-full bg-gradient-to-r from-teal-800 to-teal-900 hover:from-teal-900 hover:to-teal-950">Ver Solicitudes Pendientes (Admin)</button>
-                        <button id="adminFullHistoryBtn" class="btn-primary w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800">Ver Historial Completo (Admin)</button>
-                        <!-- NEW: Edit Announcements Button -->
-                        <button id="editAnnouncementsBtn" class="btn-primary w-full bg-gradient-to-r from-yellow-700 to-yellow-800 hover:from-yellow-800 hover:to-yellow-900">Editar Anuncios ✏️</button>
-                        <!-- NEW: View Admin Savings Debts Button -->
-                        <button id="viewAdminSavingsDebtsBtn" class="btn-primary w-full bg-gradient-to-r from-red-800 to-red-900 hover:from-red-900 hover:to-red-950">Ver Deudas de Ahorro (Admin) 🚨</button>
-                    </div>
+    <!-- Deposit Money Modal -->
+    <div id="depositModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="cancelDeposit" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Depositar Dinero</h2>
+            <p class="text-gray-600 mb-4">Ingresa el número de serie de tu depósito físico y el monto. Esto enviará una solicitud de aprobación al banco.</p>
+            <form id="depositForm" class="flex flex-col">
+                <label for="depositSerialNumber" class="text-gray-700 font-medium mb-1">Número de Serie del Depósito:</label>
+                <input type="text" id="depositSerialNumber" class="input-field" placeholder="Número de serie único" required readonly>
 
-                    <!-- FAQ button visible to all logged-in users -->
-                    <button id="viewFAQBtn" class="btn-primary w-full bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 mt-4">Ver Preguntas Frecuentes (FAQ)</button>
+                <label for="depositAmount" class="text-gray-700 font-medium mb-1">Monto:</label>
+                <input type="number" id="depositAmount" class="input-field" step="0.01" min="0.01" required>
 
-                    <!-- NEW: Announcements Section -->
-                    <div class="mt-6 p-4 bg-yellow-100 border border-yellow-300 rounded-xl text-yellow-800 text-left">
-                        <h3 class="text-xl font-bold mb-2 text-center">Anuncios Importantes 📢</h3>
-                        <ul id="announcementsList" class="list-disc list-inside space-y-1">
-                            <!-- Announcements will be loaded here by JS -->
-                            <li>Cargando anuncios...</li>
-                        </ul>
-                    </div>
+                <label for="depositCurrency" class="text-gray-700 font-medium mb-1">Moneda:</label>
+                <select id="depositCurrency" class="input-field" required>
+                    <option value="USD">USD</option>
+                    <option value="DOP">DOP</option>
+                </select>
 
-                    <!-- Admin Contact info visible to all logged-in users -->
-                    <p class="text-sm text-gray-600 mt-6 pt-4 border-t border-gray-200">
-                        Contacto de Soporte (Admin): <a href="https://wa.me/18293329545" target="_blank" class="font-bold text-green-600 hover:underline">829-332-9545 (WhatsApp)</a>
-                    </p>
-                    <button id="logoutBtn" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-xl shadow transition duration-200 w-full">Cerrar Sesión</button>
-                </div>
+                <button type="submit" class="btn-primary w-full mt-4">Enviar Solicitud de Depósito</button>
+            </form>
+        </div>
+    </div>
 
-                <!-- Transfer Money Modal -->
-                <div id="transferModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-                    <div class="modal-content w-full max-w-sm">
-                        <div class="modal-header">
-                            Transferir Dinero
-                            <button id="cancelTransferModalBtn" class="close-button">&times;</button>
-                        </div>
-                        <form id="transferForm" class="space-y-4">
-                            <div>
-                                <label for="transferRecipientId" class="block text-gray-700 text-sm font-semibold mb-2">ID de Destinatario (Email o ID único)</label>
-                                <input type="text" id="transferRecipientId" class="input-field" placeholder="ej. MA#5678 o email@banco.com" required>
-                                <p id="recipientNameDisplay" class="text-xs text-gray-500 mt-1"></p>
-                            </div>
-                            <div>
-                                <label for="transferAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto</label>
-                                <input type="number" id="transferAmount" class="input-field" placeholder="100.00" min="0.01" step="0.01" required>
-                            </div>
-                            <div>
-                                <label for="transferCurrency" class="block text-gray-700 text-sm font-semibold mb-2">Moneda</label>
-                                <select id="transferCurrency" class="input-field">
-                                    <option value="USD">Dólar (USD)</option>
-                                    <option value="DOP">Peso Dominicano (DOP)</option>
-                                </select>
-                            </div>
-                            <div class="flex justify-end space-x-4 pt-4">
-                                <button type="submit" id="confirmTransferBtn" class="btn-primary" disabled>Confirmar Transferencia</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+    <!-- Withdraw Money Modal -->
+    <div id="withdrawModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="cancelWithdraw" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Retirar Dinero</h2>
+            <p class="text-gray-600 mb-4">Ingresa el monto que deseas retirar. Se aplicará una tarifa del 4%.</p>
+            <form id="withdrawForm" class="flex flex-col">
+                <label for="withdrawAmount" class="text-gray-700 font-medium mb-1">Monto:</label>
+                <input type="number" id="withdrawAmount" class="input-field" step="0.01" min="0.01" required>
 
-                <!-- Deposit Money Modal -->
-                <div id="depositModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-                    <div class="modal-content w-full max-w-sm">
-                        <div class="modal-header">
-                            Depositar Dinero
-                            <button id="cancelDeposit" class="close-button">&times;</button>
-                        </div>
-                        <form id="depositForm" class="space-y-4">
-                            <div>
-                                <label for="depositSerialNumber" class="block text-gray-700 text-sm font-semibold mb-2">Número de Serie Único (Generado)</label>
-                                <input type="text" id="depositSerialNumber" class="input-field" readonly>
-                            </div>
-                            <div>
-                                <label for="depositAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto</label>
-                                <input type="number" id="depositAmount" class="input-field" placeholder="Ej: 500.00" min="0.01" step="0.01" required>
-                            </div>
-                            <div>
-                                <label for="depositCurrency" class="block text-gray-700 text-sm font-semibold mb-2">Moneda</label>
-                                <select id="depositCurrency" class="input-field">
-                                    <option value="USD">Dólar (USD)</option>
-                                    <option value="DOP">Peso Dominicano (DOP)</option>
-                                </select>
-                            </div>
-                            <div class="flex justify-end space-x-4 pt-4">
-                                <button type="submit" class="btn-primary">Solicitar Depósito</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                <label for="withdrawCurrency" class="text-gray-700 font-medium mb-1">Moneda:</label>
+                <select id="withdrawCurrency" class="input-field" required>
+                    <option value="USD">USD</option>
+                    <option value="DOP">DOP</option>
+                </select>
 
-                <!-- Withdraw Money Modal -->
-                <div id="withdrawModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-                    <div class="modal-content w-full max-w-sm">
-                        <div class="modal-header">
-                            Retirar Dinero
-                            <button id="cancelWithdraw" class="close-button">&times;</button>
-                        </div>
-                        <form id="withdrawForm" class="space-y-4">
-                            <div>
-                                <label for="withdrawAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto</label>
-                                <input type="number" id="withdrawAmount" class="input-field" placeholder="Ej: 200.00" min="0.01" step="0.01" required>
-                            </div>
-                            <div>
-                                <label for="withdrawCurrency" class="block text-gray-700 text-sm font-semibold mb-2">Moneda</label>
-                                <select id="withdrawCurrency" class="input-field">
-                                    <option value="USD">Dólar (USD)</option>
-                                    <option value="DOP">Peso Dominicano (DOP)</option>
-                                </select>
-                            </div>
-                            <p class="text-sm text-gray-600 mt-2">Se aplicará una tarifa del 4% a este retiro.</p>
-                            <div class="flex justify-end space-x-4 pt-4">
-                                <button type="submit" class="btn-primary">Solicitar Retiro</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                <button type="submit" class="btn-primary w-full mt-4">Enviar Solicitud de Retiro</button>
+            </form>
+        </div>
+    </div>
 
-                <!-- User History Modal -->
-                <div id="userHistoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            Mi Historial de Movimientos
-                            <button id="closeUserHistoryModalBtn" class="close-button">&times;</button>
-                        </div>
-                        <div class="table-container bg-white shadow">
-                            <table class="min-w-full">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Tipo</th>
-                                        <th>Detalle</th>
-                                        <th>Monto</th>
-                                        <th>Moneda</th>
-                                        <th>Recibo</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="userHistoryTableBody">
-                                    <tr><td colspan="6" class="text-center text-gray-500 py-4">Cargando historial...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="flex justify-end items-center mt-6">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Transfer/Deposit/Withdrawal Status Message (for 10-second transfers or pending deposits) -->
-                <div id="transactionStatusMsg" class="mt-6 p-4 rounded-lg text-sm hidden bg-yellow-100 border border-yellow-200 text-yellow-800" role="status">
-                    <p id="transactionStatusText"></p>
-                    <button id="cancelOngoingTransferBtn" class="mt-2 btn-secondary hidden">Cancelar Transferencia</button>
-                </div>
-
+    <!-- User History Modal -->
+    <div id="userHistoryModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="closeUserHistoryModalBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Mi Historial de Transacciones</h2>
+            <div class="table-container">
+                <table class="min-w-full bg-white rounded-lg shadow-md">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Detalles</th>
+                            <th>Monto</th>
+                            <th>Moneda</th>
+                            <th>Recibo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userHistoryTableBody">
+                        <!-- Transaction rows will be inserted here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <!-- Admin Full History Modal -->
-    <div id="adminFullHistoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+    <div id="adminFullHistoryModal" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                Historial Completo de Transacciones (Admin)
-                <button id="closeAdminFullHistoryModalBtn" class="close-button">&times;</button>
-            </div>
-            <div class="table-container bg-white shadow">
-                <table class="min-w-full">
+            <button id="closeAdminFullHistoryModalBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Historial Completo de Transacciones (Admin)</h2>
+            <div class="table-container">
+                <table class="min-w-full bg-white rounded-lg shadow-md">
                     <thead>
                         <tr>
                             <th>Fecha</th>
                             <th>Tipo</th>
-                            <th>Usuario (Remitente/Receptor)</th>
+                            <th>Usuarios Involucrados</th>
                             <th>Monto</th>
                             <th>Moneda</th>
                             <th>Estado</th>
@@ -566,22 +476,20 @@
                         </tr>
                     </thead>
                     <tbody id="adminFullHistoryTableBodyModal">
-                        <tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando historial completo...</td></tr>
+                        <!-- Transaction rows will be inserted here -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Admin Pending Requests Modal (Unified) -->
-    <div id="adminPendingRequestsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+    <!-- Admin Pending Requests Modal -->
+    <div id="adminPendingRequestsModal" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                Solicitudes Pendientes (Admin)
-                <button id="closeAdminPendingRequestsModalBtn" class="close-button">&times;</button>
-            </div>
-            <div class="table-container bg-white shadow">
-                <table class="min-w-full">
+            <button id="closeAdminPendingRequestsModalBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Solicitudes Pendientes (Admin)</h2>
+            <div class="table-container">
+                <table class="min-w-full bg-white rounded-lg shadow-md">
                     <thead>
                         <tr>
                             <th>Fecha</th>
@@ -590,11 +498,11 @@
                             <th>Monto</th>
                             <th>Moneda</th>
                             <th>Detalles</th>
-                            <th>Acción</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="adminPendingRequestsTableBody">
-                        <tr><td colspan="7" class="text-center text-gray-500 py-4">No hay solicitudes pendientes.</td></tr>
+                        <!-- Pending request rows will be inserted here -->
                     </tbody>
                 </table>
             </div>
@@ -602,240 +510,175 @@
     </div>
 
     <!-- FAQ Modal -->
-    <div id="faqModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+    <div id="faqModal" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                Preguntas Frecuentes (FAQ)
-                <button id="closeFAQModalBtn" class="close-button">&times;</button>
-            </div>
-            <div class="text-left text-gray-700 space-y-4">
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo puedo registrarme?</h4>
-                    <p class="text-sm">Para registrarte, ve a la pestaña "Registrarse" y completa tus datos. Se te asignará un ID de usuario único.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Qué monedas puedo usar?</h4>
-                    <p class="text-sm">Actualmente, el Banco Juvenil maneja Dólares (USD) y Pesos Dominicanos (DOP). Puedes ver y cambiar tu preferencia de moneda en tu dashboard.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cuánto tiempo tardan las transferencias?</h4>
-                    <p class="text-sm">Las transferencias entre cuentas toman aproximadamente 10 segundos en procesarse. Una vez iniciada, no se puede cancelar.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo funciona el depósito de dinero?</h4>
-                    <p class="text-sm">Para depositar dinero, solicitas un depósito con un número de serie único. Esta solicitud debe ser aprobada por un administrador del banco antes de que el dinero se refleje en tu cuenta.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Hay alguna tarifa por retiro?</h4>
-                    <p class="text-sm">Sí, se aplica una tarifa del 4% a todas las solicitudes de retiro para cubrir los costos de procesamiento.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo funciona la compra por internet?</h4>
-                    <p class="text-sm">Puedes solicitar la compra de productos de tiendas como Shein, Alibaba, AliExpress o Temu. Proporciona el monto estimado y los enlaces de los productos. Se te cobrará una tarifa del 3% sobre el total. **Tu solicitud será revisada y confirmada por el administrador antes de que se deduzca el dinero de tu cuenta.**</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo puedo pagar servicios de streaming?</h4>
-                    <p class="text-sm">Puedes pagar tus suscripciones a servicios como Netflix, Disney+, Spotify, etc. Introduce el nombre del servicio, tu usuario/email de cuenta y el monto. Se aplicará una tarifa del 3%. **Tu solicitud será revisada y confirmada por el administrador antes de que se deduzca el dinero de tu cuenta.**</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo recargo mis juegos (Roblox, Free Fire, etc.)?</h4>
-                    <p class="text-sm">Puedes solicitar recargas para tus juegos favoritos. Deberás seleccionar el juego, ingresar tu ID de jugador y el monto. Se aplicará una tarifa del 3%. **Tu solicitud será revisada y confirmada por el administrador antes de que se deduzca el dinero de tu cuenta.**</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Puedo ver mis solicitudes de depósito y retiro pendientes?</h4>
-                    <p class="text-sm">Sí, en tu dashboard puedes hacer clic en "Ver Mis Solicitudes Pendientes" para revisar el estado de todas tus solicitudes (depósitos, retiros, compras, pagos de streaming y recargas de juegos) que aún no han sido procesadas por el administrador.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Cómo abro una cuenta de ahorro?</h4>
-                    <p class="text-sm">Puedes solicitar una cuenta de ahorro desde tu panel. Deberás especificar tu objetivo de ahorro, un monto de depósito inicial, una frecuencia y cuota periódica, y una fecha de finalización. Una vez aprobada por el administrador, se creará tu cuenta de ahorro.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Hay alguna tarifa por cerrar una cuenta de ahorro?</h4>
-                    <p class="text-sm">Sí, al eliminar una cuenta de ahorro, se aplica una tarifa del 2% sobre el saldo restante. El resto del dinero se transferirá a tu cuenta principal.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">¿Qué pasa si no puedo pagar mi cuota de ahorro?</h4>
-                    <p class="text-sm">Si tu cuenta principal no tiene fondos suficientes para cubrir tu cuota de ahorro automática, se registrará una deuda. Si esta deuda no se paga en la fecha límite, se aplicará una indemnización que se cargará a tu cuenta y se transferirá al administrador.</p>
-                </div>
+            <button id="closeFAQModalBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Preguntas Frecuentes</h2>
+            <div class="text-gray-700">
+                <h3 class="text-xl font-semibold mb-2">¿Cómo deposito dinero?</h3>
+                <p class="mb-4">Puedes depositar dinero en efectivo en cualquiera de nuestras sucursales. Te proporcionaremos un número de serie que deberás ingresar en la aplicación para que tu depósito sea aprobado por el banco.</p>
+
+                <h3 class="text-xl font-semibold mb-2">¿Cómo retiro dinero?</h3>
+                <p class="mb-4">Puedes solicitar un retiro a través de la aplicación. Una vez aprobado por el banco, podrás recoger el dinero en una sucursal. Se aplica una tarifa del 4%.</p>
+
+                <h3 class="text-xl font-semibold mb-2">¿Puedo transferir dinero a otros usuarios?</h3>
+                <p class="mb-4">Sí, puedes transferir dinero a otros usuarios de Banco Juvenil utilizando su email, ID de usuario o UID. Las transferencias tardan 10 segundos en procesarse.</p>
+
+                <h3 class="text-xl font-semibold mb-2">¿Qué son las cuentas de ahorro?</h3>
+                <p class="mb-4">Las cuentas de ahorro te permiten establecer metas y contribuir periódicamente. Puedes elegir la frecuencia de tus contribuciones. Las solicitudes de apertura y eliminación requieren aprobación.</p>
+
+                <h3 class="text-xl font-semibold mb-2">¿Qué sucede si no pago mi cuota de ahorro automática?</h3>
+                <p class="mb-4">Si no tienes fondos suficientes para una contribución automática, se registrará una deuda. Si esta deuda no se paga a tiempo, se aplicará una indemnización del 5% del monto adeudado, que se transferirá al administrador.</p>
+
+                <h3 class="text-xl font-semibold mb-2">¿Puedo hacer compras en línea o pagar servicios de streaming?</h3>
+                <p class="mb-4">Sí, puedes solicitar compras en línea o pagos de servicios de streaming a través de la aplicación. Estas solicitudes requieren la aprobación del administrador y se aplica una comisión del 3%.</p>
+
+                <h3 class="text-xl font-semibold mb-2">¿Qué es una recarga de juegos?</h3>
+                <p class="mb-4">Puedes solicitar recargas para tus juegos favoritos a través de la aplicación. Estas solicitudes también requieren la aprobación del administrador y se aplica una comisión del 3%.</p>
+
+                <h3 class="text-xl font-semibold mb-2">¿Cómo contacto al soporte?</h3>
+                <p class="mb-4">Puedes contactarnos a través del botón "Contacto y Soporte" en el panel de control. Te proporcionaremos un número de WhatsApp para asistencia directa.</p>
             </div>
         </div>
     </div>
 
     <!-- Online Shopping Modal -->
-    <div id="onlineShoppingModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-        <div class="modal-content w-full max-w-lg">
-            <div class="modal-header">
-                Compra por Internet
-                <button id="cancelOnlineShopping" class="close-button">&times;</button>
-            </div>
-            <form id="onlineShoppingForm" class="space-y-4">
-                <div>
-                    <label for="shoppingAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto total estimado de los productos (sin incluir envío/impuestos)</label>
-                    <input type="number" id="shoppingAmount" class="input-field" placeholder="Ej: 50.00" min="0.01" step="0.01" required>
-                </div>
-                <div>
-                    <label for="shoppingCurrency" class="block text-gray-700 text-sm font-semibold mb-2">Moneda</label>
-                    <select id="shoppingCurrency" class="input-field">
-                        <option value="USD">Dólar (USD)</option>
-                        <option value="DOP">Peso Dominicano (DOP)</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="productLinks" class="block text-gray-700 text-sm font-semibold mb-2">Pegue aquí los enlaces de los productos (uno por línea)</label>
-                    <textarea id="productLinks" class="input-field h-32" placeholder="https://www.shein.com/item1&#10;https://www.aliexpress.com/item2" required></textarea>
-                </div>
-                <div>
-                    <label for="shoppingCategory" class="block text-gray-700 text-sm font-semibold mb-2">Categoría de la Compra</label>
-                    <select id="shoppingCategory" class="input-field" required>
-                        <option value="">Seleccione una categoría</option>
-                        <option value="Ropa y Accesorios">Ropa y Accesorios</option>
-                        <option value="Electrónica">Electrónica</option>
-                        <option value="Libros y Papelería">Libros y Papelería</option>
-                        <option value="Juguetes y Juegos">Juguetes y Juegos</option>
-                        <option value="Hogar y Decoración">Hogar y Decoración</option>
-                        <option value="Deportes">Deportes</option>
-                        <option value="Belleza y Cuidado Personal">Belleza y Cuidado Personal</option>
-                        <option value="Otros">Otros</option>
-                    </select>
-                </div>
-                <div class="text-right text-sm text-gray-600">
-                    <p>Tarifa (3%): <span id="shoppingFeeDisplay">$0.00 USD</span></p>
-                    <p class="font-bold text-base text-gray-800">Total Solicitado: <span id="shoppingTotalDisplay">$0.00 USD</span></p>
-                    <p class="text-xs text-red-500 mt-1">Este monto será deducido de tu cuenta SÓLO después de la aprobación del administrador.</p>
-                </div>
-                <div class="flex justify-end space-x-4 pt-4">
-                    <button type="submit" id="requestOnlineShopping" class="btn-primary">Enviar Solicitud de Compra</button>
-                </div>
+    <div id="onlineShoppingModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="cancelOnlineShopping" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Solicitar Compra en Línea</h2>
+            <p class="text-gray-600 mb-4">Ingresa el monto estimado de tu compra y los enlaces de los productos. Se aplicará una comisión del 3%.</p>
+            <form id="onlineShoppingForm" class="flex flex-col">
+                <label for="shoppingAmount" class="text-gray-700 font-medium mb-1">Monto Estimado de Productos:</label>
+                <input type="number" id="shoppingAmount" class="input-field" step="0.01" min="0.01" required>
+
+                <label for="shoppingCurrency" class="text-gray-700 font-medium mb-1">Moneda del Monto Estimado:</label>
+                <select id="shoppingCurrency" class="input-field" required>
+                    <option value="USD">USD</option>
+                    <option value="DOP">DOP</option>
+                </select>
+
+                <label for="shoppingCategory" class="text-gray-700 font-medium mb-1">Categoría de la Compra:</label>
+                <select id="shoppingCategory" class="input-field" required>
+                    <option value="">Selecciona una categoría</option>
+                    <option value="Ropa y Accesorios">Ropa y Accesorios</option>
+                    <option value="Electrónica">Electrónica</option>
+                    <option value="Libros y Material Educativo">Libros y Material Educativo</option>
+                    <option value="Juguetes y Juegos">Juguetes y Juegos</option>
+                    <option value="Artículos para el Hogar">Artículos para el Hogar</option>
+                    <option value="Salud y Belleza">Salud y Belleza</option>
+                    <option value="Entretenimiento">Entretenimiento</option>
+                    <option value="Otros">Otros</option>
+                </select>
+
+                <label for="productLinks" class="text-gray-700 font-medium mb-1">Enlaces de los Productos (uno por línea):</label>
+                <textarea id="productLinks" class="input-field h-32 resize-y" placeholder="https://ejemplo.com/producto1&#10;https://ejemplo.com/producto2" required></textarea>
+
+                <p class="text-gray-700 mt-2">Tarifa (3%): <span id="shoppingFeeDisplay" class="font-semibold text-blue-700">$0.00 USD</span></p>
+                <p class="text-gray-700">Total a Deducir (aprox.): <span id="shoppingTotalDisplay" class="font-semibold text-blue-700">$0.00 USD</span></p>
+
+                <button type="submit" class="btn-primary w-full mt-4">Enviar Solicitud de Compra</button>
             </form>
         </div>
     </div>
 
     <!-- Streaming Payment Modal -->
-    <div id="streamingPaymentModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-        <div class="modal-content w-full max-w-sm">
-            <div class="modal-header">
-                Pagar Servicio de Streaming
-                <button id="cancelStreamingPayment" class="close-button">&times;</button>
-            </div>
-            <form id="streamingPaymentForm" class="space-y-4">
-                <div>
-                    <label for="streamingService" class="block text-gray-700 text-sm font-semibold mb-2">Servicio de Streaming</label>
-                    <select id="streamingService" class="input-field" required>
-                        <option value="">Seleccione un servicio</option>
-                        <option value="Netflix">Netflix</option>
-                        <option value="Disney+">Disney+</option>
-                        <option value="Spotify">Spotify</option>
-                        <option value="Amazon Prime Video">Amazon Prime Video</option>
-                        <option value="YouTube Premium">YouTube Premium</option>
-                        <option value="HBO Max">HBO Max</option>
-                        <option value="Otros">Otros</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="streamingAccountIdentifier" class="block text-gray-700 text-sm font-semibold mb-2">Email o Usuario de la Cuenta</label>
-                    <input type="text" id="streamingAccountIdentifier" class="input-field" placeholder="tu_email@ejemplo.com o tu_usuario" required>
-                </div>
-                <div>
-                    <label for="streamingAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto de la Suscripción</label>
-                    <input type="number" id="streamingAmount" class="input-field" placeholder="Ej: 15.99" min="0.01" step="0.01" required>
-                </div>
-                <div>
-                    <label for="streamingCurrency" class="block text-gray-700 text-sm font-semibold mb-2">Moneda</label>
-                    <select id="streamingCurrency" class="input-field">
-                        <option value="USD">Dólar (USD)</option>
-                        <option value="DOP">Peso Dominicano (DOP)</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="streamingCategory" class="block text-gray-700 text-sm font-semibold mb-2">Categoría del Servicio</label>
-                    <select id="streamingCategory" class="input-field" required>
-                        <option value="">Seleccione una categoría</option>
-                        <option value="Entretenimiento">Entretenimiento</option>
-                        <option value="Música">Música</option>
-                        <option value="Educación">Educación</option>
-                        <option value="Noticias">Noticias</option>
-                        <option value="Productividad">Productividad</option>
-                        <option value="Otros">Otros</option>
-                    </select>
-                </div>
-                <div class="text-right text-sm text-gray-600">
-                    <p>Tarifa (3%): <span id="streamingFeeDisplay">$0.00 USD</span></p>
-                    <p class="font-bold text-base text-gray-800">Total Solicitado: <span id="streamingTotalDisplay">$0.00 USD</span></p>
-                    <p class="text-xs text-red-500 mt-1">Este monto será deducido de tu cuenta SÓLO después de la aprobación del administrador.</p>
-                </div>
-                <div class="flex justify-end space-x-4 pt-4">
-                    <button type="submit" id="requestStreamingPayment" class="btn-primary">Enviar Solicitud de Pago</button>
-                </div>
+    <div id="streamingPaymentModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="cancelStreamingPayment" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Solicitar Pago de Servicio de Streaming</h2>
+            <p class="text-gray-600 mb-4">Ingresa los detalles de tu servicio de streaming. Se aplicará una comisión del 3%.</p>
+            <form id="streamingPaymentForm" class="flex flex-col">
+                <label for="streamingService" class="text-gray-700 font-medium mb-1">Servicio de Streaming:</label>
+                <select id="streamingService" class="input-field" required>
+                    <option value="">Selecciona un servicio</option>
+                    <option value="Netflix">Netflix</option>
+                    <option value="Disney+">Disney+</option>
+                    <option value="HBO Max">HBO Max</option>
+                    <option value="Spotify">Spotify</option>
+                    <option value="Apple Music">Apple Music</option>
+                    <option value="YouTube Premium">YouTube Premium</option>
+                    <option value="Amazon Prime Video">Amazon Prime Video</option>
+                    <option value="Otros">Otros</option>
+                </select>
+
+                <label for="streamingAccountIdentifier" class="text-gray-700 font-medium mb-1">Identificador de Cuenta (Email o Nombre de Usuario):</label>
+                <input type="text" id="streamingAccountIdentifier" class="input-field" placeholder="Email o nombre de usuario de tu cuenta" required>
+
+                <label for="streamingAmount" class="text-gray-700 font-medium mb-1">Monto de la Suscripción:</label>
+                <input type="number" id="streamingAmount" class="input-field" step="0.01" min="0.01" required>
+
+                <label for="streamingCurrency" class="text-gray-700 font-medium mb-1">Moneda de la Suscripción:</label>
+                <select id="streamingCurrency" class="input-field" required>
+                    <option value="USD">USD</option>
+                    <option value="DOP">DOP</option>
+                </select>
+
+                <label for="streamingCategory" class="text-gray-700 font-medium mb-1">Tipo de Servicio:</label>
+                <select id="streamingCategory" class="input-field" required>
+                    <option value="">Selecciona un tipo</option>
+                    <option value="Video">Video</option>
+                    <option value="Música">Música</option>
+                    <option value="Juegos">Juegos</option>
+                    <option value="Educación">Educación</option>
+                    <option value="Otros">Otros</option>
+                </select>
+
+                <p class="text-gray-700 mt-2">Tarifa (3%): <span id="streamingFeeDisplay" class="font-semibold text-blue-700">$0.00 USD</span></p>
+                <p class="text-gray-700">Total a Deducir (aprox.): <span id="streamingTotalDisplay" class="font-semibold text-blue-700">$0.00 USD</span></p>
+
+                <button type="submit" class="btn-primary w-full mt-4">Enviar Solicitud de Pago</button>
             </form>
         </div>
     </div>
 
-    <!-- NEW: Game Recharge Modal -->
-    <div id="gameRechargeModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-        <div class="modal-content w-full max-w-sm">
-            <div class="modal-header">
-                Recargar Juegos 🎮
-                <button id="cancelGameRecharge" class="close-button">&times;</button>
-            </div>
-            <form id="gameRechargeForm" class="space-y-4">
-                <div>
-                    <label for="gameName" class="block text-gray-700 text-sm font-semibold mb-2">Juego</label>
-                    <select id="gameName" class="input-field" required>
-                        <option value="">Seleccione un juego</option>
-                        <option value="Roblox">Roblox</option>
-                        <option value="Free Fire">Free Fire</option>
-                        <option value="Fortnite">Fortnite</option>
-                        <option value="Call of Duty Mobile">Call of Duty Mobile</option>
-                        <option value="Clash Royale">Clash Royale</option>
-                        <option value="Otros">Otros</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="playerId" class="block text-gray-700 text-sm font-semibold mb-2">ID de Jugador</label>
-                    <input type="text" id="playerId" class="input-field" placeholder="Ingrese su ID de jugador" required>
-                </div>
-                <div>
-                    <label for="rechargeAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto a Recargar</label>
-                    <input type="number" id="rechargeAmount" class="input-field" placeholder="Ej: 10.00" min="0.01" step="0.01" required>
-                </div>
-                <div>
-                    <label for="rechargeCurrency" class="block text-gray-700 text-sm font-semibold mb-2">Moneda</label>
-                    <select id="rechargeCurrency" class="input-field">
-                        <option value="USD">Dólar (USD)</option>
-                        <option value="DOP">Peso Dominicano (DOP)</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="gameRechargeCategory" class="block text-gray-700 text-sm font-semibold mb-2">Tipo de Recarga</label>
-                    <select id="gameRechargeCategory" class="input-field" required>
-                        <option value="">Seleccione un tipo</option>
-                        <option value="Moneda Virtual">Moneda Virtual (Robux, Diamantes, etc.)</option>
-                        <option value="Pases de Batalla">Pases de Batalla</option>
-                        <option value="Suscripciones">Suscripciones</option>
-                        <option value="Otros">Otros</option>
-                    </select>
-                </div>
-                <div class="text-right text-sm text-gray-600">
-                    <p>Tarifa (3%): <span id="gameRechargeFeeDisplay">$0.00 USD</span></p>
-                    <p class="font-bold text-base text-gray-800">Total Solicitado: <span id="gameRechargeTotalDisplay">$0.00 USD</span></p>
-                    <p class="text-xs text-red-500 mt-1">Este monto será deducido de tu cuenta SÓLO después de la aprobación del administrador.</p>
-                </div>
-                <div class="flex justify-end space-x-4 pt-4">
-                    <button type="submit" id="requestGameRecharge" class="btn-primary">Enviar Solicitud de Recarga</button>
-                </div>
+    <!-- Game Recharge Modal -->
+    <div id="gameRechargeModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="cancelGameRecharge" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Solicitar Recarga de Juego</h2>
+            <p class="text-gray-600 mb-4">Ingresa los detalles para la recarga de tu juego. Se aplicará una comisión del 3%.</p>
+            <form id="gameRechargeForm" class="flex flex-col">
+                <label for="gameName" class="text-gray-700 font-medium mb-1">Nombre del Juego:</label>
+                <input type="text" id="gameName" class="input-field" placeholder="ej. Free Fire, Roblox" required>
+
+                <label for="playerId" class="text-gray-700 font-medium mb-1">ID de Jugador:</label>
+                <input type="text" id="playerId" class="input-field" placeholder="Tu ID de jugador en el juego" required>
+
+                <label for="rechargeAmount" class="text-gray-700 font-medium mb-1">Monto de la Recarga:</label>
+                <input type="number" id="rechargeAmount" class="input-field" step="0.01" min="0.01" required>
+
+                <label for="rechargeCurrency" class="text-gray-700 font-medium mb-1">Moneda de la Recarga:</label>
+                <select id="rechargeCurrency" class="input-field" required>
+                    <option value="USD">USD</option>
+                    <option value="DOP">DOP</option>
+                </select>
+
+                <label for="gameRechargeCategory" class="text-gray-700 font-medium mb-1">Tipo de Recarga:</label>
+                <select id="gameRechargeCategory" class="input-field" required>
+                    <option value="">Selecciona un tipo</option>
+                    <option value="Diamantes">Diamantes</option>
+                    <option value="Monedas">Monedas</option>
+                    <option value="Paquete">Paquete</option>
+                    <option value="Pase de Batalla">Pase de Batalla</option>
+                    <option value="Otros">Otros</option>
+                </select>
+
+                <p class="text-gray-700 mt-2">Tarifa (3%): <span id="gameRechargeFeeDisplay" class="font-semibold text-blue-700">$0.00 USD</span></p>
+                <p class="text-gray-700">Total a Deducir (aprox.): <span id="gameRechargeTotalDisplay" class="font-semibold text-blue-700">$0.00 USD</span></p>
+
+                <button type="submit" class="btn-primary w-full mt-4">Enviar Solicitud de Recarga</button>
             </form>
         </div>
     </div>
 
     <!-- User Pending Requests Modal -->
-    <div id="userPendingRequestsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+    <div id="userPendingRequestsModal" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                Mis Solicitudes Pendientes
-                <button id="closeUserPendingRequestsModalBtn" class="close-button">&times;</button>
-            </div>
-            <div class="table-container bg-white shadow">
-                <table class="min-w-full">
+            <button id="closeUserPendingRequestsModalBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Mis Solicitudes Pendientes</h2>
+            <div class="table-container">
+                <table class="min-w-full bg-white rounded-lg shadow-md">
                     <thead>
                         <tr>
                             <th>Fecha</th>
@@ -847,411 +690,307 @@
                         </tr>
                     </thead>
                     <tbody id="userPendingRequestsTableBody">
-                        <tr><td colspan="6" class="text-center text-gray-500 py-4">Cargando solicitudes pendientes...</td></tr>
+                        <!-- User pending request rows will be inserted here -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Receipt/Invoice Modal for Users -->
-    <div id="receiptModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-        <div class="modal-content w-full max-w-md">
-            <div class="modal-header">
-                Recibo de Transacción
-                <button id="closeReceiptModalBtn" class="close-button">&times;</button>
-            </div>
-            <div id="receiptContent" class="text-left text-gray-700 space-y-2 text-sm bg-gray-50 p-4 rounded-lg">
-                <!-- Receipt details will be inserted here by JS -->
-            </div>
-        </div>
-    </div>
-
-
-    <!-- Rules Consent Modal -->
-    <div id="rulesConsentModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-        <div class="modal-content w-full max-w-md">
-            <div class="modal-header">
-                Reglas del Banco Juvenil
-                <button id="rejectRulesBtn" class="close-button">&times;</button>
-            </div>
-            <div id="briefRulesTextContainer" class="max-h-60 overflow-y-auto text-gray-700 text-sm mb-6 p-4 border rounded-lg bg-gray-50">
-                <!-- Brief rules will be inserted here by JS -->
-            </div>
-            <div class="flex justify-end space-x-4 pt-4">
-                <button type="button" id="acceptRulesBtn" class="btn-primary">Aceptar Reglas</button>
+    <!-- Receipt Modal -->
+    <div id="receiptModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="closeReceiptModalBtn" class="close-btn">×</button>
+            <div id="receiptContent" class="text-gray-800">
+                <!-- Receipt content will be generated by JS -->
             </div>
         </div>
     </div>
 
     <!-- Edit Profile Modal -->
-    <div id="editProfileModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-        <div class="modal-content w-full max-w-sm">
-            <div class="modal-header">
-                Editar Perfil
-                <button id="cancelEditProfileBtn" class="close-button">&times;</button>
-            </div>
-            <form id="editProfileForm" class="space-y-4">
-                <div>
-                    <label for="editName" class="block text-gray-700 text-sm font-semibold mb-2">Nombre</label>
-                    <input type="text" id="editName" class="input-field" required>
-                </div>
-                <div>
-                    <label for="editSurname" class="block text-gray-700 text-sm font-semibold mb-2">Apellido</label>
-                    <input type="text" id="editSurname" class="input-field" required>
-                </div>
-                <div>
-                    <label for="editAge" class="block text-gray-700 text-sm font-semibold mb-2">Edad</label>
-                    <input type="number" id="editAge" class="input-field" min="0" required>
-                </div>
-                <div>
-                    <label for="editPhoneNumber" class="block text-gray-700 text-sm font-semibold mb-2">Número de Teléfono</label>
-                    <input type="tel" id="editPhoneNumber" class="input-field" placeholder="Ej: 8091234567" pattern="[0-9]{10}" title="Número de teléfono de 10 dígitos">
-                </div>
-                <div class="flex justify-end space-x-4 pt-4">
-                    <button type="submit" class="btn-primary">Guardar Cambios</button>
-                </div>
+    <div id="editProfileModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="cancelEditProfileBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Editar Perfil</h2>
+            <form id="editProfileForm" class="flex flex-col">
+                <label for="editName" class="text-gray-700 font-medium mb-1">Nombre:</label>
+                <input type="text" id="editName" class="input-field" required>
+
+                <label for="editSurname" class="text-gray-700 font-medium mb-1">Apellido:</label>
+                <input type="text" id="editSurname" class="input-field" required>
+
+                <label for="editAge" class="text-gray-700 font-medium mb-1">Edad:</label>
+                <input type="number" id="editAge" class="input-field" required min="13">
+
+                <label for="editPhoneNumber" class="text-gray-700 font-medium mb-1">Número de Teléfono (WhatsApp):</label>
+                <input type="tel" id="editPhoneNumber" class="input-field" placeholder="ej. 18091234567" required>
+
+                <button type="submit" class="btn-primary w-full mt-4">Guardar Cambios</button>
             </form>
         </div>
     </div>
 
     <!-- Change Password Modal -->
-    <div id="changePasswordModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-        <div class="modal-content w-full max-w-sm">
-            <div class="modal-header">
-                Cambiar Contraseña
-                <button id="cancelChangePasswordBtn" class="close-button">&times;</button>
-            </div>
-            <form id="changePasswordForm" class="space-y-4">
-                <div>
-                    <label for="currentPassword" class="block text-gray-700 text-sm font-semibold mb-2">Contraseña Actual</label>
-                    <input type="password" id="currentPassword" class="input-field" placeholder="********" required>
-                </div>
-                <div>
-                    <label for="newPassword" class="block text-gray-700 text-sm font-semibold mb-2">Nueva Contraseña</label>
-                    <input type="password" id="newPassword" class="input-field" placeholder="********" required>
-                </div>
-                <div>
-                    <label for="confirmNewPassword" class="block text-gray-700 text-sm font-semibold mb-2">Confirmar Nueva Contraseña</label>
-                    <input type="password" id="confirmNewPassword" class="input-field" placeholder="********" required>
-                </div>
-                <div class="flex justify-end space-x-4 pt-4">
-                    <button type="submit" class="btn-primary">Cambiar Contraseña</button>
-                </div>
+    <div id="changePasswordModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="cancelChangePasswordBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Cambiar Contraseña</h2>
+            <form id="changePasswordForm" class="flex flex-col">
+                <label for="currentPassword" class="text-gray-700 font-medium mb-1">Contraseña Actual:</label>
+                <input type="password" id="currentPassword" class="input-field" required>
+
+                <label for="newPassword" class="text-gray-700 font-medium mb-1">Nueva Contraseña:</label>
+                <input type="password" id="newPassword" class="input-field" required minlength="6">
+
+                <label for="confirmNewPassword" class="text-gray-700 font-medium mb-1">Confirmar Nueva Contraseña:</label>
+                <input type="password" id="confirmNewPassword" class="input-field" required>
+
+                <button type="submit" class="btn-primary w-full mt-4">Cambiar Contraseña</button>
             </form>
         </div>
     </div>
 
     <!-- Security Tips Modal -->
-    <div id="securityTipsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+    <div id="securityTipsModal" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                Consejos de Seguridad 🔒
-                <button id="closeSecurityTipsBtn" class="close-button">&times;</button>
-            </div>
-            <div class="text-left text-gray-700 space-y-4">
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">1. Contraseñas Fuertes y Únicas</h4>
-                    <p class="text-sm">Usa contraseñas largas y complejas que combinen letras mayúsculas, minúsculas, números y símbolos. ¡Y lo más importante, no las uses en otros sitios!</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">2. Cuidado con el Phishing</h4>
-                    <p class="text-sm">Nunca hagas clic en enlaces sospechosos ni descargues archivos de correos electrónicos o mensajes de texto no solicitados, incluso si parecen ser de un banco. Siempre verifica la fuente.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">3. Protege tu Información Personal</h4>
-                    <p class="text-sm">No compartas tu ID de usuario, contraseña, números de cuenta o información personal por teléfono, correo electrónico o redes sociales, a menos que estés seguro de la identidad del receptor.</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">4. Revisa tus Movimientos Regularmente</h4>
-                    <p class="text-sm">Accede a tu historial de movimientos con frecuencia para detectar cualquier actividad sospechosa o no autorizada. Si ves algo raro, ¡contáctanos de inmediato!</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-800 mb-1">5. Mantén tu Dispositivo Seguro</h4>
-                    <p class="text-sm">Usa antivirus, mantén tu sistema operativo y aplicaciones actualizadas, y evita conectarte a redes Wi-Fi públicas no seguras para realizar transacciones bancarias.</p>
-                </div>
+            <button id="closeSecurityTipsBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Consejos de Seguridad</h2>
+            <div class="text-gray-700">
+                <ul class="list-disc list-inside">
+                    <li class="mb-2">Usa contraseñas fuertes y únicas para tu cuenta.</li>
+                    <li class="mb-2">Nunca compartas tu contraseña con nadie.</li>
+                    <li class="mb-2">Ten cuidado con correos electrónicos o mensajes sospechosos que soliciten tu información personal.</li>
+                    <li class="mb-2">Verifica siempre la URL del sitio web antes de ingresar tus credenciales.</li>
+                    <li class="mb-2">Cierra sesión de tu cuenta cuando uses un dispositivo compartido o público.</li>
+                    <li class="mb-2">Mantén tu software y navegador actualizados.</li>
+                    <li class="mb-2">Reporta cualquier actividad sospechosa al soporte de inmediato.</li>
+                </ul>
             </div>
         </div>
     </div>
 
     <!-- About Us Modal -->
-    <div id="aboutUsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-        <div class="modal-content w-full max-w-lg">
-            <div class="modal-header">
-                Acerca del Banco Juvenil 🏦
-                <button id="closeAboutUsBtn" class="close-button">&times;</button>
-            </div>
-            <div class="text-left text-gray-700 space-y-4">
-                <p>¡Hola, futuro financiero! Somos el Banco Juvenil, una plataforma creada pensando en ti.</p>
-                <p>Nuestra misión es empoderar a los jóvenes como tú para que tomen el control de sus finanzas desde temprana edad. Creemos que aprender sobre dinero no tiene por qué ser aburrido, ¡sino una aventura emocionante!</p>
-                <p>Aquí podrás:</p>
-                <ul class="list-disc list-inside ml-4 space-y-1">
-                    <li>Gestionar tus ahorros y gastos de forma sencilla.</li>
-                    <li>Establecer metas de ahorro y ver tu progreso.</li>
-                    <li>Realizar transferencias y pagos de forma segura (con la supervisión de un administrador, claro).</li>
-                    <li>¡Y mucho más, todo diseñado para ser fácil y divertido!</li>
-                </ul>
-                <p class="text-sm text-gray-600 mt-4">Fundado en 2025. Versión 1.0.</p>
+    <div id="aboutUsModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="closeAboutUsBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Acerca de Banco Juvenil</h2>
+            <div class="text-gray-700">
+                <p class="mb-4">Banco Juvenil es una plataforma diseñada para ayudar a los jóvenes a aprender sobre la gestión financiera de una manera segura y controlada. Nuestro objetivo es fomentar hábitos de ahorro, responsabilidad en el gasto y comprensión de los servicios bancarios básicos.</p>
+                <p class="mb-4">Creemos que la educación financiera temprana es clave para construir un futuro sólido. Con Banco Juvenil, los jóvenes pueden experimentar transacciones, ahorros y presupuestos en un entorno simulado, preparándolos para el mundo financiero real.</p>
+                <p class="mb-4">¡Gracias por ser parte de nuestra comunidad!</p>
             </div>
         </div>
     </div>
 
-    <!-- NEW: Contact & Support Modal -->
-    <div id="contactSupportModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-        <div class="modal-content w-full max-w-md">
-            <div class="modal-header">
-                Contacto y Soporte 📞
-                <button id="closeContactSupportBtn" class="close-button">&times;</button>
-            </div>
-            <div class="text-left text-gray-700 space-y-4">
-                <p>¿Necesitas ayuda o tienes alguna pregunta? ¡Estamos aquí para ti, campeón!</p>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">WhatsApp de Soporte:</h4>
-                    <p class="text-sm"><a href="https://wa.me/18293329545" target="_blank" class="text-green-600 hover:underline font-bold">829-332-9545</a></p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">Correo Electrónico:</h4>
-                    <p class="text-sm"><a href="mailto:soportebancojuvenil@gmail.com" class="text-blue-600 hover:underline">soportebancojuvenil@gmail.com</a></p>
-                </div>
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800 mb-1">Horario de Atención:</h4>
-                    <p class="text-sm">Lunes a Viernes: 9:00 AM - 5:00 PM (Hora local)</p>
-                </div>
-                <p class="text-sm text-gray-600 mt-4">¡No dudes en contactarnos! Tu seguridad y tranquilidad son nuestra prioridad.</p>
+    <!-- Contact Support Modal -->
+    <div id="contactSupportModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="closeContactSupportBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Contacto y Soporte</h2>
+            <div class="text-gray-700">
+                <p class="mb-4">Si tienes alguna pregunta, problema o necesitas asistencia, no dudes en contactarnos. Estamos aquí para ayudarte.</p>
+                <p class="mb-2">Puedes enviarnos un mensaje directo a nuestro número de WhatsApp:</p>
+                <p class="text-lg font-bold text-green-600 mb-4">
+                    <a href="https://wa.me/18293329545" target="_blank" class="hover:underline">WhatsApp: +1 (829) 332-9545</a>
+                </p>
+                <p class="mb-4">Nuestro equipo de soporte está disponible para responder a tus consultas y brindarte la ayuda que necesites.</p>
             </div>
         </div>
     </div>
 
-    <!-- NEW: Open Savings Account Modal -->
-    <div id="openSavingsAccountModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-        <div class="modal-content w-full max-w-sm">
-            <div class="modal-header">
-                Abrir Cuenta de Ahorro 💰
-                <button id="cancelOpenSavingsAccountBtn" class="close-button">&times;</button>
-            </div>
-            <form id="savingsAccountForm" class="space-y-4">
-                <div class="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 p-4 mb-4" role="alert">
-                    <p class="font-bold">Aviso Importante:</p>
-                    <p class="text-sm">Al eliminar una cuenta de ahorro, se aplicará una tarifa del 2% sobre el saldo restante. El resto del dinero se transferirá a tu cuenta principal.</p>
-                    <p class="text-sm mt-2">Las cuotas de ahorro se cobrarán automáticamente. Si no tienes fondos, se registrará una deuda y se podrá aplicar una indemnización.</p>
-                </div>
-                <div>
-                    <label for="savingsGoal" class="block text-gray-700 text-sm font-semibold mb-2">¿Para qué estás ahorrando?</label>
-                    <input type="text" id="savingsGoal" class="input-field" placeholder="Ej: Viaje a la playa, Consola de videojuegos" required>
-                </div>
-                <div>
-                    <label for="initialDepositAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto de Depósito Inicial</label>
-                    <input type="number" id="initialDepositAmount" class="input-field" placeholder="Ej: 50.00" min="0.01" step="0.01" required>
-                </div>
-                <div>
-                    <label for="initialDepositCurrency" class="block text-gray-700 text-sm font-semibold mb-2">Moneda del Depósito Inicial</label>
-                    <select id="initialDepositCurrency" class="input-field">
-                        <option value="USD">Dólar (USD)</option>
-                        <option value="DOP">Peso Dominicano (DOP)</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="preferredSavingsFrequency" class="block text-gray-700 text-sm font-semibold mb-2">Frecuencia de Ahorro Preferida</label>
-                    <select id="preferredSavingsFrequency" class="input-field" required>
-                        <option value="">Selecciona una frecuencia</option>
-                        <option value="Diaria">Diaria</option>
-                        <option value="Semanal">Semanal</option>
-                        <option value="Quincenal">Quincenal</option>
-                        <option value="Mensual">Mensual</option>
-                        <option value="Ocasional">Ocasional (sin cobro automático)</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="periodicContributionAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto de Cuota Periódica (USD)</label>
-                    <input type="number" id="periodicContributionAmount" class="input-field" placeholder="Ej: 10.00" min="0" step="0.01" required>
-                    <p class="text-xs text-gray-500 mt-1">Este es el monto que se intentará cobrar automáticamente según la frecuencia seleccionada.</p>
-                </div>
-                <div>
-                    <label for="savingsEndDate" class="block text-gray-700 text-sm font-semibold mb-2">Fecha de Finalización del Ahorro</label>
-                    <input type="date" id="savingsEndDate" class="input-field" required>
-                </div>
-                <div class="flex justify-end space-x-4 pt-4">
-                    <button type="submit" class="btn-primary">Solicitar Cuenta de Ahorro</button>
-                </div>
+    <!-- Open Savings Account Modal -->
+    <div id="openSavingsAccountModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="cancelOpenSavingsAccountBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Abrir Nueva Cuenta de Ahorro</h2>
+            <p class="text-gray-600 mb-4">Establece una meta de ahorro y cómo te gustaría contribuir a ella.</p>
+            <form id="savingsAccountForm" class="flex flex-col">
+                <label for="savingsGoal" class="text-gray-700 font-medium mb-1">Meta de Ahorro (ej. "Para mi nueva PC", "Viaje a la playa"):</label>
+                <input type="text" id="savingsGoal" class="input-field" placeholder="Mi objetivo de ahorro" required>
+
+                <label for="initialDepositAmount" class="text-gray-700 font-medium mb-1">Monto de Depósito Inicial:</label>
+                <input type="number" id="initialDepositAmount" class="input-field" step="0.01" min="0.01" required>
+
+                <label for="initialDepositCurrency" class="text-gray-700 font-medium mb-1">Moneda del Depósito Inicial:</label>
+                <select id="initialDepositCurrency" class="input-field" required>
+                    <option value="USD">USD</option>
+                    <option value="DOP">DOP</option>
+                </select>
+
+                <label for="preferredSavingsFrequency" class="text-gray-700 font-medium mb-1">Frecuencia de Contribución Preferida:</label>
+                <select id="preferredSavingsFrequency" class="input-field" required>
+                    <option value="Ocasional">Ocasional (sin contribuciones automáticas)</option>
+                    <option value="Diaria">Diaria</option>
+                    <option value="Semanal">Semanal</option>
+                    <option value="Quincenal">Quincenal</option>
+                    <option value="Mensual">Mensual</option>
+                </select>
+
+                <label for="periodicContributionAmount" class="text-gray-700 font-medium mb-1">Monto de Contribución Periódica (USD):</label>
+                <input type="number" id="periodicContributionAmount" class="input-field" step="0.01" min="0" placeholder="0.00" required>
+
+                <label for="savingsEndDate" class="text-gray-700 font-medium mb-1">Fecha de Finalización de la Meta:</label>
+                <input type="date" id="savingsEndDate" class="input-field" required>
+
+                <button type="submit" class="btn-primary w-full mt-4">Enviar Solicitud de Apertura</button>
             </form>
         </div>
     </div>
 
-    <!-- NEW: View Savings Accounts Modal -->
-    <div id="viewSavingsAccountsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+    <!-- View Savings Accounts Modal -->
+    <div id="viewSavingsAccountsModal" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                Mis Cuentas de Ahorro 📈
-                <button id="closeViewSavingsAccountsBtn" class="close-button">&times;</button>
-            </div>
-            <div class="table-container bg-white shadow">
-                <table class="min-w-full">
+            <button id="closeViewSavingsAccountsBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Mis Cuentas de Ahorro</h2>
+            <div class="table-container">
+                <table class="min-w-full bg-white rounded-lg shadow-md">
                     <thead>
                         <tr>
                             <th>ID Cuenta</th>
-                            <th>Objetivo</th>
-                            <th>Saldo (USD)</th>
-                            <th>Saldo (DOP)</th>
+                            <th>Meta</th>
+                            <th>Saldo USD</th>
+                            <th>Saldo DOP</th>
                             <th>Frecuencia</th>
                             <th>Cuota Periódica</th>
-                            <th>Próximo Cobro</th>
-                            <th>Fin</th>
+                            <th>Próxima Cuota</th>
+                            <th>Fecha Fin</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="savingsAccountsTableBody">
-                        <tr><td colspan="10" class="text-center text-gray-500 py-4">Cargando cuentas de ahorro...</td></tr>
+                        <!-- Savings account rows will be inserted here -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- NEW: Edit Announcements Modal -->
-    <div id="editAnnouncementsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-        <div class="modal-content w-full max-w-lg">
-            <div class="modal-header">
-                Editar Anuncios ✏️
-                <button id="cancelEditAnnouncementsBtn" class="close-button">&times;</button>
-            </div>
-            <form id="editAnnouncementsForm" class="space-y-4">
-                <div>
-                    <label for="announcementsTextarea" class="block text-gray-700 text-sm font-semibold mb-2">Contenido de los Anuncios (una línea por anuncio)</label>
-                    <textarea id="announcementsTextarea" class="input-field h-40" placeholder="Escribe cada anuncio en una nueva línea..."></textarea>
-                </div>
-                <div class="flex justify-end space-x-4 pt-4">
-                    <button type="submit" class="btn-primary">Guardar Anuncios</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- NEW: Deposit to Savings Modal -->
-    <div id="depositToSavingsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-        <div class="modal-content w-full max-w-sm">
-            <div class="modal-header">
-                Depositar a Cuenta de Ahorro
-                <button id="cancelDepositToSavingsBtn" class="close-button">&times;</button>
-            </div>
-            <form id="depositToSavingsForm" class="space-y-4">
-                <p class="text-sm text-gray-700">Cuenta de Ahorro: <span id="depositToSavingsAccountIdDisplay" class="font-bold"></span></p>
-                <div>
-                    <label for="depositToSavingsAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto a Depositar</label>
-                    <input type="number" id="depositToSavingsAmount" class="input-field" placeholder="Ej: 20.00" min="0.01" step="0.01" required>
-                </div>
-                <div>
-                    <label for="depositToSavingsCurrency" class="block text-gray-700 text-sm font-semibold mb-2">Moneda</label>
-                    <select id="depositToSavingsCurrency" class="input-field">
-                        <option value="USD">Dólar (USD)</option>
-                        <option value="DOP">Peso Dominicano (DOP)</option>
-                    </select>
-                </div>
-                <div class="flex justify-end space-x-4 pt-4">
-                    <button type="submit" class="btn-primary">Confirmar Depósito</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- NEW: Withdraw from Savings Modal -->
-    <div id="withdrawFromSavingsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-        <div class="modal-content w-full max-w-sm">
-            <div class="modal-header">
-                Retirar de Cuenta de Ahorro
-                <button id="cancelWithdrawFromSavingsBtn" class="close-button">&times;</button>
-            </div>
-            <form id="withdrawFromSavingsForm" class="space-y-4">
-                <p class="text-sm text-gray-700">Cuenta de Ahorro: <span id="withdrawFromSavingsAccountIdDisplay" class="font-bold"></span></p>
-                <div>
-                    <label for="withdrawFromSavingsAmount" class="block text-gray-700 text-sm font-semibold mb-2">Monto a Retirar</label>
-                    <input type="number" id="withdrawFromSavingsAmount" class="input-field" placeholder="Ej: 10.00" min="0.01" step="0.01" required>
-                </div>
-                <div>
-                    <label for="withdrawFromSavingsCurrency" class="block text-gray-700 text-sm font-semibold mb-2">Moneda</label>
-                    <select id="withdrawFromSavingsCurrency" class="input-field">
-                        <option value="USD">Dólar (USD)</option>
-                        <option value="DOP">Peso Dominicano (DOP)</option>
-                    </select>
-                </div>
-                <div class="flex justify-end space-x-4 pt-4">
-                    <button type="submit" class="btn-primary">Confirmar Retiro</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- NEW: Confirm Delete Savings Account Modal -->
-    <div id="confirmDeleteSavingsAccountModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
-        <div class="modal-content w-full max-w-sm text-center">
-            <div class="modal-header">
-                Confirmar Eliminación de Cuenta
-                <button id="cancelDeleteSavingsAccountBtn" class="close-button">&times;</button>
-            </div>
-            <p class="text-lg text-gray-700 mb-4">¿Estás seguro de que quieres eliminar la cuenta de ahorro "<span id="deleteSavingsAccountGoalDisplay" class="font-bold"></span>"?</p>
-            <p class="text-red-600 font-semibold mb-4">Se aplicará una tarifa del 2% sobre el saldo actual (<span id="deleteSavingsAccountFeeDisplay"></span>).</p>
-            <p class="text-gray-700 mb-6">El saldo restante (<span id="deleteSavingsAccountRemainingDisplay"></span>) se transferirá a tu cuenta principal.</p>
-            <div class="flex justify-center space-x-4">
-                <button id="confirmDeleteSavingsAccountBtn" class="btn-danger">Sí, Eliminar</button>
-                <button id="cancelDeleteSavingsAccountBtn2" class="btn-secondary">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- NEW: Savings Debts Modal (Client) -->
-    <div id="savingsDebtsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+    <!-- Edit Announcements Modal (Admin Only) -->
+    <div id="editAnnouncementsModal" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                Mis Deudas de Ahorro 💸
-                <button id="closeSavingsDebtsModalBtn" class="close-button">&times;</button>
+            <button id="cancelEditAnnouncementsBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Editar Anuncios (Admin)</h2>
+            <p class="text-gray-600 mb-4">Ingresa cada anuncio en una línea separada. Se mostrarán en el panel de control de todos los usuarios.</p>
+            <form id="editAnnouncementsForm" class="flex flex-col">
+                <label for="announcementsTextarea" class="text-gray-700 font-medium mb-1">Anuncios:</label>
+                <textarea id="announcementsTextarea" class="input-field h-48 resize-y" placeholder="Anuncio 1&#10;Anuncio 2&#10;Anuncio 3"></textarea>
+                <button type="submit" class="btn-primary w-full mt-4">Guardar Anuncios</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Deposit to Savings Modal -->
+    <div id="depositToSavingsModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="cancelDepositToSavingsBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Depositar a Cuenta de Ahorro</h2>
+            <p class="text-gray-600 mb-2">Cuenta: <span id="depositToSavingsAccountIdDisplay" class="font-semibold"></span></p>
+            <p class="text-gray-600 mb-4">Transfiere dinero de tu cuenta principal a esta cuenta de ahorro.</p>
+            <form id="depositToSavingsForm" class="flex flex-col">
+                <label for="depositToSavingsAmount" class="text-gray-700 font-medium mb-1">Monto a Depositar:</label>
+                <input type="number" id="depositToSavingsAmount" class="input-field" step="0.01" min="0.01" required>
+
+                <label for="depositToSavingsCurrency" class="text-gray-700 font-medium mb-1">Moneda:</label>
+                <select id="depositToSavingsCurrency" class="input-field" required>
+                    <option value="USD">USD</option>
+                    <option value="DOP">DOP</option>
+                </select>
+
+                <button type="submit" class="btn-primary w-full mt-4">Confirmar Depósito</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Withdraw from Savings Modal -->
+    <div id="withdrawFromSavingsModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="cancelWithdrawFromSavingsBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Retirar de Cuenta de Ahorro</h2>
+            <p class="text-gray-600 mb-2">Cuenta: <span id="withdrawFromSavingsAccountIdDisplay" class="font-semibold"></span></p>
+            <p class="text-gray-600 mb-4">Transfiere dinero de esta cuenta de ahorro a tu cuenta principal.</p>
+            <form id="withdrawFromSavingsForm" class="flex flex-col">
+                <label for="withdrawFromSavingsAmount" class="text-gray-700 font-medium mb-1">Monto a Retirar:</label>
+                <input type="number" id="withdrawFromSavingsAmount" class="input-field" step="0.01" min="0.01" required>
+
+                <label for="withdrawFromSavingsCurrency" class="text-gray-700 font-medium mb-1">Moneda:</label>
+                <select id="withdrawFromSavingsCurrency" class="input-field" required>
+                    <option value="USD">USD</option>
+                    <option value="DOP">DOP</option>
+                </select>
+
+                <button type="submit" class="btn-primary w-full mt-4">Confirmar Retiro</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Savings Account Modal -->
+    <div id="confirmDeleteSavingsAccountModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="cancelDeleteSavingsAccountBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-red-700 mb-4">Confirmar Eliminación de Cuenta de Ahorro</h2>
+            <p class="text-gray-700 mb-2">¿Estás seguro de que deseas eliminar la cuenta de ahorro para "<span id="deleteSavingsAccountGoalDisplay" class="font-semibold"></span>"?</p>
+            <p class="text-gray-700 mb-2">Se aplicará una tarifa del 2% sobre el saldo restante de la cuenta.</p>
+            <p class="text-gray-700 mb-2">Tarifa de Eliminación: <span id="deleteSavingsAccountFeeDisplay" class="font-semibold text-red-600"></span></p>
+            <p class="text-gray-700 mb-4">Saldo Restante a Transferir a tu Cuenta Principal: <span id="deleteSavingsAccountRemainingDisplay" class="font-semibold text-blue-700"></span></p>
+            <div class="flex justify-end space-x-4">
+                <button id="cancelDeleteSavingsAccountBtn2" class="btn-secondary">Cancelar</button>
+                <button id="confirmDeleteSavingsAccountBtn" class="btn-danger">Eliminar Cuenta</button>
             </div>
-            <div class="table-container bg-white shadow">
-                <table class="min-w-full">
+        </div>
+    </div>
+
+    <!-- Savings Debts Modal (Client) -->
+    <div id="savingsDebtsModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="closeSavingsDebtsModalBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Mis Deudas de Ahorro Pendientes</h2>
+            <div class="table-container">
+                <table class="min-w-full bg-white rounded-lg shadow-md">
                     <thead>
                         <tr>
                             <th>Cuenta de Ahorro</th>
                             <th>Monto Adeudado</th>
-                            <th>Fecha Límite</th>
+                            <th>Fecha de Vencimiento</th>
                             <th>Estado</th>
-                            <th>Acciones</th>
+                            <th>Acción</th>
                         </tr>
                     </thead>
                     <tbody id="savingsDebtsTableBody">
-                        <tr><td colspan="5" class="text-center text-gray-500 py-4">Cargando deudas...</td></tr>
+                        <!-- Savings debt rows for client will be inserted here -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- NEW: Admin Savings Debts Modal -->
-    <div id="adminSavingsDebtsModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center hidden p-4">
+    <!-- Admin Savings Debts Modal -->
+    <div id="adminSavingsDebtsModal" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                Deudas de Cuentas de Ahorro (Admin) 🚨
-                <button id="closeAdminSavingsDebtsModalBtn" class="close-button">&times;</button>
-            </div>
-            <div class="table-container bg-white shadow">
-                <table class="min-w-full">
+            <button id="closeAdminSavingsDebtsModalBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Deudas de Ahorro (Administrador)</h2>
+            <div class="table-container">
+                <table class="min-w-full bg-white rounded-lg shadow-md">
                     <thead>
                         <tr>
                             <th>Usuario</th>
                             <th>Cuenta de Ahorro</th>
                             <th>Monto Adeudado</th>
-                            <th>Fecha Límite</th>
+                            <th>Fecha de Vencimiento</th>
                             <th>Estado</th>
-                            <th>Contacto</th>
-                            <th>Acción</th>
+                            <th>Contactar</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="adminSavingsDebtsTableBody">
-                        <tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando deudas...</td></tr>
+                        <!-- Admin savings debt rows will be inserted here -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <script type="module" src="script.js"></script>
+    <!-- Main JavaScript file -->
+    <script type="module" src="./script.js"></script>
 </body>
 </html>
