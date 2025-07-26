@@ -33,7 +33,7 @@ const WITHDRAWAL_FEE_RATE = 0.04; // Tarifa del 4% para retiros
 const SAVINGS_DELETE_FEE_RATE = 0.02; // Tarifa del 2% por eliminar cuenta de ahorro
 const INDEMNIZATION_RATE = 0.05; // Indemnización del 5% por deudas de ahorro vencidas
 
-// Email de administrador para propósitos de prototipo - ACTUALIZADO CON TU PROJECT ID
+// Email de administrador para propósitos de prototipo - CRÍTICO: ASEGÚRATE DE QUE ESTO COINCIDA CON TUS REGLAS DE SEGURIDAD
 const ADMIN_EMAIL = `admin.jhonnio@${appId}.com`;
 const ADMIN_PHONE_NUMBER_FULL = '18293329545'; // Número de WhatsApp del administrador con código de país
 
@@ -51,6 +51,9 @@ const userPhoneNumbersCache = {}; // Nuevo caché para números de teléfono
 
 // Variable global para almacenar los datos de transacción del usuario para el resumen (ya no se usa para el resumen de IA, pero se mantiene para la carga del historial)
 let userTransactionsData = [];
+
+// Variable global para almacenar la función de desuscripción del oyente de perfil de usuario
+let userProfileUnsubscribe = null;
 
 // Elementos de la interfaz de usuario
 const loginTab = document.getElementById('loginTab');
@@ -699,12 +702,17 @@ async function performRegistration(name, surname, age, phoneNumber, password) {
     // Genera un ID simple y amigable para el usuario para mostrar
     const userDisplayId = generateUserDisplayId(name, surname);
 
+    console.log("Intentando registrar nuevo usuario con email:", generatedEmail);
+    console.log("Datos de registro:", { name, surname, age, phoneNumber, userDisplayId });
+
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, generatedEmail, password);
         const user = userCredential.user;
         const userId = user.uid; // UID de Firebase
+        console.log("Usuario de Firebase Auth creado:", user);
 
-        await setDoc(doc(db, 'artifacts', appId, 'users', userId), {
+        const userDocRef = doc(db, 'artifacts', appId, 'users', userId);
+        await setDoc(userDocRef, {
             userId: userId, // UID interno de Firebase
             userDisplayId: userDisplayId, // ID de visualización amigable para el usuario
             name: name,
@@ -718,11 +726,12 @@ async function performRegistration(name, surname, age, phoneNumber, password) {
             hasPendingDeposit: false, // Mantiene esto para el bloqueo de depósitos específicos
             createdAt: serverTimestamp()
         });
+        console.log("Documento de usuario creado en Firestore para UID:", userId);
 
         showMessage(`¡Registro exitoso, ${name}! Tu ID de usuario para iniciar sesión es: ${generatedEmail}. Tu ID público es: ${userDisplayId}. Por favor, anótalo.`, 'success');
         loginIdentifierInput.value = generatedEmail; // Prellena el campo de inicio de sesión con el email generado
         loginPassword.value = password; // Prellena la contraseña
-        // No hay un toggleTabs('login') explícito aquí, ya que onAuthStateChanged maneja la visualización del panel de control
+        // onAuthStateChanged se encargará de la visualización del panel de control
         // si el inicio de sesión es exitoso después del registro automáticamente.
 
     } catch (error) {
@@ -760,6 +769,8 @@ async function handleLogin(e) {
         return;
     }
 
+    console.log("Intentando iniciar sesión con identificador:", identifier);
+
     try {
         // Si el identificador no parece un email, intenta encontrar el email por userDisplayId o UID de Firebase
         if (!identifier.includes('@')) {
@@ -767,29 +778,36 @@ async function handleLogin(e) {
             let querySnapshot;
 
             // 1. Intenta buscar por userDisplayId (preferido para la facilidad de uso)
+            console.log("Buscando usuario por userDisplayId:", identifier);
             let q = query(usersCollectionRef, where('userDisplayId', '==', identifier));
             querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
                 // 2. Si no se encuentra por userDisplayId, intenta buscar por UID de Firebase
+                console.log("userDisplayId no encontrado. Buscando por userId:", identifier);
                 q = query(usersCollectionRef, where('userId', '==', identifier));
                 querySnapshot = await getDocs(q);
             }
 
             if (querySnapshot.empty) {
+                console.warn("Usuario no encontrado por userDisplayId ni userId:", identifier);
                 showMessage('ID de usuario o contraseña incorrectos.', 'error');
                 return;
             }
             // Usuario encontrado, obtén su email asociado para Firebase Auth
             emailToLogin = querySnapshot.docs[0].data().email;
             if (!emailToLogin) {
+                console.error("No se pudo encontrar el email asociado a este ID de usuario en Firestore:", identifier);
                 showMessage('No se pudo encontrar el email asociado a este ID de usuario.', 'error');
                 return;
             }
+            console.log("Email de inicio de sesión encontrado en Firestore:", emailToLogin);
         }
 
         // Intenta iniciar sesión con el email y la contraseña determinados
+        console.log("Intentando signInWithEmailAndPassword para:", emailToLogin);
         await signInWithEmailAndPassword(auth, emailToLogin, password);
+        console.log("signInWithEmailAndPassword exitoso.");
         // El oyente onAuthStateChanged se encargará de la actualización de la interfaz de usuario si el inicio de sesión es exitoso
 
     } catch (error) {
@@ -811,7 +829,9 @@ async function handleLogin(e) {
  */
 async function handleLogout() {
     try {
+        console.log("Intentando cerrar sesión...");
         await signOut(auth);
+        console.log("Cierre de sesión exitoso.");
         // El oyente onAuthStateChanged se encargará de la actualización de la interfaz de usuario
     } catch (error) {
         console.error("Error durante el cierre de sesión:", error);
@@ -846,18 +866,32 @@ function toggleCurrencyDisplay() {
 onAuthStateChanged(auth, async (user) => {
     hideMessage(); // Borra cualquier mensaje
     hideTransactionStatus(); // Borra cualquier mensaje de estado de transacción
+    console.log("onAuthStateChanged: Estado de autenticación cambiado. Usuario:", user ? user.uid : "null");
 
     if (user) {
         // El usuario ha iniciado sesión
         currentUser = user;
         currentUserId = user.uid;
+        console.log(`onAuthStateChanged: Usuario autenticado. UID: ${currentUserId}, Email: ${user.email}`);
 
         // Escucha las actualizaciones en tiempo real del perfil del usuario en Firestore
         // Ruta: artifacts/{appId}/users/{userId}
         const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
-        onSnapshot(userProfileRef, (docSnap) => {
+        console.log("onAuthStateChanged: Intentando escuchar el documento de perfil de usuario:", userProfileRef.path);
+
+        // Desuscribirse de cualquier oyente anterior para evitar duplicados si onAuthStateChanged se dispara varias veces
+        if (userProfileUnsubscribe) { // Comprueba si ya hay una función de desuscripción asignada
+            userProfileUnsubscribe();
+            userProfileUnsubscribe = null; // Restablece la variable
+            console.log("onAuthStateChanged: Desuscrito del oyente de perfil de usuario anterior.");
+        }
+
+        userProfileUnsubscribe = onSnapshot(userProfileRef, (docSnap) => {
+            console.log("onSnapshot para perfil de usuario activado.");
             if (docSnap.exists()) {
                 const userData = docSnap.data();
+                console.log("Datos del perfil de usuario cargados:", userData);
+
                 dashboardUserName.textContent = userData.name || 'Usuario';
                 // Muestra el ID amigable para el usuario, si no está configurado, usa el UID de Firebase
                 dashboardDisplayId.textContent = userData.userDisplayId || userData.userId;
@@ -880,18 +914,23 @@ onAuthStateChanged(auth, async (user) => {
                 // Muestra los botones específicos del administrador si el usuario actual es administrador
                 if (currentUser.email === ADMIN_EMAIL) {
                     adminButtonsContainer.classList.remove('hidden'); // Muestra el contenedor para los botones del administrador
+                    console.log("onAuthStateChanged: Usuario es administrador.");
                 } else {
                     adminButtonsContainer.classList.add('hidden'); // Oculta para no administradores
+                    console.log("onAuthStateChanged: Usuario NO es administrador.");
                 }
 
             } else {
-                console.warn("Perfil de usuario no encontrado en Firestore para el UID:", currentUserId);
+                console.warn("onSnapshot: Perfil de usuario NO encontrado en Firestore para el UID:", currentUserId);
                 // Si el perfil de usuario no existe, cierra la sesión
-                handleLogout();
+                // Esto es crucial: si un usuario se autentica pero no tiene un perfil en Firestore, lo desconecta.
+                showMessage("Tu perfil de usuario no se encontró. Por favor, regístrate o contacta a soporte.", 'error');
+                handleLogout(); // Desconecta al usuario si no hay perfil de Firestore
             }
         }, (error) => {
-            console.error("Error al escuchar el perfil del usuario:", error);
+            console.error("onSnapshot ERROR: Error al escuchar el perfil del usuario:", error);
             showMessage("Error al cargar los datos de tu perfil. Intenta recargar la página.", 'error');
+            handleLogout(); // También desconecta en caso de error de lectura
         });
 
         // Carga los anuncios cuando el usuario inicia sesión
@@ -902,6 +941,7 @@ onAuthStateChanged(auth, async (user) => {
 
     } else {
         // El usuario ha cerrado sesión
+        console.log("onAuthStateChanged: Usuario desconectado.");
         currentUser = null;
         currentUserId = null;
         dashboardUserName.textContent = '';
