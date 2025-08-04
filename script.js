@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, serverTimestamp, query, where, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, serverTimestamp, query, where, getDocs, deleteDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
 // TU CONFIGURACIÓN DE FIREBASE - PROPORCIONADA POR TI
 const firebaseConfig = {
@@ -13,7 +13,7 @@ const firebaseConfig = {
 };
 
 // Usando projectId como appId para la consistencia de la ruta de Firestore
-const appId = "banco-juvenil-12903"; 
+const appId = "banco-juvenil-12903";
 
 // Inicializa Firebase
 const app = initializeApp(firebaseConfig);
@@ -158,6 +158,18 @@ const withdrawForm = document.getElementById('withdrawForm');
 const withdrawAmount = document.getElementById('withdrawAmount'); // Asegúrate de que este ID exista
 const withdrawCurrency = document.getElementById('withdrawCurrency'); // Asegúrate de que este ID exista
 
+// NUEVO: Elementos para recibir dinero del exterior
+const receiveExternalMoneyBtn = document.getElementById('receiveExternalMoneyBtn'); // Asegúrate de que este botón exista en tu HTML
+const receiveExternalMoneyModal = document.getElementById('receiveExternalMoneyModal'); // Asegúrate de que este modal exista en tu HTML
+const cancelReceiveExternalMoneyBtn = document.getElementById('cancelReceiveExternalMoneyBtn'); // Asegúrate de que este botón exista en tu HTML
+const receiveExternalMoneyForm = document.getElementById('receiveExternalMoneyForm'); // Asegúrate de que este formulario exista en tu HTML
+const externalSenderNameInput = document.getElementById('externalSenderName');
+const externalSenderBankInput = document.getElementById('externalSenderBank');
+const externalSerialNumberInput = document.getElementById('externalSerialNumber');
+const externalDepositAmountInput = document.getElementById('externalDepositAmount');
+const externalDepositCurrencyInput = document.getElementById('externalDepositCurrency');
+
+
 const userHistoryModal = document.getElementById('userHistoryModal');
 const userHistoryTableBody = document.getElementById('userHistoryTableBody');
 const closeUserHistoryModalBtn = document.getElementById('closeUserHistoryModalBtn');
@@ -300,6 +312,7 @@ let currentSavingsAccountGoal = '';
 let adminPendingRequestsUnsubscribe = null;
 let adminSavingsDebtsUnsubscribe = null; // Nueva desuscripción para deudas de ahorro del administrador
 let savingsDebtsUnsubscribe = null; // Nueva desuscripción para deudas de ahorro del cliente
+let userHistoryUnsubscribe = null; // NUEVO: Desuscripción para el oyente del historial del usuario
 
 // NUEVO: Modal de deudas de ahorro (cliente)
 const savingsDebtsModal = document.getElementById('savingsDebtsModal');
@@ -433,6 +446,13 @@ async function showReceipt(transaction) {
         typeDisplay = 'Depósito';
         amountDisplay = (transaction.amount ?? 0).toFixed(2);
         currencyDisplay = transaction.currency;
+        otherDetails += `<p><strong>Número de Serie:</strong> ${transaction.serialNumber || 'N/A'}</p>`;
+    } else if (transaction.type === 'external_deposit') { // NUEVO: Recibo de depósito externo
+        typeDisplay = 'Depósito Exterior';
+        amountDisplay = (transaction.amount ?? 0).toFixed(2);
+        currencyDisplay = transaction.currency;
+        otherDetails += `<p><strong>Banco Origen:</strong> ${transaction.senderBank || 'N/A'}</p>`;
+        otherDetails += `<p><strong>Remitente:</strong> ${transaction.senderName || 'N/A'}</p>`;
         otherDetails += `<p><strong>Número de Serie:</strong> ${transaction.serialNumber || 'N/A'}</p>`;
     } else if (transaction.type === 'withdrawal') {
         typeDisplay = 'Retiro';
@@ -575,12 +595,12 @@ function toggleTabs(activeTabId) {
         loginTab.classList.add('active');
         registerTab.classList.remove('active');
         // Oculta todas las secciones principales y modales
-        showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, gameRechargeModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
+        showSection(loginSection, registerSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, gameRechargeModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal, receiveExternalMoneyModal);
     } else {
         registerTab.classList.add('active');
         loginTab.classList.remove('active');
         // Oculta todas las secciones principales y modales
-        showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, gameRechargeModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
+        showSection(registerSection, loginSection, dashboardSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, gameRechargeModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal, receiveExternalMoneyModal);
     }
     hideMessage(); // Oculta cualquier mensaje anterior al cambiar de pestaña
 }
@@ -592,950 +612,1019 @@ function closeModal(modalElement) {
     modalElement.classList.add('hidden');
 }
 
-/**
- * Genera un ID simple y legible para fines de visualización.
- * @param {string} name Primer nombre del usuario.
- * @param {string} surname Apellido del usuario.
- * @returns {string} Un ID de visualización amigable para el usuario.
- */
-function generateUserDisplayId(name, surname) {
-    const initials = `${name.substring(0, 1).toUpperCase()}${surname.substring(0, 1).toUpperCase()}`;
-    const randomNumber = Math.floor(1000 + Math.random() * 9000); // Número de 4 dígitos
-    return `${initials}#${randomNumber}`;
-}
+// --- Funcionalidad de inicio de sesión y registro ---
 
-/**
- * Obtiene el nombre de visualización de un usuario del caché o de Firestore.
- * @param {string} userId El UID de Firebase del usuario.
- * @returns {Promise<string>} El nombre de visualización del usuario (Nombre Apellido (ID#ABCD)) o un ID truncado.
- */
-async function getUserDisplayName(userId) {
-    // Comprueba si el userId coincide con el UID de Firebase del email del administrador
-    const adminQuery = query(collection(db, 'artifacts', appId, 'users'), where('email', '==', ADMIN_EMAIL));
-    const adminSnapshot = await getDocs(adminQuery);
-    if (!adminSnapshot.empty && adminSnapshot.docs[0].id === userId) {
-        return "Administrador";
+// Oyentes de eventos para las pestañas de inicio de sesión/registro
+loginTab.addEventListener('click', () => toggleTabs('login'));
+registerTab.addEventListener('click', () => toggleTabs('register'));
+
+// Oyente de eventos para el formulario de inicio de sesión
+loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideMessage();
+    const identifier = loginIdentifierInput.value.trim();
+    const password = loginPassword.value;
+
+    if (!identifier || !password) {
+        showMessage('Por favor, ingresa tu correo electrónico/ID de usuario y contraseña.', 'error');
+        return;
     }
 
-    if (userDisplayNamesCache[userId]) {
-        return userDisplayNamesCache[userId];
-    }
     try {
-        const userDocRef = doc(db, 'artifacts', appId, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists()) {
-            const userData = userDocSnap.data();
-            const displayName = `${userData.name} ${userData.surname} (${userData.userDisplayId || userData.userId.substring(0, 5) + '...'})`;
-            userDisplayNamesCache[userId] = displayName;
-            return displayName;
+        let emailToSignIn = identifier;
+        // Si el identificador no contiene '@', asume que es un userDisplayId o phoneNumber
+        if (!identifier.includes('@')) {
+            const usersRef = collection(db, 'artifacts', appId, 'users');
+            let q;
+            if (identifier.startsWith('+')) { // Asume que es un número de teléfono si empieza con '+'
+                q = query(usersRef, where('phoneNumber', '==', identifier));
+            } else { // Asume que es un userDisplayId
+                q = query(usersRef, where('userDisplayId', '==', identifier));
+            }
+            const querySnapshot = await getDocs(q);
+            if (querySnapshot.empty) {
+                showMessage('Usuario no encontrado. Verifica tu ID de usuario o número de teléfono.', 'error');
+                return;
+            }
+            emailToSignIn = querySnapshot.docs[0].data().email;
         }
-    } catch (error) {
-        console.error("Error al obtener el nombre de visualización del usuario:", error);
-    }
-    return `ID: ${userId.substring(0, 5)}...`; // Vuelve al UID de Firebase truncado
-}
 
-/**
- * Obtiene el número de teléfono de un usuario del caché o de Firestore.
- * @param {string} userId El UID de Firebase del usuario.
- * @returns {Promise<string|null>} El número de teléfono del usuario o nulo si no se encuentra.
- */
-async function getUserPhoneNumber(userId) {
-    if (userPhoneNumbersCache[userId]) {
-        return userPhoneNumbersCache[userId];
-    }
-    try {
-        const userDocRef = doc(db, 'artifacts', appId, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists()) {
-            const userData = userDocSnap.data();
-            const phoneNumber = userData.phoneNumber || null;
-            userPhoneNumbersCache[userId] = phoneNumber;
-            return phoneNumber;
+        await signInWithEmailAndPassword(auth, emailToSignIn, password);
+        showMessage('Inicio de sesión exitoso.', 'success');
+        loginForm.reset();
+    } catch (error) {
+        console.error("Error de inicio de sesión:", error);
+        if (error.code === 'auth/invalid-email' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+            showMessage('Credenciales inválidas. Verifica tu correo/ID de usuario y contraseña.', 'error');
+        } else if (error.code === 'auth/too-many-requests') {
+            showMessage('Demasiados intentos de inicio de sesión fallidos. Inténtalo de nuevo más tarde.', 'error');
+        } else {
+            showMessage('Error al iniciar sesión. Por favor, inténtalo de nuevo.', 'error');
         }
-    } catch (error) {
-        console.error("Error al obtener el número de teléfono del usuario:", error);
     }
-    return null;
-}
+});
 
-
-// --- Autenticación de Firebase y operaciones de Firestore ---
-
-/**
- * Maneja el envío del formulario de registro de nuevos usuarios (inicia el consentimiento de las reglas).
- * @param {Event} e Evento de envío del formulario.
- */
+// Oyente de eventos para el formulario de registro
 registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideMessage();
     const name = registerNameInput.value.trim();
     const surname = registerSurnameInput.value.trim();
     const age = parseInt(registerAgeInput.value);
-    const phoneNumber = registerPhoneNumberInput.value.trim(); // Obtener número de teléfono
+    const phoneNumber = registerPhoneNumberInput.value.trim(); // Obtiene el número de teléfono
     const password = registerPasswordInput.value;
+    const email = `${name.toLowerCase()}.${surname.toLowerCase()}@${appId}.com`; // Genera un email único
 
-    if (!name || !surname || !password || isNaN(age) || age <= 0 || !phoneNumber) {
-        showMessage('Por favor, completa todos los campos correctamente.', 'error');
+    if (!name || !surname || isNaN(age) || age < 13 || !phoneNumber || password.length < 6) {
+        showMessage('Por favor, completa todos los campos. La edad debe ser al menos 13 y la contraseña de 6 caracteres mínimo.', 'error');
         return;
     }
 
-    // Almacena los datos temporalmente para usarlos después del consentimiento de las reglas
-    tempRegisterData = { name, surname, age, phoneNumber, password };
-
-    // Muestra el modal de consentimiento de las reglas
+    // Guarda los datos temporalmente y muestra el modal de consentimiento
+    tempRegisterData = { name, surname, age, phoneNumber, password, email };
     briefRulesTextContainer.innerHTML = briefRulesText;
     rulesConsentModal.classList.remove('hidden');
 });
 
-/**
- * Realiza el registro real del usuario después del consentimiento de las reglas.
- * @param {string} name Nombre del usuario.
- * @param {string} surname Apellido del usuario.
- * @param {number} age Edad del usuario.
- * @param {string} phoneNumber Número de teléfono del usuario.
- * @param {string} password Contraseña del usuario.
- */
-async function performRegistration(name, surname, age, phoneNumber, password) {
-    // Genera un email para Firebase Auth (uso interno principalmente)
-    const generatedEmail = `${name.toLowerCase().replace(/\s/g, '')}.${surname.toLowerCase().replace(/\s/g, '')}@${appId}.com`;
-    // Genera un ID simple y amigable para el usuario para mostrar
-    const userDisplayId = generateUserDisplayId(name, surname);
-
-    console.log("Intentando registrar nuevo usuario con email:", generatedEmail);
-    console.log("Datos de registro:", { name, surname, age, phoneNumber, userDisplayId });
+// Oyentes de eventos para el modal de consentimiento de reglas
+acceptRulesBtn.addEventListener('click', async () => {
+    rulesConsentModal.classList.add('hidden');
+    const { name, surname, age, phoneNumber, password, email } = tempRegisterData;
 
     try {
-        const userCredential = await createUserWithEmailAndPassword(auth, generatedEmail, password);
-        const user = userCredential.user;
-        const userId = user.uid; // UID de Firebase
-        console.log("Usuario de Firebase Auth creado:", user);
+        // Verifica si el userDisplayId o el número de teléfono ya existen
+        const usersRef = collection(db, 'artifacts', appId, 'users');
+        const querySnapshotId = await getDocs(query(usersRef, where('userDisplayId', '==', `${name.toLowerCase()}.${surname.toLowerCase()}`)));
+        const querySnapshotPhone = await getDocs(query(usersRef, where('phoneNumber', '==', phoneNumber)));
 
-        const userDocRef = doc(db, 'artifacts', appId, 'users', userId);
-        await setDoc(userDocRef, {
-            userId: userId, // UID interno de Firebase
-            userDisplayId: userDisplayId, // ID de visualización amigable para el usuario
-            name: name,
-            surname: surname,
-            age: age,
-            phoneNumber: phoneNumber, // Almacena el número de teléfono
-            email: generatedEmail, // Email de inicio de sesión principal
-            balanceUSD: 0,
-            balanceDOP: 0,
-            currencyPreference: 'USD',
-            hasPendingDeposit: false, // Mantiene esto para el bloqueo de depósitos específicos
-            createdAt: serverTimestamp()
-        });
-        console.log("Documento de usuario creado en Firestore para UID:", userId);
-
-        showMessage(`¡Registro exitoso, ${name}! Tu ID de usuario para iniciar sesión es: ${generatedEmail}. Tu ID público es: ${userDisplayId}. Por favor, anótalo.`, 'success');
-        loginIdentifierInput.value = generatedEmail; // Prellena el campo de inicio de sesión con el email generado
-        loginPassword.value = password; // Prellena la contraseña
-        // onAuthStateChanged se encargará de la visualización del panel de control
-        // si el inicio de sesión es exitoso después del registro automáticamente.
-
-    } catch (error) {
-        console.error("Error durante el registro:", error);
-        let errorMessage = 'Error al registrar. Por favor, inténtalo de nuevo.';
-        if (error.code === 'auth/email-already-in-use') {
-            errorMessage = `Ya existe una cuenta con este nombre y apellido (o email ${generatedEmail}). Prueba a iniciar sesión o usa otro nombre/apellido.`;
-        } else if (error.code === 'auth/weak-password') {
-            errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
-        } else if (error.code === 'auth/invalid-email') {
-            errorMessage = 'Error en el formato del email generado. Contacta soporte.';
-        } else if (error.code === 'auth/configuration-not-found') {
-            errorMessage = 'Error de configuración de autenticación. Asegúrate de que "Email/Password" esté habilitado en Firebase Auth.';
+        if (!querySnapshotId.empty) {
+            showMessage('El ID de usuario generado (nombre.apellido) ya existe. Por favor, usa un nombre o apellido diferente.', 'error');
+            return;
         }
-        showMessage(errorMessage, 'error');
-    } finally {
-        tempRegisterData = {}; // Borra los datos temporales independientemente del resultado
-    }
-}
-
-
-/**
- * Maneja el inicio de sesión del usuario, aceptando email o UID de Firebase.
- * @param {Event} e Evento de envío del formulario.
- */
-async function handleLogin(e) {
-    e.preventDefault();
-    hideMessage();
-    const identifier = loginIdentifierInput.value.trim(); // Puede ser email, userDisplayId o UID de Firebase
-    const password = loginPassword.value;
-    let emailToLogin = identifier;
-
-    if (!identifier || !password) {
-        showMessage('Por favor, ingresa tu ID de usuario y contraseña.', 'error');
-        return;
-    }
-
-    console.log("Intentando iniciar sesión con identificador:", identifier);
-
-    try {
-        // Si el identificador no parece un email, intenta encontrar el email por userDisplayId o UID de Firebase
-        if (!identifier.includes('@')) {
-            const usersCollectionRef = collection(db, 'artifacts', appId, 'users');
-            let querySnapshot;
-
-            // 1. Intenta buscar por userDisplayId (preferido para la facilidad de uso)
-            console.log("Buscando usuario por userDisplayId:", identifier);
-            let q = query(usersCollectionRef, where('userDisplayId', '==', identifier));
-            querySnapshot = await getDocs(q);
-
-            if (querySnapshot.empty) {
-                // 2. Si no se encuentra por userDisplayId, intenta buscar por UID de Firebase
-                console.log("userDisplayId no encontrado. Buscando por userId:", identifier);
-                q = query(usersCollectionRef, where('userId', '==', identifier));
-                querySnapshot = await getDocs(q);
-            }
-
-            if (querySnapshot.empty) {
-                console.warn("Usuario no encontrado por userDisplayId ni userId:", identifier);
-                showMessage('ID de usuario o contraseña incorrectos.', 'error');
-                return;
-            }
-            // Usuario encontrado, obtén su email asociado para Firebase Auth
-            emailToLogin = querySnapshot.docs[0].data().email;
-            if (!emailToLogin) {
-                console.error("No se pudo encontrar el email asociado a este ID de usuario en Firestore:", identifier);
-                showMessage('No se pudo encontrar el email asociado a este ID de usuario.', 'error');
-                return;
-            }
-            console.log("Email de inicio de sesión encontrado en Firestore:", emailToLogin);
-        }
-
-        // Intenta iniciar sesión con el email y la contraseña determinados
-        console.log("Intentando signInWithEmailAndPassword para:", emailToLogin);
-        await signInWithEmailAndPassword(auth, emailToLogin, password);
-        console.log("signInWithEmailAndPassword exitoso.");
-        // El oyente onAuthStateChanged se encargará de la actualización de la interfaz de usuario si el inicio de sesión es exitoso
-
-    } catch (error) {
-        console.error("Error durante el inicio de sesión:", error);
-        let errorMessage = 'Error al iniciar sesión. Verifica tu ID de usuario y contraseña.';
-        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-            errorMessage = 'ID de usuario o contraseña incorrectos.';
-        } else if (error.code === 'auth/invalid-email') {
-            errorMessage = 'El formato del ID de usuario (email) es inválido.';
-        } else if (error.code === 'auth/configuration-not-found') {
-            errorMessage = 'Error de configuración de autenticación. Asegúrate de que "Email/Password" esté habilitado en Firebase Auth.';
-        }
-        showMessage(errorMessage, 'error');
-    }
-}
-
-/**
- * Maneja el cierre de sesión del usuario.
- */
-async function handleLogout() {
-    try {
-        console.log("Intentando cerrar sesión...");
-        await signOut(auth);
-        console.log("Cierre de sesión exitoso.");
-        // El oyente onAuthStateChanged se encargará de la actualización de la interfaz de usuario
-    } catch (error) {
-        console.error("Error durante el cierre de sesión:", error);
-        showMessage('Error al cerrar sesión. Por favor, inténtalo de nuevo.', 'error');
-    }
-}
-
-/**
- * Actualiza la visualización del saldo en la interfaz de usuario.
- */
-function updateBalanceDisplay() {
-    if (showCurrencyUSD) {
-        accountBalance.textContent = `$${currentBalanceUSD.toFixed(2)} USD`;
-        toggleCurrencyBtn.textContent = 'Cambiar a DOP';
-    } else {
-        accountBalance.textContent = `RD$${currentBalanceDOP.toFixed(2)} DOP`;
-        toggleCurrencyBtn.textContent = 'Cambiar a USD';
-    }
-}
-
-/**
- * Maneja el cambio de visualización de la moneda en el panel de control.
- */
-function toggleCurrencyDisplay() {
-    showCurrencyUSD = !showCurrencyUSD;
-    updateBalanceDisplay();
-}
-
-/**
- * Escucha los cambios en el estado de autenticación para actualizar la interfaz de usuario.
- */
-onAuthStateChanged(auth, async (user) => {
-    hideMessage(); // Borra cualquier mensaje
-    hideTransactionStatus(); // Borra cualquier mensaje de estado de transacción
-    console.log("onAuthStateChanged: Estado de autenticación cambiado. Usuario:", user ? user.uid : "null");
-
-    if (user) {
-        // El usuario ha iniciado sesión
-        currentUser = user;
-        currentUserId = user.uid;
-        console.log(`onAuthStateChanged: Usuario autenticado. UID: ${currentUserId}, Email: ${user.email}`);
-
-        // Escucha las actualizaciones en tiempo real del perfil del usuario en Firestore
-        // Ruta: artifacts/{appId}/users/{userId}
-        const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
-        console.log("onAuthStateChanged: Intentando escuchar el documento de perfil de usuario:", userProfileRef.path);
-
-        // Desuscribirse de cualquier oyente anterior para evitar duplicados si onAuthStateChanged se dispara varias veces
-        if (userProfileUnsubscribe) { // Comprueba si ya hay una función de desuscripción asignada
-            userProfileUnsubscribe();
-            userProfileUnsubscribe = null; // Restablece la variable
-            console.log("onAuthStateChanged: Desuscrito del oyente de perfil de usuario anterior.");
-        }
-
-        userProfileUnsubscribe = onSnapshot(userProfileRef, (docSnap) => {
-            console.log("onSnapshot para perfil de usuario activado.");
-            if (docSnap.exists()) {
-                const userData = docSnap.data();
-                console.log("Datos del perfil de usuario cargados:", userData);
-
-                dashboardUserName.textContent = userData.name || 'Usuario';
-                // Muestra el ID amigable para el usuario, si no está configurado, usa el UID de Firebase
-                dashboardDisplayId.textContent = userData.userDisplayId || userData.userId;
-                profileAvatar.textContent = (userData.name ? userData.name.substring(0,1) : 'U').toUpperCase(); // Establece la inicial del avatar
-
-                currentBalanceUSD = userData.balanceUSD || 0;
-                currentBalanceDOP = userData.balanceDOP || 0;
-                updateBalanceDisplay();
-
-                // Comprueba si hay depósitos pendientes y deshabilita el botón de depósito si es necesario
-                if (userData.hasPendingDeposit) {
-                    depositMoneyBtn.disabled = true;
-                    depositMoneyBtn.textContent = 'Depósito Pendiente...';
-                    showMessage('Tienes un depósito pendiente de aprobación. No puedes hacer otro depósito hasta que se confirme el actual.', 'info');
-                } else {
-                    depositMoneyBtn.disabled = false;
-                    depositMoneyBtn.textContent = 'Depositar Dinero';
-                }
-
-                // Muestra los botones específicos del administrador si el usuario actual es administrador
-                if (currentUser.email === ADMIN_EMAIL) {
-                    adminButtonsContainer.classList.remove('hidden'); // Muestra el contenedor para los botones del administrador
-                    console.log("onAuthStateChanged: Usuario es administrador.");
-                } else {
-                    adminButtonsContainer.classList.add('hidden'); // Oculta para no administradores
-                    console.log("onAuthStateChanged: Usuario NO es administrador.");
-                }
-
-            } else {
-                console.warn("onSnapshot: Perfil de usuario NO encontrado en Firestore para el UID:", currentUserId);
-                // Si el perfil de usuario no existe, cierra la sesión
-                // Esto es crucial: si un usuario se autentica pero no tiene un perfil en Firestore, lo desconecta.
-                showMessage("Tu perfil de usuario no se encontró. Por favor, regístrate o contacta a soporte.", 'error');
-                handleLogout(); // Desconecta al usuario si no hay perfil de Firestore
-            }
-        }, (error) => {
-            console.error("onSnapshot ERROR: Error al escuchar el perfil del usuario:", error);
-            showMessage("Error al cargar los datos de tu perfil. Intenta recargar la página.", 'error');
-            handleLogout(); // También desconecta en caso de error de lectura
-        });
-
-        // Carga los anuncios cuando el usuario inicia sesión
-        loadAnnouncements();
-
-        // Muestra el panel de control y oculta los formularios de inicio de sesión/registro y todos los modales
-        showSection(dashboardSection, loginSection, registerSection, rulesConsentModal, userHistoryModal, adminFullHistoryModal, adminPendingRequestsModal, faqModal, onlineShoppingModal, streamingPaymentModal, gameRechargeModal, userPendingRequestsModal, receiptModal, editProfileModal, changePasswordModal, securityTipsModal, aboutUsModal, contactSupportModal, openSavingsAccountModal, viewSavingsAccountsModal, editAnnouncementsModal, depositToSavingsModal, withdrawFromSavingsModal, confirmDeleteSavingsAccountModal, savingsDebtsModal, adminSavingsDebtsModal);
-
-    } else {
-        // El usuario ha cerrado sesión
-        console.log("onAuthStateChanged: Usuario desconectado.");
-        currentUser = null;
-        currentUserId = null;
-        dashboardUserName.textContent = '';
-        dashboardDisplayId.textContent = ''; // Borra el ID de visualización
-        profileAvatar.textContent = 'U'; // Restablece el avatar
-        accountBalance.textContent = '$0.00 USD';
-        toggleCurrencyBtn.textContent = 'Cambiar a DOP';
-        showCurrencyUSD = true; // Restablece la preferencia de visualización de moneda
-        toggleTabs('login'); // Vuelve a la pestaña de inicio de sesión
-    }
-});
-
-
-// --- Funcionalidad de transferencia de dinero ---
-
-/**
- * Muestra el modal de transferencia de dinero y restablece su estado.
- */
-transferMoneyBtn.addEventListener('click', () => {
-    transferModal.classList.remove('hidden');
-    transferForm.reset();
-    recipientNameDisplay.textContent = ''; // Borra el nombre del destinatario anterior
-    confirmTransferBtn.disabled = true; // Deshabilita el botón de confirmar inicialmente
-});
-
-/**
- * Cierra el modal de transferencia de dinero.
- */
-cancelTransferModalBtn.addEventListener('click', () => {
-    closeModal(transferModal);
-    transferForm.reset();
-    recipientNameDisplay.textContent = '';
-    confirmTransferBtn.disabled = true;
-});
-
-// Oyente de eventos para la entrada del ID del destinatario para obtener el nombre
-transferRecipientIdInput.addEventListener('input', async () => {
-    const identifier = transferRecipientIdInput.value.trim();
-    recipientNameDisplay.textContent = 'Buscando usuario...';
-    confirmTransferBtn.disabled = true;
-    currentTransferRecipientUid = null; // Restablece el UID en la nueva entrada
-
-    if (!identifier) {
-        recipientNameDisplay.textContent = '';
-        return;
-    }
-
-    let recipientData = null;
-    let querySnapshot;
-
-    // 1. Intenta buscar por email
-    if (identifier.includes('@')) {
-        const q = query(collection(db, 'artifacts', appId, 'users'), where('email', '==', identifier));
-        querySnapshot = await getDocs(q);
-    } else {
-        // 2. Si no es un email, intenta buscar por userDisplayId
-        const q = query(collection(db, 'artifacts', appId, 'users'), where('userDisplayId', '==', identifier));
-        querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-            // 3. Finalmente, intenta buscar por UID de Firebase
-            const q2 = query(collection(db, 'artifacts', appId, 'users'), where('userId', '==', identifier));
-            querySnapshot = await getDocs(q2);
-        }
-    }
-
-    if (!querySnapshot.empty) {
-        recipientData = querySnapshot.docs[0].data();
-        // Almacena el UID real de Firebase para la transacción
-        currentTransferRecipientUid = recipientData.userId;
-        // Almacena el identificador que el usuario escribió para los mensajes
-        currentTransferRecipientIdentifier = identifier;
-        currentTransferRecipientDisplayName = `${recipientData.name} ${recipientData.surname}`;
-        recipientNameDisplay.textContent = `Usuario: ${currentTransferRecipientDisplayName}`;
-        confirmTransferBtn.disabled = false;
-
-        // Evita la auto-transferencia
-        if (currentTransferRecipientUid === currentUserId) {
-            recipientNameDisplay.textContent = '¡No puedes transferir dinero a tu propia cuenta!';
-            confirmTransferBtn.disabled = true;
-            currentTransferRecipientUid = null; // Invalida el destinatario
-        }
-    } else {
-        recipientNameDisplay.textContent = 'Usuario no encontrado.';
-        confirmTransferBtn.disabled = true;
-        currentTransferRecipientUid = null;
-        currentTransferRecipientDisplayName = '';
-    }
-});
-
-
-/**
- * Maneja el envío del formulario de transferencia.
- * En un entorno real, esto DEBERÍA SER UNA FUNCIÓN DE LA NUBE DE FIREBASE por seguridad.
- */
-transferForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideMessage();
-    hideTransactionStatus();
-
-    if (!currentTransferRecipientUid) {
-        showMessage('Por favor, selecciona un destinatario válido.', 'error');
-        return;
-    }
-
-    currentTransferAmount = parseFloat(transferAmount.value);
-    currentTransferCurrency = transferCurrency.value;
-
-    if (currentTransferAmount <= 0 || isNaN(currentTransferAmount)) {
-        showMessage('El monto a transferir debe ser un número positivo.', 'error');
-        return;
-    }
-
-    // Comprueba el saldo del remitente (currentBalanceUSD y currentBalanceDOP ya están actualizados por onSnapshot)
-    let senderBalance = currentTransferCurrency === 'USD' ? currentBalanceUSD : currentBalanceDOP;
-    if (currentTransferAmount > senderBalance) {
-        showMessage('Saldo insuficiente para realizar esta transferencia.', 'error');
-        closeModal(transferModal); // Cierra el modal en caso de error
-        return;
-    }
-
-    showMessage(`Iniciando transferencia de ${currentTransferAmount.toFixed(2)} ${currentTransferCurrency} a ${currentTransferRecipientDisplayName}... Por favor, espera 10 segundos.`, 'info');
-    closeModal(transferModal); // Cierra el modal inmediatamente
-    showTransactionStatus(`Transferencia a ${currentTransferRecipientDisplayName} en proceso... (10 segundos restantes)`);
-    transferForm.reset(); // Restablece los campos del formulario
-    recipientNameDisplay.textContent = ''; // Borra la visualización del nombre del destinatario
-    confirmTransferBtn.disabled = true; // Deshabilita el botón después del envío
-
-    // --- SIMULACIÓN DE 10 SEGUNDOS DE ESPERA ---
-    let countdown = 10; // 10 segundos
-    cancelOngoingTransferBtn.classList.remove('hidden'); // Muestra el botón de cancelar para la transferencia en curso
-
-    transferInterval = setInterval(() => {
-        countdown--;
-        if (countdown >= 0) {
-            transactionStatusText.textContent = `Transferencia a ${currentTransferRecipientDisplayName} en proceso... (${countdown} segundos restantes)`;
-        }
-
-        if (countdown <= 0) {
-            clearInterval(transferInterval);
-            transferInterval = null; // Borra el ID del intervalo
-            hideTransactionStatus(); // Oculta el mensaje de estado
-            performTransfer(currentUserId, currentTransferRecipientUid, currentTransferAmount, currentTransferCurrency, currentTransferRecipientDisplayName);
-        }
-    }, 1000); // Actualiza cada segundo
-});
-
-// Manejador del botón de cancelar transferencia en curso
-cancelOngoingTransferBtn.addEventListener('click', () => {
-    if (transferInterval) {
-        clearInterval(transferInterval);
-        transferInterval = null; // Borra el ID del intervalo
-        hideTransactionStatus();
-        showMessage('Transferencia cancelada.', 'info');
-        // Restablece cualquier estado relacionado con la transferencia
-        currentTransferRecipientUid = null;
-        currentTransferAmount = 0;
-        currentTransferCurrency = '';
-        currentTransferRecipientIdentifier = '';
-        currentTransferRecipientDisplayName = '';
-    }
-});
-
-
-/**
- * Ejecuta la lógica de transferencia real después del retraso.
- * En un entorno real, esto DEBERÍA SER UNA FUNCIÓN DE LA NUBE DE FIREBASE por seguridad.
- * @param {string} senderUid UID de Firebase del remitente.
- * @param {string} actualRecipientUid UID de Firebase del destinatario.
- * @param {number} amount Cantidad a transferir.
- * @param {string} currency Moneda de la transferencia (USD/DOP).
- * @param {string} recipientDisplayName El nombre que se muestra al usuario para el destinatario.
- */
-async function performTransfer(senderUid, actualRecipientUid, amount, currency, recipientDisplayName) {
-    try {
-        const senderProfileRef = doc(db, 'artifacts', appId, 'users', senderUid);
-        const recipientProfileRef = doc(db, 'artifacts', appId, 'users', actualRecipientUid);
-
-        // Obtener saldos actuales para la transacción (idealmente todo este bloque sería atómico en una función de la nube)
-        const senderSnap = await getDoc(senderProfileRef);
-        const recipientSnap = await getDoc(recipientProfileRef);
-
-        if (!senderSnap.exists() || !recipientSnap.exists()) {
-            showMessage('Error: No se encontraron los perfiles de remitente o destinatario para completar la transferencia.', 'error');
-            return; // No procede con la transferencia si no se encuentran los perfiles
-        }
-
-        const senderData = senderSnap.data();
-        const recipientData = recipientSnap.data();
-
-        let senderCurrentBalanceUSD = senderData.balanceUSD || 0;
-        let senderCurrentBalanceDOP = senderData.balanceDOP || 0;
-        let recipientCurrentBalanceUSD = recipientData.balanceUSD || 0;
-        let recipientCurrentBalanceDOP = recipientData.balanceDOP || 0;
-
-        // Convierte la cantidad a USD para el cálculo interno si la moneda es DOP
-        let amountInUSD = amount;
-        if (currency === 'DOP') {
-            amountInUSD = amount / USD_TO_DOP_RATE;
-        }
-
-        // Vuelve a verificar el saldo del remitente
-        if (senderCurrentBalanceUSD < amountInUSD) {
-            showMessage('Error: Saldo insuficiente para completar la transferencia (posiblemente ya gastado o error de concurrencia).', 'error');
+        if (!querySnapshotPhone.empty) {
+            showMessage('El número de teléfono ya está registrado. Por favor, usa uno diferente o inicia sesión.', 'error');
             return;
         }
 
-        // Actualiza el saldo del remitente
-        senderCurrentBalanceUSD -= amountInUSD;
-        senderCurrentBalanceDOP = senderCurrentBalanceUSD * USD_TO_DOP_RATE;
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        const userDisplayId = `${name.toLowerCase()}.${surname.toLowerCase()}`; // ID de usuario simplificado
 
-        // Actualiza el saldo del destinatario
-        recipientCurrentBalanceUSD += amountInUSD;
-        recipientCurrentBalanceDOP = recipientCurrentBalanceUSD * USD_TO_DOP_RATE;
-
-        // Realiza las actualizaciones en Firestore
-        await updateDoc(senderProfileRef, {
-            balanceUSD: senderCurrentBalanceUSD,
-            balanceDOP: senderCurrentBalanceDOP
+        await setDoc(doc(db, 'artifacts', appId, 'users', user.uid), {
+            name: name,
+            surname: surname,
+            age: age,
+            phoneNumber: phoneNumber, // Guarda el número de teléfono
+            email: email,
+            userDisplayId: userDisplayId, // Guarda el ID de usuario simplificado
+            balanceUSD: 0,
+            balanceDOP: 0,
+            isAdmin: false,
+            createdAt: serverTimestamp()
         });
+        showMessage('Registro exitoso. ¡Bienvenido a Banco Juvenil!', 'success');
+        registerForm.reset();
+        tempRegisterData = {}; // Limpia los datos temporales
+    } catch (error) {
+        console.error("Error de registro:", error);
+        if (error.code === 'auth/email-already-in-use') {
+            showMessage('El correo electrónico ya está en uso. Intenta iniciar sesión.', 'error');
+        } else {
+            showMessage('Error al registrar. Por favor, inténtalo de nuevo.', 'error');
+        }
+    }
+});
 
-        await updateDoc(recipientProfileRef, {
-            balanceUSD: recipientCurrentBalanceUSD,
-            balanceDOP: recipientCurrentBalanceDOP
-        });
+rejectRulesBtn.addEventListener('click', () => {
+    rulesConsentModal.classList.add('hidden');
+    tempRegisterData = {}; // Limpia los datos temporales si se rechazan las reglas
+    showMessage('Debes aceptar las reglas para registrarte.', 'error');
+});
 
-        // Registra la transacción en una colección pública
-        // Ruta: artifacts/{appId}/public/data/transactions
-        const newTransactionRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-            senderId: senderUid,
-            recipientId: actualRecipientUid,
+// --- NUEVA FUNCIONALIDAD: Recibir dinero de banco exterior ---
+receiveExternalMoneyBtn.addEventListener('click', () => {
+    receiveExternalMoneyModal.classList.remove('hidden');
+    receiveExternalMoneyForm.reset();
+});
+
+cancelReceiveExternalMoneyBtn.addEventListener('click', () => {
+    closeModal(receiveExternalMoneyModal);
+    receiveExternalMoneyForm.reset();
+});
+
+receiveExternalMoneyForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideMessage();
+    const senderName = externalSenderNameInput.value.trim();
+    const senderBank = externalSenderBankInput.value.trim();
+    const serialNumber = externalSerialNumberInput.value.trim();
+    const amount = parseFloat(externalDepositAmountInput.value);
+    const currency = externalDepositCurrencyInput.value;
+
+    if (!senderName || !senderBank || !serialNumber || isNaN(amount) || amount <= 0) {
+        showMessage('Por favor, completa todos los campos correctamente.', 'error');
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'pending_requests'), {
+            userId: currentUserId,
+            type: 'external_deposit',
+            senderName: senderName,
+            senderBank: senderBank,
+            serialNumber: serialNumber,
             amount: amount,
             currency: currency,
             timestamp: serverTimestamp(),
-            type: 'transfer',
-            status: 'completed',
-            description: `Transferencia a ${recipientDisplayName}`
+            status: 'pending'
         });
 
-        showMessage(`Transferencia de ${amount.toFixed(2)} ${currency} a ${recipientDisplayName} completada exitosamente.`, 'success');
-        // Los saldos se actualizarán automáticamente por el oyente onSnapshot
+        showMessage('Solicitud de depósito exterior enviada. Esperando aprobación del administrador.', 'success');
+        closeModal(receiveExternalMoneyModal);
+        receiveExternalMoneyForm.reset();
 
-        // Muestra el recibo para el remitente
-        const transactionDoc = await getDoc(newTransactionRef);
-        if (transactionDoc.exists()) {
-            showReceipt({ id: transactionDoc.id, ...transactionDoc.data() });
-        }
+        // Enviar notificación al administrador por WhatsApp
+        const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
+        const userData = userDocSnap.data();
+        const whatsappMessage = `
+            Nueva solicitud de depósito exterior pendiente:
+            Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
+            Remitente: ${senderName}
+            Banco: ${senderBank}
+            Número de Serie: ${serialNumber}
+            Monto: ${amount.toFixed(2)} ${currency}
+            Por favor, revisa y confirma.
+        `;
+        const encodedMessage = encodeURIComponent(whatsappMessage);
+        window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
 
     } catch (error) {
-        console.error("Error al completar la transferencia:", error);
-        showMessage('Error al procesar la transferencia. Por favor, inténtalo de nuevo.', 'error');
-    } finally {
-        // Asegura que el estado de la transacción esté oculto después de la finalización o el error
-        hideTransactionStatus();
+        console.error("Error al solicitar depósito exterior:", error);
+        showMessage('Error al procesar la solicitud de depósito exterior. Por favor, inténtalo de nuevo.', 'error');
     }
-}
+});
 
 
-// --- Funcionalidad de depósito de dinero ---
+// --- Funcionalidad del historial de usuario ---
+viewHistoryBtn.addEventListener('click', () => {
+    userHistoryModal.classList.remove('hidden');
+    loadUserHistory();
+});
 
-/**
- * Muestra el modal de depósito de dinero con un número de serie autogenerado.
- */
-depositMoneyBtn.addEventListener('click', () => {
-    depositSerialNumberInput.value = crypto.randomUUID().substring(0, 8).toUpperCase(); // Genera un ID único más corto
-    depositModal.classList.remove('hidden');
+closeUserHistoryModalBtn.addEventListener('click', () => {
+    closeModal(userHistoryModal);
+    // Desuscribirse del oyente cuando se cierra el modal
+    if (userHistoryUnsubscribe) {
+        userHistoryUnsubscribe();
+        userHistoryUnsubscribe = null;
+        console.log("Usuario: Desuscrito del oyente del historial al cerrar el modal.");
+    }
 });
 
 /**
- * Cierra el modal de depósito de dinero.
+ * Carga el historial de transacciones del usuario y lo muestra.
  */
+async function loadUserHistory() {
+    // Desuscribirse del oyente anterior si existe para evitar duplicados
+    if (userHistoryUnsubscribe) {
+        userHistoryUnsubscribe();
+        userHistoryUnsubscribe = null;
+    }
+
+    userHistoryTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando historial...</td></tr>';
+    if (!currentUserId) {
+        userHistoryTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-red-500 py-4">Inicia sesión para ver tu historial.</td></tr>';
+        return;
+    }
+
+    const transactionsCollectionRef = collection(db, 'artifacts', appId, 'transactions');
+    const q = query(transactionsCollectionRef,
+        where('usersInvolved', 'array-contains', currentUserId));
+
+    userHistoryUnsubscribe = onSnapshot(q, async (snapshot) => {
+        userHistoryTableBody.innerHTML = ''; // Importante: Vacía la tabla para evitar duplicados
+        if (snapshot.empty) {
+            userHistoryTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay historial de transacciones.</td></tr>';
+            return;
+        }
+
+        const transactions = [];
+        for (const docEntry of snapshot.docs) {
+            const transaction = docEntry.data();
+            transactions.push({ id: docEntry.id, ...transaction });
+        }
+
+        // Ordena las transacciones por marca de tiempo, la más reciente primero
+        transactions.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+
+        for (const transaction of transactions) {
+            const date = (transaction.timestamp && typeof transaction.timestamp.seconds !== 'undefined') ? new Date(transaction.timestamp.seconds * 1000).toLocaleString() : 'Fecha no disponible';
+            let typeDisplay = '';
+            let amountDisplay = '';
+            let currencyDisplay = '';
+            let detailsDisplay = '';
+
+            switch (transaction.type) {
+                case 'transfer':
+                    const otherUserId = transaction.senderId === currentUserId ? transaction.recipientId : transaction.senderId;
+                    const otherUserName = await getUserDisplayName(otherUserId);
+                    if (transaction.senderId === currentUserId) {
+                        typeDisplay = 'Transferencia Enviada';
+                        detailsDisplay = `Destinatario: ${otherUserName}`;
+                        amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)}`;
+                    } else {
+                        typeDisplay = 'Transferencia Recibida';
+                        detailsDisplay = `Remitente: ${otherUserName}`;
+                        amountDisplay = `+${(transaction.amount ?? 0).toFixed(2)}`;
+                    }
+                    currencyDisplay = transaction.currency;
+                    break;
+                case 'deposit':
+                    typeDisplay = 'Depósito';
+                    amountDisplay = `+${(transaction.amount ?? 0).toFixed(2)}`;
+                    currencyDisplay = transaction.currency;
+                    detailsDisplay = `Serie: ${transaction.serialNumber || 'N/A'}`;
+                    break;
+                case 'external_deposit': // NUEVO: Visualización para el usuario de un depósito exterior aprobado
+                    typeDisplay = 'Depósito Exterior';
+                    amountDisplay = `+${(transaction.amount ?? 0).toFixed(2)}`;
+                    currencyDisplay = transaction.currency;
+                    detailsDisplay = `Banco Origen: ${transaction.senderBank || 'N/A'}, Serie: ${transaction.serialNumber || 'N/A'}`;
+                    break;
+                case 'withdrawal':
+                    typeDisplay = 'Retiro';
+                    const totalWithdrawal = (transaction.amount ?? 0) + (transaction.feeAmount ?? 0);
+                    amountDisplay = `-${totalWithdrawal.toFixed(2)}`;
+                    currencyDisplay = transaction.currency;
+                    detailsDisplay = `Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
+                    break;
+                case 'online_purchase':
+                    typeDisplay = 'Compra Online';
+                    amountDisplay = `-${(transaction.totalAmountDeducted ?? 0).toFixed(2)}`;
+                    currencyDisplay = 'USD';
+                    detailsDisplay = `Cat: ${transaction.category || 'N/A'}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
+                    break;
+                case 'streaming_payment':
+                    typeDisplay = 'Pago Streaming';
+                    amountDisplay = `-${(transaction.totalAmountDeducted ?? 0).toFixed(2)}`;
+                    currencyDisplay = 'USD';
+                    detailsDisplay = `Servicio: ${transaction.service}, Cat: ${transaction.category || 'N/A'}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
+                    break;
+                case 'game_recharge':
+                    typeDisplay = 'Recarga de Juego';
+                    amountDisplay = `-${(transaction.totalAmountDeducted ?? 0).toFixed(2)}`;
+                    currencyDisplay = 'USD';
+                    detailsDisplay = `Juego: ${transaction.gameName}, ID Jugador: ${transaction.playerId}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
+                    break;
+                case 'savings_account_open':
+                    typeDisplay = 'Apertura Cta. Ahorro';
+                    amountDisplay = `-${(transaction.initialDepositAmount ?? 0).toFixed(2)}`;
+                    currencyDisplay = transaction.initialDepositCurrency;
+                    detailsDisplay = `Objetivo: ${transaction.savingsGoal}, ID Cta: ${transaction.savingsAccountId.substring(0, 8)}...`;
+                    break;
+                case 'deposit_to_savings':
+                    typeDisplay = 'Depósito a Ahorro';
+                    amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)}`;
+                    currencyDisplay = transaction.currency;
+                    detailsDisplay = `Objetivo: ${transaction.savingsGoal}, ID Cta: ${transaction.savingsAccountId.substring(0, 8)}...`;
+                    break;
+                case 'withdraw_from_savings':
+                    typeDisplay = 'Retiro de Ahorro';
+                    amountDisplay = `+${(transaction.amount ?? 0).toFixed(2)}`;
+                    currencyDisplay = transaction.currency;
+                    detailsDisplay = `Objetivo: ${transaction.savingsGoal}, ID Cta: ${transaction.savingsAccountId.substring(0, 8)}...`;
+                    break;
+                case 'delete_savings_account':
+                    typeDisplay = 'Eliminación Cta. Ahorro';
+                    amountDisplay = `+${(transaction.remainingBalanceTransferred ?? 0).toFixed(2)}`;
+                    currencyDisplay = 'USD';
+                    detailsDisplay = `Objetivo: ${transaction.savingsGoal}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
+                    break;
+                case 'automatic_savings_collection':
+                    typeDisplay = 'Cobro Automático Ahorro';
+                    amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)}`;
+                    currencyDisplay = transaction.currency;
+                    detailsDisplay = `Objetivo: ${transaction.savingsGoal}, ID Cta: ${transaction.savingsAccountId.substring(0, 8)}...`;
+                    break;
+                case 'savings_debt_payment':
+                    typeDisplay = 'Pago Deuda Ahorro';
+                    amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)}`;
+                    currencyDisplay = transaction.currency;
+                    detailsDisplay = `Objetivo: ${transaction.savingsGoal}, ID Deuda: ${transaction.debtId.substring(0, 8)}...`;
+                    break;
+                default:
+                    typeDisplay = transaction.type || 'Desconocido';
+                    amountDisplay = (transaction.amount ?? 0).toFixed(2);
+                    currencyDisplay = transaction.currency || 'N/A';
+                    detailsDisplay = 'N/A';
+            }
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${date}</td>
+                <td>${typeDisplay}</td>
+                <td class="text-right">${amountDisplay}</td>
+                <td>${currencyDisplay}</td>
+                <td>${detailsDisplay}</td>
+                <td>
+                    <button class="btn-info btn-sm view-receipt-btn" data-transaction-id="${transaction.id}">Ver Recibo</button>
+                </td>
+            `;
+            userHistoryTableBody.appendChild(row);
+        }
+    }, (error) => {
+        console.error("Error al cargar el historial del usuario:", error);
+        userHistoryTableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error al cargar el historial.</td></tr>`;
+    });
+}
+
+// --- Event Listeners del Dashboard ---
+
+// Alternar la visualización de la moneda
+toggleCurrencyBtn.addEventListener('click', () => {
+    showCurrencyUSD = !showCurrencyUSD;
+    updateBalanceDisplay();
+});
+
+// Botones de modales
+transferMoneyBtn.addEventListener('click', () => {
+    showSection(transferModal);
+    transferForm.reset();
+});
+cancelTransferModalBtn.addEventListener('click', () => {
+    closeModal(transferModal);
+    transferForm.reset();
+});
+
+depositMoneyBtn.addEventListener('click', () => {
+    showSection(depositModal);
+    depositForm.reset();
+});
 cancelDeposit.addEventListener('click', () => {
     closeModal(depositModal);
     depositForm.reset();
 });
 
-/**
- * Maneja el envío del formulario de depósito.
- * Las solicitudes se envían a pending_requests para la aprobación del administrador.
- */
-depositForm.addEventListener('submit', async (e) => {
+withdrawMoneyBtn.addEventListener('click', () => {
+    showSection(withdrawModal);
+    withdrawForm.reset();
+});
+cancelWithdraw.addEventListener('click', () => {
+    closeModal(withdrawModal);
+    withdrawForm.reset();
+});
+
+viewUserPendingRequestsBtn.addEventListener('click', () => {
+    userPendingRequestsModal.classList.remove('hidden');
+    loadUserPendingRequests(); // Cargar las solicitudes pendientes del usuario al abrir
+});
+closeUserPendingRequestsModalBtn.addEventListener('click', () => {
+    closeModal(userPendingRequestsModal);
+});
+
+closeReceiptModalBtn.addEventListener('click', () => {
+    closeModal(receiptModal);
+});
+
+// Delegación de eventos para el botón "Ver Recibo" en el historial de usuario
+userHistoryTableBody.addEventListener('click', async (event) => {
+    if (event.target.classList.contains('view-receipt-btn')) {
+        const transactionId = event.target.dataset.transactionId;
+        console.log("Buscando recibo para la transacción ID:", transactionId);
+        const transactionDocRef = doc(db, 'artifacts', appId, 'transactions', transactionId);
+        try {
+            const transactionDocSnap = await getDoc(transactionDocRef);
+            if (transactionDocSnap.exists()) {
+                const transactionData = transactionDocSnap.data();
+                transactionData.id = transactionId; // Agrega el ID al objeto de datos
+                showReceipt(transactionData);
+            } else {
+                showMessage("Recibo no encontrado.", "error");
+            }
+        } catch (error) {
+            console.error("Error al obtener el recibo:", error);
+            showMessage("Error al obtener el recibo.", "error");
+        }
+    }
+});
+
+
+// Botones del administrador
+if (adminFullHistoryBtn) {
+    adminFullHistoryBtn.addEventListener('click', () => {
+        showSection(adminFullHistoryModal);
+        loadAdminFullHistory();
+    });
+}
+if (closeAdminFullHistoryModalBtn) {
+    closeAdminFullHistoryModalBtn.addEventListener('click', () => {
+        closeModal(adminFullHistoryModal);
+    });
+}
+if (viewAdminPendingRequestsBtn) {
+    viewAdminPendingRequestsBtn.addEventListener('click', () => {
+        showSection(adminPendingRequestsModal);
+        loadAdminPendingRequests();
+    });
+}
+if (closeAdminPendingRequestsModalBtn) {
+    closeAdminPendingRequestsModalBtn.addEventListener('click', () => {
+        closeModal(adminPendingRequestsModal);
+        // Desuscribirse del oyente cuando se cierra el modal
+        if (adminPendingRequestsUnsubscribe) {
+            adminPendingRequestsUnsubscribe();
+            adminPendingRequestsUnsubscribe = null;
+            console.log("Admin: Desuscrito del oyente de solicitudes pendientes al cerrar el modal.");
+        }
+    });
+}
+// Botones de navegación
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+        signOut(auth)
+            .then(() => {
+                console.log('Sesión cerrada');
+                showSection(loginSection, registerSection, dashboardSection);
+                toggleTabs('login');
+                hideMessage();
+            })
+            .catch((error) => {
+                console.error("Error al cerrar sesión:", error);
+            });
+    });
+}
+
+// Botones de funciones
+if (onlineShoppingBtn) {
+    onlineShoppingBtn.addEventListener('click', () => {
+        showSection(onlineShoppingModal);
+        onlineShoppingForm.reset();
+    });
+}
+if (cancelOnlineShopping) {
+    cancelOnlineShopping.addEventListener('click', () => {
+        closeModal(onlineShoppingModal);
+    });
+}
+if (streamingPaymentBtn) {
+    streamingPaymentBtn.addEventListener('click', () => {
+        showSection(streamingPaymentModal);
+        streamingPaymentForm.reset();
+    });
+}
+if (cancelStreamingPayment) {
+    cancelStreamingPayment.addEventListener('click', () => {
+        closeModal(streamingPaymentModal);
+    });
+}
+if (gameRechargeBtn) {
+    gameRechargeBtn.addEventListener('click', () => {
+        showSection(gameRechargeModal);
+        gameRechargeForm.reset();
+    });
+}
+if (cancelGameRecharge) {
+    cancelGameRecharge.addEventListener('click', () => {
+        closeModal(gameRechargeModal);
+    });
+}
+if (viewFAQBtn) {
+    viewFAQBtn.addEventListener('click', () => {
+        showSection(faqModal);
+    });
+}
+if (closeFAQModalBtn) {
+    closeFAQModalBtn.addEventListener('click', () => {
+        closeModal(faqModal);
+    });
+}
+if (editProfileBtn) {
+    editProfileBtn.addEventListener('click', async () => {
+        await loadEditProfileData();
+        showSection(editProfileModal);
+    });
+}
+if (cancelEditProfileBtn) {
+    cancelEditProfileBtn.addEventListener('click', () => {
+        closeModal(editProfileModal);
+    });
+}
+if (changePasswordBtn) {
+    changePasswordBtn.addEventListener('click', () => {
+        showSection(changePasswordModal);
+        changePasswordForm.reset();
+    });
+}
+if (cancelChangePasswordBtn) {
+    cancelChangePasswordBtn.addEventListener('click', () => {
+        closeModal(changePasswordModal);
+    });
+}
+if (securityTipsBtn) {
+    securityTipsBtn.addEventListener('click', () => {
+        showSection(securityTipsModal);
+    });
+}
+if (closeSecurityTipsBtn) {
+    closeSecurityTipsBtn.addEventListener('click', () => {
+        closeModal(securityTipsModal);
+    });
+}
+if (aboutUsBtn) {
+    aboutUsBtn.addEventListener('click', () => {
+        showSection(aboutUsModal);
+    });
+}
+if (closeAboutUsBtn) {
+    closeAboutUsBtn.addEventListener('click', () => {
+        closeModal(aboutUsModal);
+    });
+}
+if (contactSupportBtn) {
+    contactSupportBtn.addEventListener('click', () => {
+        showSection(contactSupportModal);
+    });
+}
+if (closeContactSupportBtn) {
+    closeContactSupportBtn.addEventListener('click', () => {
+        closeModal(contactSupportModal);
+    });
+}
+if (openSavingsAccountBtn) {
+    openSavingsAccountBtn.addEventListener('click', () => {
+        showSection(openSavingsAccountModal);
+        savingsAccountForm.reset();
+    });
+}
+if (cancelOpenSavingsAccountBtn) {
+    cancelOpenSavingsAccountBtn.addEventListener('click', () => {
+        closeModal(openSavingsAccountModal);
+    });
+}
+if (viewSavingsAccountsBtn) {
+    viewSavingsAccountsBtn.addEventListener('click', () => {
+        showSection(viewSavingsAccountsModal);
+        loadUserSavingsAccounts();
+    });
+}
+if (closeViewSavingsAccountsBtn) {
+    closeViewSavingsAccountsBtn.addEventListener('click', () => {
+        closeModal(viewSavingsAccountsModal);
+    });
+}
+if (editAnnouncementsBtn) {
+    editAnnouncementsBtn.addEventListener('click', async () => {
+        await loadAnnouncementsForEdit();
+        showSection(editAnnouncementsModal);
+    });
+}
+if (cancelEditAnnouncementsBtn) {
+    cancelEditAnnouncementsBtn.addEventListener('click', () => {
+        closeModal(editAnnouncementsModal);
+    });
+}
+if (viewSavingsDebtsBtn) {
+    viewSavingsDebtsBtn.addEventListener('click', () => {
+        showSection(savingsDebtsModal);
+        loadUserSavingsDebts();
+    });
+}
+if (closeSavingsDebtsModalBtn) {
+    closeSavingsDebtsModalBtn.addEventListener('click', () => {
+        closeModal(savingsDebtsModal);
+        if (savingsDebtsUnsubscribe) {
+            savingsDebtsUnsubscribe();
+            savingsDebtsUnsubscribe = null;
+        }
+    });
+}
+if (viewAdminSavingsDebtsBtn) {
+    viewAdminSavingsDebtsBtn.addEventListener('click', () => {
+        showSection(adminSavingsDebtsModal);
+        loadAdminSavingsDebts();
+    });
+}
+if (closeAdminSavingsDebtsModalBtn) {
+    closeAdminSavingsDebtsModalBtn.addEventListener('click', () => {
+        closeModal(adminSavingsDebtsModal);
+        if (adminSavingsDebtsUnsubscribe) {
+            adminSavingsDebtsUnsubscribe();
+            adminSavingsDebtsUnsubscribe = null;
+        }
+    });
+}
+
+// --- Formularios de transacciones y perfiles ---
+
+// Envío del formulario de transferencia
+transferForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideMessage();
-    hideTransactionStatus();
+    const recipientIdentifier = transferRecipientIdInput.value.trim();
+    const amount = parseFloat(transferAmount.value);
+    const currency = transferCurrency.value;
 
-    const serialNumber = depositSerialNumberInput.value.trim();
-    const amount = parseFloat(depositAmount.value);
-    const currency = depositCurrency.value;
-
-    if (amount <= 0 || isNaN(amount)) {
-        showMessage('El monto debe ser un número positivo.', 'error');
+    if (!recipientIdentifier || isNaN(amount) || amount <= 0) {
+        showMessage('Por favor, ingresa un ID de destinatario y un monto válido.', 'error');
         return;
     }
-    if (!serialNumber) {
-        showMessage('Por favor, ingresa un número de serie único para tu depósito.', 'error');
+
+    if (currency === 'USD' && currentBalanceUSD < amount) {
+        showMessage('Saldo USD insuficiente para la transferencia.', 'error');
+        return;
+    }
+    if (currency === 'DOP' && currentBalanceDOP < amount) {
+        showMessage('Saldo DOP insuficiente para la transferencia.', 'error');
         return;
     }
 
     try {
-        // Comprueba si el usuario ya tiene un depósito pendiente (esta bandera específica es solo para depósitos)
-        const userDocRef = doc(db, 'artifacts', appId, 'users', currentUserId);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists() && userDocSnap.data().hasPendingDeposit) {
-             showMessage('Ya tienes un depósito pendiente de aprobación. No puedes solicitar otro.', 'error');
-             closeModal(depositModal);
-             depositForm.reset();
-             return;
+        let recipientUid = '';
+        let recipientDisplayName = '';
+
+        // Buscar al destinatario por userDisplayId, phoneNumber o email
+        const usersRef = collection(db, 'artifacts', appId, 'users');
+        let q;
+        if (recipientIdentifier.includes('@')) {
+            q = query(usersRef, where('email', '==', recipientIdentifier));
+        } else if (recipientIdentifier.startsWith('+')) {
+            q = query(usersRef, where('phoneNumber', '==', recipientIdentifier));
+        } else {
+            q = query(usersRef, where('userDisplayId', '==', recipientIdentifier));
         }
 
-        // Agrega la solicitud de depósito a una colección unificada 'pending_requests'
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            showMessage('Destinatario no encontrado. Verifica el ID de usuario, número de teléfono o correo electrónico.', 'error');
+            return;
+        }
+
+        const recipientDoc = querySnapshot.docs[0];
+        recipientUid = recipientDoc.id;
+        const recipientData = recipientDoc.data();
+        recipientDisplayName = `${recipientData.name} ${recipientData.surname}`;
+
+        if (recipientUid === currentUserId) {
+            showMessage('No puedes transferir dinero a ti mismo.', 'error');
+            return;
+        }
+
+        currentTransferRecipientUid = recipientUid;
+        currentTransferAmount = amount;
+        currentTransferCurrency = currency;
+        currentTransferRecipientIdentifier = recipientIdentifier;
+        currentTransferRecipientDisplayName = recipientDisplayName;
+
+        // Mostrar confirmación
+        recipientNameDisplay.textContent = `¿Confirmas la transferencia de ${amount.toFixed(2)} ${currency} a ${recipientDisplayName}?`;
+        transferForm.classList.add('hidden');
+        document.getElementById('transferConfirmation').classList.remove('hidden');
+
+    } catch (error) {
+        console.error("Error al buscar destinatario:", error);
+        showMessage('Error al buscar destinatario. Inténtalo de nuevo.', 'error');
+    }
+});
+
+// Confirmar transferencia
+confirmTransferBtn.addEventListener('click', async () => {
+    hideMessage();
+    showTransactionStatus('Transferencia en curso...');
+    closeModal(transferModal);
+    transferForm.classList.remove('hidden');
+    document.getElementById('transferConfirmation').classList.add('hidden');
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            const senderDocRef = doc(db, 'artifacts', appId, 'users', currentUserId);
+            const recipientDocRef = doc(db, 'artifacts', appId, 'users', currentTransferRecipientUid);
+
+            const senderDocSnap = await transaction.get(senderDocRef);
+            const recipientDocSnap = await transaction.get(recipientDocRef);
+
+            if (!senderDocSnap.exists() || !recipientDocSnap.exists()) {
+                throw "Documento de remitente o destinatario no encontrado.";
+            }
+
+            const senderData = senderDocSnap.data();
+            const recipientData = recipientDocSnap.data();
+
+            let newSenderBalanceUSD = senderData.balanceUSD;
+            let newSenderBalanceDOP = senderData.balanceDOP;
+            let newRecipientBalanceUSD = recipientData.balanceUSD;
+            let newRecipientBalanceDOP = recipientData.balanceDOP;
+
+            if (currentTransferCurrency === 'USD') {
+                if (newSenderBalanceUSD < currentTransferAmount) {
+                    throw "Saldo USD insuficiente.";
+                }
+                newSenderBalanceUSD -= currentTransferAmount;
+                newRecipientBalanceUSD += currentTransferAmount;
+            } else if (currentTransferCurrency === 'DOP') {
+                if (newSenderBalanceDOP < currentTransferAmount) {
+                    throw "Saldo DOP insuficiente.";
+                }
+                newSenderBalanceDOP -= currentTransferAmount;
+                newRecipientBalanceDOP += currentTransferAmount;
+            }
+
+            transaction.update(senderDocRef, {
+                balanceUSD: newSenderBalanceUSD,
+                balanceDOP: newSenderBalanceDOP
+            });
+            transaction.update(recipientDocRef, {
+                balanceUSD: newRecipientBalanceUSD,
+                balanceDOP: newRecipientBalanceDOP
+            });
+
+            // Registrar la transacción
+            const newTransactionDocRef = doc(collection(db, 'artifacts', appId, 'transactions'));
+            transaction.set(newTransactionDocRef, {
+                type: 'transfer',
+                senderId: currentUserId,
+                recipientId: currentTransferRecipientUid,
+                usersInvolved: [currentUserId, currentTransferRecipientUid], // Ambos usuarios involucrados
+                amount: currentTransferAmount,
+                currency: currentTransferCurrency,
+                timestamp: serverTimestamp(),
+                status: 'completed'
+            });
+        });
+
+        showMessage('Transferencia realizada exitosamente.', 'success');
+        transferForm.reset();
+        hideTransactionStatus();
+    } catch (error) {
+        console.error("Error al realizar la transferencia:", error);
+        showMessage(`Error en la transferencia: ${error}`, 'error');
+        hideTransactionStatus();
+    }
+});
+
+// Cancelar transferencia en curso
+cancelOngoingTransferBtn.addEventListener('click', () => {
+    if (transferInterval) {
+        clearInterval(transferInterval);
+        transferInterval = null;
+    }
+    hideTransactionStatus();
+    showMessage('Transferencia cancelada.', 'info');
+});
+
+// Envío del formulario de depósito
+depositForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideMessage();
+    const serialNumber = depositSerialNumberInput.value.trim();
+    const amount = parseFloat(depositAmount.value);
+    const currency = depositCurrency.value;
+
+    if (!serialNumber || isNaN(amount) || amount <= 0) {
+        showMessage('Por favor, completa el número de serie y un monto válido.', 'error');
+        return;
+    }
+
+    try {
+        // Verificar si ya hay una solicitud de depósito pendiente para este usuario
+        const pendingDepositsQuery = query(
+            collection(db, 'artifacts', appId, 'public', 'pending_requests'),
+            where('userId', '==', currentUserId),
+            where('type', '==', 'deposit'),
+            where('status', '==', 'pending')
+        );
+        const existingPendingDeposits = await getDocs(pendingDepositsQuery);
+
+        if (!existingPendingDeposits.empty) {
+            showMessage('Ya tienes una solicitud de depósito pendiente. Por favor, espera a que sea aprobada antes de hacer otra.', 'error');
+            return;
+        }
+
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'pending_requests'), {
             userId: currentUserId,
-            type: 'deposit', // Indica el tipo de solicitud
+            type: 'deposit',
             serialNumber: serialNumber,
             amount: amount,
             currency: currency,
             timestamp: serverTimestamp(),
-            status: 'pending' // Estado para la aprobación del administrador
+            status: 'pending'
         });
 
-        // Actualiza el perfil del usuario para marcar que tiene un depósito pendiente
-        await updateDoc(userDocRef, {
-            hasPendingDeposit: true
-        });
-
-        showMessage(`Solicitud de depósito de ${amount.toFixed(2)} ${currency} con número de serie ${serialNumber} enviada. Esperando aprobación del banco.`, 'success');
+        showMessage('Solicitud de depósito enviada. Esperando aprobación del administrador.', 'success');
         closeModal(depositModal);
         depositForm.reset();
 
-        // Envía un mensaje de WhatsApp al administrador
+        // Enviar notificación al administrador por WhatsApp
+        const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
         const userData = userDocSnap.data();
         const whatsappMessage = `
-        Nueva solicitud de depósito pendiente:
-        Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
-        Monto: ${amount.toFixed(2)} ${currency}
-        Número de Serie: ${serialNumber}
-        Por favor, revisa y confirma.
+            Nueva solicitud de depósito pendiente:
+            Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
+            Monto: ${amount.toFixed(2)} ${currency}
+            Número de Serie: ${serialNumber}
+            Por favor, revisa y confirma.
         `;
         const encodedMessage = encodeURIComponent(whatsappMessage);
         window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
 
     } catch (error) {
         console.error("Error al solicitar depósito:", error);
-        showMessage('Error al procesar la solicitud de depósito. Inténtalo de nuevo.', 'error');
+        showMessage('Error al procesar la solicitud de depósito. Por favor, inténtalo de nuevo.', 'error');
     }
 });
 
-// --- Funcionalidad de retiro de dinero ---
-
-/**
- * Muestra el modal de retiro de dinero.
- */
-withdrawMoneyBtn.addEventListener('click', () => {
-    withdrawModal.classList.remove('hidden');
-});
-
-/**
- * Cierra el modal de retiro de dinero.
- */
-cancelWithdraw.addEventListener('click', () => {
-    closeModal(withdrawModal);
-    withdrawForm.reset();
-});
-
-/**
- * Maneja el envío del formulario de retiro.
- * Las solicitudes se envían a pending_requests para la aprobación del administrador.
- */
+// Envío del formulario de retiro
 withdrawForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideMessage();
-    hideTransactionStatus();
-
     const amount = parseFloat(withdrawAmount.value);
     const currency = withdrawCurrency.value;
 
-    if (amount <= 0 || isNaN(amount)) {
-        showMessage('El monto a retirar debe ser un número positivo.', 'error');
+    if (isNaN(amount) || amount <= 0) {
+        showMessage('Por favor, ingresa un monto válido.', 'error');
         return;
     }
 
-    // Calcula el total estimado incluyendo la tarifa para mostrar
     let amountInUSD = amount;
     if (currency === 'DOP') {
         amountInUSD = amount / USD_TO_DOP_RATE;
     }
-    const estimatedFeeInUSD = amountInUSD * WITHDRAWAL_FEE_RATE;
-    const totalRequiredForWithdrawalInUSD = amountInUSD + estimatedFeeInUSD;
 
-    // Comprueba si el saldo actual es suficiente para la estimación (verificación final en la confirmación)
-    if (currentBalanceUSD < totalRequiredForWithdrawalInUSD) {
-        showMessage(`Saldo insuficiente para cubrir el retiro de ${amount.toFixed(2)} ${currency} y la tarifa del 4%. Necesitas $${totalRequiredForWithdrawalInUSD.toFixed(2)} USD.`, 'error');
+    const estimatedFee = amountInUSD * WITHDRAWAL_FEE_RATE;
+    const totalDeduction = amountInUSD + estimatedFee;
+
+    if (currentBalanceUSD < totalDeduction) {
+        showMessage(`Saldo insuficiente. Necesitas $${totalDeduction.toFixed(2)} USD (incluyendo tarifa de $${estimatedFee.toFixed(2)} USD).`, 'error');
         return;
     }
 
     try {
-        // Agrega la solicitud de retiro a una colección unificada 'pending_requests'
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
+        // Verificar si ya hay una solicitud de retiro pendiente para este usuario
+        const pendingWithdrawalsQuery = query(
+            collection(db, 'artifacts', appId, 'public', 'pending_requests'),
+            where('userId', '==', currentUserId),
+            where('type', '==', 'withdrawal'),
+            where('status', '==', 'pending')
+        );
+        const existingPendingWithdrawals = await getDocs(pendingWithdrawalsQuery);
+
+        if (!existingPendingWithdrawals.empty) {
+            showMessage('Ya tienes una solicitud de retiro pendiente. Por favor, espera a que sea aprobada antes de hacer otra.', 'error');
+            return;
+        }
+
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'pending_requests'), {
             userId: currentUserId,
-            type: 'withdrawal', // Indica el tipo de solicitud
-            amount: amount,
+            type: 'withdrawal',
+            amount: amount, // Monto que el usuario quiere retirar
             currency: currency,
+            estimatedFee: estimatedFee, // Tarifa estimada en USD
+            totalDeduction: totalDeduction, // Monto total a deducir en USD
             timestamp: serverTimestamp(),
-            status: 'pending', // Estado para la aprobación del administrador
-            estimatedFee: estimatedFeeInUSD // Almacena la tarifa estimada para la revisión del administrador
+            status: 'pending'
         });
 
-        showMessage(`Solicitud de retiro de ${amount.toFixed(2)} ${currency} enviada. Esperando aprobación del banco. Se aplicará una tarifa del 4% al confirmar.`, 'success');
+        showMessage('Solicitud de retiro enviada. Esperando aprobación del administrador.', 'success');
         closeModal(withdrawModal);
         withdrawForm.reset();
 
-        // Envía un mensaje de WhatsApp al administrador
+        // Enviar notificación al administrador por WhatsApp
         const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
         const userData = userDocSnap.data();
         const whatsappMessage = `
-        Nueva solicitud de retiro pendiente:
-        Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
-        Monto: ${amount.toFixed(2)} ${currency}
-        Tarifa estimada (4%): $${estimatedFeeInUSD.toFixed(2)} USD
-        Por favor, revisa y confirma.
+            Nueva solicitud de retiro pendiente:
+            Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
+            Monto: ${amount.toFixed(2)} ${currency}
+            Tarifa estimada: ${estimatedFee.toFixed(2)} USD
+            Total a deducir: ${totalDeduction.toFixed(2)} USD
+            Por favor, revisa y confirma.
         `;
         const encodedMessage = encodeURIComponent(whatsappMessage);
         window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
 
     } catch (error) {
         console.error("Error al solicitar retiro:", error);
-        showMessage('Error al procesar la solicitud de retiro. Inténtalo de nuevo.', 'error');
+        showMessage('Error al procesar la solicitud de retiro. Por favor, inténtalo de nuevo.', 'error');
     }
 });
 
-// --- Lógica de compras en línea ---
-onlineShoppingBtn.addEventListener('click', () => {
-    onlineShoppingModal.classList.remove('hidden');
-    onlineShoppingForm.reset();
-    shoppingFeeDisplay.textContent = '$0.00 USD';
-    shoppingTotalDisplay.textContent = '$0.00 USD';
-});
-
-cancelOnlineShopping.addEventListener('click', () => {
-    closeModal(onlineShoppingModal);
-    onlineShoppingForm.reset();
-});
-
-shoppingAmountInput.addEventListener('input', updateOnlineShoppingCalculation);
-shoppingCurrencyInput.addEventListener('change', updateOnlineShoppingCalculation);
-
-function updateOnlineShoppingCalculation() {
-    const amount = parseFloat(shoppingAmountInput.value);
-    const currency = shoppingCurrencyInput.value;
-
-    if (isNaN(amount) || amount <= 0) {
-        shoppingFeeDisplay.textContent = `$0.00 USD`;
-        shoppingTotalDisplay.textContent = `$0.00 USD`;
-        return;
-    }
-
-    let amountInUSD = amount;
-    if (currency === 'DOP') {
-        amountInUSD = amount / USD_TO_DOP_RATE;
-    }
-
-    const feeAmount = amountInUSD * COMMISSION_RATE;
-    const totalAmount = amountInUSD + feeAmount; // Esto es lo que el usuario *pagará* después de la confirmación del administrador
-
-    shoppingFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
-    shoppingTotalDisplay.textContent = `$${totalAmount.toFixed(2)} USD`;
-}
-
+// Envío del formulario de compras en línea
 onlineShoppingForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideMessage();
-
     const productAmount = parseFloat(shoppingAmountInput.value);
     const productCurrency = shoppingCurrencyInput.value;
     const productLinks = productLinksInput.value.trim();
-    const shoppingCategory = shoppingCategoryInput.value; // Obtener categoría
+    const category = shoppingCategoryInput.value;
 
-    if (isNaN(productAmount) || productAmount <= 0) {
-        showMessage('Por favor, ingresa un monto estimado válido para los productos.', 'error');
+    if (isNaN(productAmount) || productAmount <= 0 || !productLinks || !category) {
+        showMessage('Por favor, completa todos los campos correctamente.', 'error');
         return;
     }
-    if (!productLinks) {
-        showMessage('Por favor, ingresa al menos un enlace de producto.', 'error');
-        return;
-    }
-    if (!shoppingCategory) {
-        showMessage('Por favor, selecciona una categoría para la compra.', 'error');
-        return;
-    }
-
 
     let amountInUSD = productAmount;
     if (productCurrency === 'DOP') {
         amountInUSD = productAmount / USD_TO_DOP_RATE;
     }
-
     const feeAmount = amountInUSD * COMMISSION_RATE;
-    const totalToDeductInUSD = amountInUSD + feeAmount; // Este es el monto total que el usuario pagará
+    const totalAmountToDeduct = amountInUSD + feeAmount;
+
+    if (currentBalanceUSD < totalAmountToDeduct) {
+        showMessage(`Saldo insuficiente. Necesitas $${totalAmountToDeduct.toFixed(2)} USD (incluyendo tarifa de $${feeAmount.toFixed(2)} USD).`, 'error');
+        return;
+    }
 
     try {
-        // Agrega la solicitud de compra en línea a 'pending_requests'
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'pending_requests'), {
             userId: currentUserId,
             type: 'online_purchase',
             productAmount: productAmount,
             productCurrency: productCurrency,
             productLinks: productLinks,
-            feeAmount: feeAmount, // Almacena la tarifa calculada
-            totalAmountToDeduct: totalToDeductInUSD, // Almacena el total a deducir
-            category: shoppingCategory, // Almacena la categoría
+            category: category,
+            feeAmount: feeAmount,
+            totalAmountToDeduct: totalAmountToDeduct,
             timestamp: serverTimestamp(),
             status: 'pending'
         });
 
-        showMessage('Solicitud de compra por internet enviada. Esperando aprobación del administrador. El dinero se deducirá al confirmar.', 'info');
+        showMessage('Solicitud de compra en línea enviada. Esperando aprobación del administrador.', 'success');
         closeModal(onlineShoppingModal);
         onlineShoppingForm.reset();
 
-        // Envía un mensaje de WhatsApp al administrador
+        // Enviar notificación al administrador por WhatsApp
         const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
         const userData = userDocSnap.data();
         const whatsappMessage = `
-        Nueva solicitud de compra online pendiente:
-        Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
-        Monto de productos: ${productAmount.toFixed(2)} ${productCurrency}
-        Tarifa (3%): $${feeAmount.toFixed(2)} USD
-        TOTAL A DEDUCIR: $${totalToDeductInUSD.toFixed(2)} USD (al confirmar)
-        Categoría: ${shoppingCategory}
-        Enlaces de productos:
-        ${productLinks}
-        Por favor, revisa y confirma.
+            Nueva solicitud de compra online pendiente:
+            Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
+            Monto Productos: ${productAmount.toFixed(2)} ${productCurrency}
+            Categoría: ${category}
+            Enlaces: ${productLinks.substring(0, 100)}...
+            Total a deducir: ${totalAmountToDeduct.toFixed(2)} USD
+            Por favor, revisa y confirma.
         `;
         const encodedMessage = encodeURIComponent(whatsappMessage);
         window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
 
     } catch (error) {
-        console.error("Error al solicitar compra online:", error);
-        showMessage('Error al procesar la solicitud de compra online. Por favor, inténtalo de nuevo.', 'error');
+        console.error("Error al solicitar compra en línea:", error);
+        showMessage('Error al procesar la solicitud de compra en línea. Por favor, inténtalo de nuevo.', 'error');
     }
 });
 
-// --- Lógica de pago de streaming ---
-streamingPaymentBtn.addEventListener('click', () => {
-    streamingPaymentModal.classList.remove('hidden');
-    streamingPaymentForm.reset();
-    streamingFeeDisplay.textContent = '$0.00 USD';
-    streamingTotalDisplay.textContent = '$0.00 USD';
-});
-
-cancelStreamingPayment.addEventListener('click', () => {
-    closeModal(streamingPaymentModal);
-    streamingPaymentForm.reset();
-});
-
-streamingAmountInput.addEventListener('input', updateStreamingPaymentCalculation);
-streamingCurrencyInput.addEventListener('change', updateStreamingPaymentCalculation);
-
-function updateStreamingPaymentCalculation() {
-    const amount = parseFloat(streamingAmountInput.value);
-    const currency = streamingCurrencyInput.value;
-
-    if (isNaN(amount) || amount <= 0) {
-        streamingFeeDisplay.textContent = `$0.00 USD`;
-        streamingTotalDisplay.textContent = `$0.00 USD`;
-        return;
-    }
-
-    let amountInUSD = amount;
-    if (currency === 'DOP') {
-        amountInUSD = amount / USD_TO_DOP_RATE;
-    }
-
-    const feeAmount = amountInUSD * COMMISSION_RATE;
-    const totalAmount = amountInUSD + feeAmount; // Esto es lo que el usuario *pagará* después de la confirmación del administrador
-
-    streamingFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
-    streamingTotalDisplay.textContent = `$${totalAmount.toFixed(2)} USD`;
-}
-
+// Envío del formulario de pago de streaming
 streamingPaymentForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideMessage();
-
-    const service = streamingServiceInput.value;
+    const service = streamingServiceInput.value.trim();
     const accountIdentifier = streamingAccountIdentifierInput.value.trim();
     const subscriptionAmount = parseFloat(streamingAmountInput.value);
     const subscriptionCurrency = streamingCurrencyInput.value;
-    const streamingCategory = streamingCategoryInput.value; // Obtener categoría
+    const category = streamingCategoryInput.value;
 
-    if (!service || !accountIdentifier || isNaN(subscriptionAmount) || subscriptionAmount <= 0) {
-        showMessage('Por favor, completa todos los campos para el pago del servicio de streaming.', 'error');
-        return;
-    }
-    if (!streamingCategory) {
-        showMessage('Por favor, selecciona una categoría para el servicio de streaming.', 'error');
+    if (!service || !accountIdentifier || isNaN(subscriptionAmount) || subscriptionAmount <= 0 || !category) {
+        showMessage('Por favor, completa todos los campos correctamente.', 'error');
         return;
     }
 
@@ -1543,147 +1632,113 @@ streamingPaymentForm.addEventListener('submit', async (e) => {
     if (subscriptionCurrency === 'DOP') {
         amountInUSD = subscriptionAmount / USD_TO_DOP_RATE;
     }
-
     const feeAmount = amountInUSD * COMMISSION_RATE;
-    const totalToDeductInUSD = amountInUSD + feeAmount; // Este es el monto total que el usuario pagará
+    const totalAmountToDeduct = amountInUSD + feeAmount;
+
+    if (currentBalanceUSD < totalAmountToDeduct) {
+        showMessage(`Saldo insuficiente. Necesitas $${totalAmountToDeduct.toFixed(2)} USD (incluyendo tarifa de $${feeAmount.toFixed(2)} USD).`, 'error');
+        return;
+    }
 
     try {
-        // Agrega la solicitud de pago de streaming a 'pending_requests'
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'pending_requests'), {
             userId: currentUserId,
             type: 'streaming_payment',
             service: service,
             accountIdentifier: accountIdentifier,
             subscriptionAmount: subscriptionAmount,
             subscriptionCurrency: subscriptionCurrency,
+            category: category,
             feeAmount: feeAmount,
-            totalAmountToDeduct: totalToDeductInUSD,
-            category: streamingCategory, // Almacena la categoría
+            totalAmountToDeduct: totalAmountToDeduct,
             timestamp: serverTimestamp(),
             status: 'pending'
         });
 
-        showMessage('Solicitud de pago de servicio de streaming enviada. Esperando aprobación del administrador. El dinero se deducirá al confirmar.', 'info');
+        showMessage('Solicitud de pago de streaming enviada. Esperando aprobación del administrador.', 'success');
         closeModal(streamingPaymentModal);
         streamingPaymentForm.reset();
 
-        // Envía un mensaje de WhatsApp al administrador
+        // Enviar notificación al administrador por WhatsApp
         const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
         const userData = userDocSnap.data();
         const whatsappMessage = `
-        Nueva solicitud de pago de streaming pendiente:
-        Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
-        Servicio: ${service}
-        Cuenta: ${accountIdentifier}
-        Monto Suscripción: ${subscriptionAmount.toFixed(2)} ${subscriptionCurrency}
-        Tarifa (3%): $${feeAmount.toFixed(2)} USD
-        TOTAL A DEDUCIR: $${totalToDeductInUSD.toFixed(2)} USD (al confirmar)
-        Categoría: ${streamingCategory}
-        Por favor, revisa y confirma.
+            Nueva solicitud de pago de streaming pendiente:
+            Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
+            Servicio: ${service}
+            Cuenta: ${accountIdentifier}
+            Monto Suscripción: ${subscriptionAmount.toFixed(2)} ${subscriptionCurrency}
+            Categoría: ${category}
+            Total a deducir: ${totalAmountToDeduct.toFixed(2)} USD
+            Por favor, revisa y confirma.
         `;
         const encodedMessage = encodeURIComponent(whatsappMessage);
         window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
 
     } catch (error) {
         console.error("Error al solicitar pago de streaming:", error);
-        showMessage('Error al procesar el pago de streaming. Por favor, inténtalo de nuevo.', 'error');
+        showMessage('Error al procesar la solicitud de pago de streaming. Por favor, inténtalo de nuevo.', 'error');
     }
 });
 
-// --- NUEVO: Lógica de recarga de juegos ---
-gameRechargeBtn.addEventListener('click', () => {
-    gameRechargeModal.classList.remove('hidden');
-    gameRechargeForm.reset();
-    gameRechargeFeeDisplay.textContent = '$0.00 USD';
-    gameRechargeTotalDisplay.textContent = '$0.00 USD';
-});
-
-cancelGameRecharge.addEventListener('click', () => {
-    closeModal(gameRechargeModal);
-    gameRechargeForm.reset();
-});
-
-rechargeAmountInput.addEventListener('input', updateGameRechargeCalculation);
-rechargeCurrencyInput.addEventListener('change', updateGameRechargeCalculation);
-
-function updateGameRechargeCalculation() {
-    const amount = parseFloat(rechargeAmountInput.value);
-    const currency = rechargeCurrencyInput.value;
-
-    if (isNaN(amount) || amount <= 0) {
-        gameRechargeFeeDisplay.textContent = `$0.00 USD`;
-        gameRechargeTotalDisplay.textContent = `$0.00 USD`;
-        return;
-    }
-
-    let amountInUSD = amount;
-    if (currency === 'DOP') {
-        amountInUSD = amount / USD_TO_DOP_RATE;
-    }
-
-    const feeAmount = amountInUSD * COMMISSION_RATE;
-    const totalAmount = amountInUSD + feeAmount; // Esto es lo que el usuario *pagará* después de la confirmación del administrador
-
-    gameRechargeFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
-    gameRechargeTotalDisplay.textContent = `$${totalAmount.toFixed(2)} USD`;
-}
-
+// Envío del formulario de recarga de juegos
 gameRechargeForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideMessage();
-
-    const gameName = gameNameInput.value;
+    const gameName = gameNameInput.value.trim();
     const playerId = playerIdInput.value.trim();
     const rechargeAmount = parseFloat(rechargeAmountInput.value);
     const rechargeCurrency = rechargeCurrencyInput.value;
-    const gameRechargeCategory = gameRechargeCategoryInput.value;
+    const category = gameRechargeCategoryInput.value;
 
-    if (!gameName || !playerId || isNaN(rechargeAmount) || rechargeAmount <= 0 || !gameRechargeCategory) {
-        showMessage('Por favor, completa todos los campos para la recarga del juego.', 'error');
+    if (!gameName || !playerId || isNaN(rechargeAmount) || rechargeAmount <= 0 || !category) {
+        showMessage('Por favor, completa todos los campos correctamente.', 'error');
         return;
     }
 
     let amountInUSD = rechargeAmount;
     if (rechargeCurrency === 'DOP') {
-        amountInUSD = amount / USD_TO_DOP_RATE;
+        amountInUSD = rechargeAmount / USD_TO_DOP_RATE;
+    }
+    const feeAmount = amountInUSD * COMMISSION_RATE;
+    const totalAmountToDeduct = amountInUSD + feeAmount;
+
+    if (currentBalanceUSD < totalAmountToDeduct) {
+        showMessage(`Saldo insuficiente. Necesitas $${totalAmountToDeduct.toFixed(2)} USD (incluyendo tarifa de $${feeAmount.toFixed(2)} USD).`, 'error');
+        return;
     }
 
-    const feeAmount = amountInUSD * COMMISSION_RATE;
-    const totalToDeductInUSD = amountInUSD + feeAmount; // Este es el monto total que el usuario pagará
-
     try {
-        // Agrega la solicitud de recarga de juegos a 'pending_requests'
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'pending_requests'), {
             userId: currentUserId,
             type: 'game_recharge',
             gameName: gameName,
             playerId: playerId,
             rechargeAmount: rechargeAmount,
             rechargeCurrency: rechargeCurrency,
+            category: category,
             feeAmount: feeAmount,
-            totalAmountToDeduct: totalToDeductInUSD,
-            category: gameRechargeCategory,
+            totalAmountToDeduct: totalAmountToDeduct,
             timestamp: serverTimestamp(),
             status: 'pending'
         });
 
-        showMessage('Solicitud de recarga de juego enviada. Esperando aprobación del administrador. El dinero se deducirá al confirmar.', 'info');
+        showMessage('Solicitud de recarga de juego enviada. Esperando aprobación del administrador.', 'success');
         closeModal(gameRechargeModal);
         gameRechargeForm.reset();
 
-        // Envía un mensaje de WhatsApp al administrador
+        // Enviar notificación al administrador por WhatsApp
         const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
         const userData = userDocSnap.data();
         const whatsappMessage = `
-        Nueva solicitud de recarga de juego pendiente:
-        Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
-        Juego: ${gameName}
-        ID de Jugador: ${playerId}
-        Monto Recarga: ${rechargeAmount.toFixed(2)} ${rechargeCurrency}
-        Tarifa (3%): $${feeAmount.toFixed(2)} USD
-        TOTAL A DEDUCIR: $${totalToDeductInUSD.toFixed(2)} USD (al confirmar)
-        Tipo de Recarga: ${gameRechargeCategory}
-        Por favor, revisa y confirma.
+            Nueva solicitud de recarga de juego pendiente:
+            Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
+            Juego: ${gameName}
+            ID Jugador: ${playerId}
+            Monto Recarga: ${rechargeAmount.toFixed(2)} ${rechargeCurrency}
+            Tipo: ${category}
+            Total a deducir: ${totalAmountToDeduct.toFixed(2)} USD
+            Por favor, revisa y confirma.
         `;
         const encodedMessage = encodeURIComponent(whatsappMessage);
         window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
@@ -1694,37 +1749,150 @@ gameRechargeForm.addEventListener('submit', async (e) => {
     }
 });
 
+// Envío del formulario de apertura de cuenta de ahorro
+savingsAccountForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideMessage();
+    const savingsGoal = savingsGoalInput.value.trim();
+    const initialDepositAmount = parseFloat(initialDepositAmountInput.value);
+    const initialDepositCurrency = initialDepositCurrencyInput.value;
+    const preferredSavingsFrequency = preferredSavingsFrequencyInput.value;
+    const periodicContributionAmount = parseFloat(periodicContributionAmountInput.value);
+    const savingsEndDate = savingsEndDateInput.value; // Formato YYYY-MM-DD
 
-// --- Funcionalidad de solicitudes pendientes del administrador (Unificado) ---
+    if (!savingsGoal || isNaN(initialDepositAmount) || initialDepositAmount < 0 || isNaN(periodicContributionAmount) || periodicContributionAmount < 0 || !preferredSavingsFrequency || !savingsEndDate) {
+        showMessage('Por favor, completa todos los campos de la cuenta de ahorro correctamente.', 'error');
+        return;
+    }
 
-viewAdminPendingRequestsBtn.addEventListener('click', () => {
-    adminPendingRequestsModal.classList.remove('hidden');
-    loadAdminPendingRequests();
-});
+    let initialDepositAmountInUSD = initialDepositAmount;
+    if (initialDepositCurrency === 'DOP') {
+        initialDepositAmountInUSD = initialDepositAmount / USD_TO_DOP_RATE;
+    }
 
-closeAdminPendingRequestsModalBtn.addEventListener('click', () => {
-    closeModal(adminPendingRequestsModal);
-    // Desuscribirse del oyente cuando se cierra el modal
-    if (adminPendingRequestsUnsubscribe) {
-        adminPendingRequestsUnsubscribe();
-        adminPendingRequestsUnsubscribe = null;
-        console.log("Admin: Desuscrito del oyente de solicitudes pendientes al cerrar el modal.");
+    if (currentBalanceUSD < initialDepositAmountInUSD) {
+        showMessage(`Saldo insuficiente en tu cuenta principal para el depósito inicial. Necesitas $${initialDepositAmountInUSD.toFixed(2)} USD.`, 'error');
+        return;
+    }
+
+    const startDate = new Date(); // La fecha de inicio es ahora
+    const endDateObj = new Date(savingsEndDate);
+
+    if (endDateObj <= startDate) {
+        showMessage('La fecha de finalización debe ser posterior a la fecha actual.', 'error');
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'pending_requests'), {
+            userId: currentUserId,
+            type: 'savings_account_open',
+            savingsGoal: savingsGoal,
+            initialDepositAmount: initialDepositAmount,
+            initialDepositCurrency: initialDepositCurrency,
+            preferredSavingsFrequency: preferredSavingsFrequency,
+            periodicContributionAmount: periodicContributionAmount,
+            startDate: startDate, // Guarda como objeto Date
+            endDate: savingsEndDate, // Guarda como string para visualización
+            timestamp: serverTimestamp(),
+            status: 'pending'
+        });
+
+        showMessage('Solicitud para abrir cuenta de ahorro enviada. Esperando aprobación del administrador.', 'success');
+        closeModal(openSavingsAccountModal);
+        savingsAccountForm.reset();
+
+        // Enviar notificación al administrador por WhatsApp
+        const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
+        const userData = userDocSnap.data();
+        const whatsappMessage = `
+            Nueva solicitud de apertura de cuenta de ahorro pendiente:
+            Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
+            Objetivo: ${savingsGoal}
+            Depósito Inicial: ${initialDepositAmount.toFixed(2)} ${initialDepositCurrency}
+            Frecuencia: ${preferredSavingsFrequency}
+            Cuota Periódica: ${periodicContributionAmount.toFixed(2)} USD
+            Fecha Fin: ${savingsEndDate}
+            Por favor, revisa y confirma.
+        `;
+        const encodedMessage = encodeURIComponent(whatsappMessage);
+        window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
+
+    } catch (error) {
+        console.error("Error al solicitar apertura de cuenta de ahorro:", error);
+        showMessage('Error al procesar la solicitud de apertura de cuenta de ahorro. Por favor, inténtalo de nuevo.', 'error');
     }
 });
+
+
+// Actualiza el precio total al cambiar la cantidad o la moneda para compras en línea
+onlineShoppingForm.addEventListener('input', () => {
+    const productAmount = parseFloat(shoppingAmountInput.value);
+    const productCurrency = shoppingCurrencyInput.value;
+    if (!isNaN(productAmount) && productAmount > 0) {
+        let amountInUSD = productAmount;
+        if (productCurrency === 'DOP') {
+            amountInUSD = productAmount / USD_TO_DOP_RATE;
+        }
+        const fee = amountInUSD * COMMISSION_RATE;
+        const totalAmount = amountInUSD + fee;
+        shoppingFeeDisplay.textContent = `Tarifa (3%): $${fee.toFixed(2)} USD`;
+        shoppingTotalDisplay.textContent = `Total a deducir: $${totalAmount.toFixed(2)} USD`;
+    } else {
+        shoppingFeeDisplay.textContent = 'Tarifa (3%): $0.00 USD';
+        shoppingTotalDisplay.textContent = 'Total a deducir: $0.00 USD';
+    }
+});
+// Evento para el formulario de pago de streaming
+streamingPaymentForm.addEventListener('input', () => {
+    const subscriptionAmount = parseFloat(streamingAmountInput.value);
+    const subscriptionCurrency = streamingCurrencyInput.value;
+    if (!isNaN(subscriptionAmount) && subscriptionAmount > 0) {
+        let amountInUSD = subscriptionAmount;
+        if (subscriptionCurrency === 'DOP') {
+            amountInUSD = subscriptionAmount / USD_TO_DOP_RATE;
+        }
+        const fee = amountInUSD * COMMISSION_RATE;
+        const totalAmount = amountInUSD + fee;
+        streamingFeeDisplay.textContent = `Tarifa (3%): $${fee.toFixed(2)} USD`;
+        streamingTotalDisplay.textContent = `Total a deducir: $${totalAmount.toFixed(2)} USD`;
+    } else {
+        streamingFeeDisplay.textContent = 'Tarifa (3%): $0.00 USD';
+        streamingTotalDisplay.textContent = 'Total a deducir: $0.00 USD';
+    }
+});
+// Evento para el formulario de recarga de juegos
+gameRechargeForm.addEventListener('input', () => {
+    const rechargeAmount = parseFloat(rechargeAmountInput.value);
+    const rechargeCurrency = rechargeCurrencyInput.value;
+    if (!isNaN(rechargeAmount) && rechargeAmount > 0) {
+        let amountInUSD = rechargeAmount;
+        if (rechargeCurrency === 'DOP') {
+            amountInUSD = rechargeAmount / USD_TO_DOP_RATE;
+        }
+        const fee = amountInUSD * COMMISSION_RATE;
+        const totalAmount = amountInUSD + fee;
+        gameRechargeFeeDisplay.textContent = `Tarifa (3%): $${fee.toFixed(2)} USD`;
+        gameRechargeTotalDisplay.textContent = `Total a deducir: $${totalAmount.toFixed(2)} USD`;
+    } else {
+        gameRechargeFeeDisplay.textContent = 'Tarifa (3%): $0.00 USD';
+        gameRechargeTotalDisplay.textContent = 'Total a deducir: $0.00 USD';
+    }
+});
+
 
 /**
  * Carga y muestra todas las solicitudes pendientes para el administrador.
  */
 function loadAdminPendingRequests() {
-    // Desuscribirse del oyente anterior si existe
+    // Desuscribirse del oyente anterior si existe para evitar duplicados
     if (adminPendingRequestsUnsubscribe) {
         adminPendingRequestsUnsubscribe();
-        adminPendingRequestsUnsubscribe = null; // Restablecer
+        adminPendingRequestsUnsubscribe = null;
         console.log("Admin: Desuscrito del oyente de solicitudes pendientes anterior.");
     }
-
     adminPendingRequestsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando solicitudes pendientes...</td></tr>';
-    const pendingRequestsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests');
+    const pendingRequestsCollectionRef = collection(db, 'artifacts', appId, 'public', 'pending_requests');
     const q = query(pendingRequestsCollectionRef, where('status', '==', 'pending'));
 
     // Asigna la función de desuscripción a adminPendingRequestsUnsubscribe
@@ -1734,20 +1902,16 @@ function loadAdminPendingRequests() {
             adminPendingRequestsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay solicitudes pendientes.</td></tr>';
             return;
         }
-
         for (const docEntry of snapshot.docs) {
             const request = docEntry.data();
             const requestId = docEntry.id;
-
             const userNameDisplay = await getUserDisplayName(request.userId);
-            const requestDate = (request.timestamp && typeof request.timestamp.seconds !== 'undefined')
-                ? new Date(request.timestamp.seconds * 1000).toLocaleString()
-                : 'Fecha no disponible';
-
+            const requestDate = (request.timestamp && typeof request.timestamp.seconds !== 'undefined') ? new Date(request.timestamp.seconds * 1000).toLocaleString() : 'Fecha no disponible';
             let typeDisplay = '';
             let amountDisplay = '';
             let currencyDisplay = '';
             let detailsDisplay = '';
+            let newAttributes = ''; // Para nuevos atributos de la solicitud
 
             switch (request.type) {
                 case 'deposit':
@@ -1755,6 +1919,13 @@ function loadAdminPendingRequests() {
                     amountDisplay = (request.amount ?? 0).toFixed(2);
                     currencyDisplay = request.currency;
                     detailsDisplay = `Serie: ${request.serialNumber}`;
+                    break;
+                case 'external_deposit': // NUEVO: Visualización de solicitud de depósito exterior para el administrador
+                    typeDisplay = 'Depósito Exterior';
+                    amountDisplay = (request.amount ?? 0).toFixed(2);
+                    currencyDisplay = request.currency;
+                    detailsDisplay = `Banco: ${request.senderBank || 'N/A'}, Remitente: ${request.senderName || 'N/A'}, Serie: ${request.serialNumber || 'N/A'}`;
+                    newAttributes += `data-sender-name="${request.senderName || ''}" data-sender-bank="${request.senderBank || ''}" data-serial-number="${request.serialNumber || ''}"`;
                     break;
                 case 'withdrawal':
                     typeDisplay = 'Retiro';
@@ -1771,10 +1942,10 @@ function loadAdminPendingRequests() {
                 case 'streaming_payment':
                     typeDisplay = 'Pago Streaming';
                     amountDisplay = (request.totalAmountToDeduct ?? 0).toFixed(2); // Muestra el monto total a deducir
-                    currencyDisplay = 'USD'; // Asumiendo que totalToDeduct está en USD
+                    currencyCurrency = 'USD'; // Asumiendo que totalToDeduct está en USD
                     detailsDisplay = `Servicio: ${request.service}, Cuenta: ${request.accountIdentifier}, Tarifa (3%): $${(request.feeAmount ?? 0).toFixed(2)} USD. Cat: ${request.category || 'N/A'}.`;
                     break;
-                case 'game_recharge': // NUEVO: Visualización de solicitud pendiente de administrador para recarga de juegos
+                case 'game_recharge':
                     typeDisplay = 'Recarga de Juego';
                     amountDisplay = (request.totalAmountToDeduct ?? 0).toFixed(2);
                     currencyDisplay = 'USD';
@@ -1792,7 +1963,6 @@ function loadAdminPendingRequests() {
                     currencyDisplay = request.currency || 'N/A';
                     detailsDisplay = 'N/A';
             }
-
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${requestDate}</td>
@@ -1802,40 +1972,8 @@ function loadAdminPendingRequests() {
                 <td>${currencyDisplay}</td>
                 <td>${detailsDisplay}</td>
                 <td>
-                    <button class="btn-success confirm-request-btn"
-                        data-request-id="${requestId}"
-                        data-user-id="${request.userId}"
-                        data-type="${request.type}"
-                        data-amount="${request.amount || 0}"
-                        data-currency="${request.currency || ''}"
-                        data-serial-number="${request.serialNumber || ''}"
-                        data-product-amount="${request.productAmount || 0}"
-                        data-product-currency="${request.productCurrency || ''}"
-                        data-product-links="${request.productLinks || ''}"
-                        data-service="${request.service || ''}"
-                        data-account-identifier="${request.accountIdentifier || ''}"
-                        data-subscription-amount="${request.subscriptionAmount || 0}"
-                        data-subscription-currency="${request.subscriptionCurrency || ''}"
-                        data-game-name="${request.gameName || ''}"
-                        data-player-id="${request.playerId || ''}"
-                        data-recharge-amount="${request.rechargeAmount || 0}"
-                        data-recharge-currency="${request.rechargeCurrency || ''}"
-                        data-fee-amount="${request.feeAmount || 0}"
-                        data-total-amount-to-deduct="${request.totalAmountToDeduct || 0}"
-                        data-category="${request.category || ''}"
-                        data-savings-goal="${request.savingsGoal || ''}"
-                        data-initial-deposit-amount="${request.initialDepositAmount || 0}"
-                        data-initial-deposit-currency="${request.initialDepositCurrency || ''}"
-                        data-preferred-savings-frequency="${request.preferredSavingsFrequency || ''}"
-                        data-periodic-contribution-amount="${request.periodicContributionAmount || 0}"
-                        data-start-date="${request.startDate ? request.startDate.seconds * 1000 : ''}"
-                        data-end-date="${request.endDate || ''}"
-                        >Confirmar</button>
-                    <button class="btn-danger reject-request-btn"
-                        data-request-id="${requestId}"
-                        data-user-id="${request.userId}"
-                        data-type="${request.type}"
-                        >Rechazar</button>
+                    <button class="btn-success confirm-request-btn" data-request-id="${requestId}" data-user-id="${request.userId}" data-type="${request.type}" data-amount="${request.amount || 0}" data-currency="${request.currency || ''}" data-serial-number="${request.serialNumber || ''}" data-product-amount="${request.productAmount || 0}" data-product-currency="${request.productCurrency || ''}" data-product-links="${request.productLinks || ''}" data-service="${request.service || ''}" data-account-identifier="${request.accountIdentifier || ''}" data-subscription-amount="${request.subscriptionAmount || 0}" data-subscription-currency="${request.subscriptionCurrency || ''}" data-game-name="${request.gameName || ''}" data-player-id="${request.playerId || ''}" data-recharge-amount="${request.rechargeAmount || 0}" data-recharge-currency="${request.rechargeCurrency || ''}" data-fee-amount="${request.feeAmount || 0}" data-total-amount-to-deduct="${request.totalAmountToDeduct || 0}" data-category="${request.category || ''}" data-savings-goal="${request.savingsGoal || ''}" data-initial-deposit-amount="${request.initialDepositAmount || 0}" data-initial-deposit-currency="${request.initialDepositCurrency || ''}" data-preferred-savings-frequency="${request.preferredSavingsFrequency || ''}" data-periodic-contribution-amount="${request.periodicContributionAmount || 0}" data-start-date="${request.startDate ? request.startDate.seconds * 1000 : ''}" data-end-date="${request.endDate || ''}" ${newAttributes} >Confirmar</button>
+                    <button class="btn-danger reject-request-btn" data-request-id="${requestId}" data-user-id="${request.userId}" data-type="${request.type}" >Rechazar</button>
                 </td>
             `;
             adminPendingRequestsTableBody.appendChild(row);
@@ -1865,10 +2003,10 @@ adminPendingRequestsTableBody.addEventListener('click', async (event) => {
             dataset.accountIdentifier,
             parseFloat(dataset.subscriptionAmount),
             dataset.subscriptionCurrency,
-            dataset.gameName, // NUEVO
-            dataset.playerId, // NUEVO
-            parseFloat(dataset.rechargeAmount), // NUEVO
-            dataset.rechargeCurrency, // NUEVO
+            dataset.gameName,
+            dataset.playerId,
+            parseFloat(dataset.rechargeAmount),
+            dataset.rechargeCurrency,
             parseFloat(dataset.feeAmount),
             parseFloat(dataset.totalAmountToDeduct),
             dataset.category,
@@ -1876,2139 +2014,1371 @@ adminPendingRequestsTableBody.addEventListener('click', async (event) => {
             parseFloat(dataset.initialDepositAmount),
             dataset.initialDepositCurrency,
             dataset.preferredSavingsFrequency,
-            parseFloat(dataset.periodicContributionAmount), // Pasa periodicContributionAmount
-            dataset.startDate, // Pasa startDate
-            dataset.endDate // Pasa endDate
+            parseFloat(dataset.periodicContributionAmount),
+            dataset.startDate,
+            dataset.endDate,
+            dataset.senderName, // NUEVO: Atributo para el nombre del remitente del depósito exterior
+            dataset.senderBank // NUEVO: Atributo para el banco del remitente del depósito exterior
         );
     } else if (target.classList.contains('reject-request-btn')) {
-        const dataset = target.dataset;
-        await rejectRequest(dataset.requestId, dataset.type, dataset.userId);
+        await rejectRequest(target.dataset.requestId, target.dataset.type);
     }
 });
 
 
 /**
- * Confirma una solicitud pendiente, maneja la transferencia de dinero y registra la transacción.
+ * Confirma y procesa una solicitud pendiente.
+ * @param {string} requestId El ID del documento de la solicitud en 'pending_requests'.
+ * @param {string} type El tipo de solicitud (ej: 'deposit', 'withdrawal', 'online_purchase', 'external_deposit').
+ * @param {string} userId El ID del usuario que hizo la solicitud.
+ * @param {number} amount El monto principal de la transacción.
+ * @param {string} currency La moneda de la transacción.
+ * @param {string} serialNumber El número de serie para depósitos.
+ * @param {number} productAmount Monto de los productos para compras online.
+ * @param {string} productCurrency Moneda de los productos.
+ * @param {string} productLinks Enlaces de los productos.
+ * @param {string} service Nombre del servicio de streaming.
+ * @param {string} accountIdentifier Identificador de la cuenta de streaming.
+ * @param {number} subscriptionAmount Monto de la suscripción.
+ * @param {string} subscriptionCurrency Moneda de la suscripción.
+ * @param {string} gameName Nombre del juego.
+ * @param {string} playerId ID del jugador.
+ * @param {number} rechargeAmount Monto de la recarga del juego.
+ * @param {string} rechargeCurrency Moneda de la recarga del juego.
+ * @param {number} feeAmount La tarifa aplicada.
+ * @param {number} totalAmountToDeduct El monto total a deducir (incluye tarifa).
+ * @param {string} category La categoría de la compra/pago.
+ * @param {string} savingsGoal Objetivo de la cuenta de ahorro.
+ * @param {number} initialDepositAmount Depósito inicial de la cuenta de ahorro.
+ * @param {string} initialDepositCurrency Moneda del depósito inicial.
+ * @param {string} preferredSavingsFrequency Frecuencia de ahorro preferida.
+ * @param {number} periodicContributionAmount Contribución periódica de ahorro.
+ * @param {string} startDate Fecha de inicio de la cuenta de ahorro.
+ * @param {string} endDate Fecha de finalización de la cuenta de ahorro.
+ * @param {string} senderName Nombre del remitente (para depósitos exteriores).
+ * @param {string} senderBank Banco del remitente (para depósitos exteriores).
  */
 async function confirmRequest(
-            requestId, type, userId, amount, currency, serialNumber,
-            productAmount, productCurrency, productLinks,
-            service, accountIdentifier, subscriptionAmount, subscriptionCurrency,
-            gameName, playerId, rechargeAmount, rechargeCurrency, // Parámetros NUEVOS de recarga de juegos
-            feeAmount, totalAmountToDeduct, category,
-            savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, startDate, endDate // Nuevos parámetros
-        ) {
-            console.log("Confirmando solicitud:", { requestId, type, userId, amount, currency, serialNumber, productAmount, productCurrency, productLinks, service, accountIdentifier, subscriptionAmount, subscriptionCurrency, gameName, playerId, rechargeAmount, rechargeCurrency, feeAmount, totalAmountToDeduct, category, savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, startDate, endDate });
-            try {
-                const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
-                const requestDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_requests', requestId);
+    requestId, type, userId, amount, currency, serialNumber,
+    productAmount, productCurrency, productLinks,
+    service, accountIdentifier, subscriptionAmount, subscriptionCurrency,
+    gameName, playerId, rechargeAmount, rechargeCurrency,
+    feeAmount, totalAmountToDeduct, category,
+    savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, startDate, endDate,
+    senderName, senderBank
+) {
+    console.log(`Confirmando solicitud ID: ${requestId} de tipo: ${type}`);
+    const userDocRef = doc(db, 'artifacts', appId, 'users', userId);
+    const requestDocRef = doc(db, 'artifacts', appId, 'public', 'pending_requests', requestId);
 
-                const userDocSnap = await getDoc(userProfileRef);
-
-                if (!userDocSnap.exists()) {
-                    console.error("Error: Perfil de usuario no encontrado para la solicitud:", userId);
-                    showMessage('Error: Usuario no encontrado para la solicitud.', 'error');
-                    return;
-                }
-                const userData = userDocSnap.data();
-                let userCurrentBalanceUSD = userData.balanceUSD || 0;
-                let userCurrentBalanceDOP = userData.balanceDOP || 0;
-
-                let adminId = null;
-                const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
-                const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
-                const adminSnapshot = await getDocs(adminQuery);
-                if (!adminSnapshot.empty) {
-                    adminId = adminSnapshot.docs[0].id;
-                } else {
-                    console.warn("Cuenta de administrador no encontrada. Las tarifas podrían no transferirse al administrador.");
-                }
-
-                let transactionType = type;
-                let transactionDescription = '';
-                let amountToRecordInTransaction = amount;
-                let currencyToRecordInTransaction = currency;
-                let typeDisplay = '';
-                let savingsAccountId = null;
-                let calculatedFeeInUSD = 0;
-
-                switch (type) {
-                    case 'deposit':
-                        let depositAmountInUSD = amount;
-                        if (currency === 'DOP') {
-                            depositAmountInUSD = amount / USD_TO_DOP_RATE;
-                        }
-                        userCurrentBalanceUSD += depositAmountInUSD;
-                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
-                        transactionDescription = `Depósito con serie ${serialNumber}`;
-                        typeDisplay = 'Depósito';
-                        break;
-                    case 'withdrawal':
-                        let withdrawalAmountInUSD = amount;
-                        if (currency === 'DOP') {
-                            withdrawalAmountInUSD = amount / USD_TO_DOP_RATE;
-                        }
-                        calculatedFeeInUSD = withdrawalAmountInUSD * WITHDRAWAL_FEE_RATE;
-                        const totalDeductionFromUserForWithdrawal = withdrawalAmountInUSD + calculatedFeeInUSD;
-
-                        if (userCurrentBalanceUSD < totalDeductionFromUserForWithdrawal) {
-                            showMessage(`Error: Saldo insuficiente para cubrir el retiro y la tarifa del 4%.`, 'error');
-                            return;
-                        }
-                        userCurrentBalanceUSD -= totalDeductionFromUserForWithdrawal;
-                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
-                        transactionDescription = `Retiro (Tarifa: ${calculatedFeeInUSD.toFixed(2)} USD)`;
-                        typeDisplay = 'Retiro';
-
-                        if (adminId) {
-                            const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
-                            const adminData = (await getDoc(adminProfileRef)).data();
-                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + calculatedFeeInUSD;
-                            await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
-                            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-                                payerId: userId,
-                                receiverId: adminId,
-                                amount: calculatedFeeInUSD,
-                                currency: 'USD',
-                                timestamp: serverTimestamp(),
-                                type: 'withdrawal_fee',
-                                status: 'completed',
-                                originalRequestId: requestId
-                            });
-                        }
-                        break;
-                    case 'online_purchase':
-                        if (userCurrentBalanceUSD < totalAmountToDeduct) {
-                            showMessage(`Error: Saldo insuficiente para la compra online.`, 'error');
-                            return;
-                        }
-                        userCurrentBalanceUSD -= totalAmountToDeduct;
-                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
-                        transactionDescription = `Compra online`;
-                        amountToRecordInTransaction = totalAmountToDeduct;
-                        currencyToRecordInTransaction = 'USD';
-                        typeDisplay = 'Compra Online';
-
-                        // --- CAMBIO AQUÍ: Solo transferimos la tarifa (feeAmount) al administrador ---
-                        if (adminId && feeAmount > 0) {
-                            console.log("Transfiriendo TARIFA de compra en línea al administrador:", feeAmount, "USD");
-                            const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
-                            const adminData = (await getDoc(adminProfileRef)).data();
-                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
-                            await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
-                        }
-                        break;
-                    case 'streaming_payment':
-                        if (userCurrentBalanceUSD < totalAmountToDeduct) {
-                            showMessage(`Error: Saldo insuficiente para el pago de streaming.`, 'error');
-                            return;
-                        }
-                        userCurrentBalanceUSD -= totalAmountToDeduct;
-                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
-                        transactionDescription = `Pago de ${service}`;
-                        amountToRecordInTransaction = totalAmountToDeduct;
-                        currencyToRecordInTransaction = 'USD';
-                        typeDisplay = 'Pago Streaming';
-
-                        // --- CAMBIO AQUÍ: Solo transferimos la tarifa (feeAmount) al administrador ---
-                        if (adminId && feeAmount > 0) {
-                            console.log("Transfiriendo TARIFA de pago de streaming al administrador:", feeAmount, "USD");
-                            const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
-                            const adminData = (await getDoc(adminProfileRef)).data();
-                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
-                            await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
-                        }
-                        break;
-                    case 'game_recharge':
-                        if (userCurrentBalanceUSD < totalAmountToDeduct) {
-                            showMessage(`Error: Saldo insuficiente para la recarga de juego.`, 'error');
-                            return;
-                        }
-                        userCurrentBalanceUSD -= totalAmountToDeduct;
-                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
-                        transactionDescription = `Recarga de ${gameName} (ID: ${playerId})`;
-                        amountToRecordInTransaction = totalAmountToDeduct;
-                        currencyToRecordInTransaction = 'USD';
-                        typeDisplay = 'Recarga de Juego';
-
-                        // --- CAMBIO AQUÍ: Solo transferimos la tarifa (feeAmount) al administrador ---
-                        if (adminId && feeAmount > 0) {
-                            console.log("Transfiriendo TARIFA de recarga de juego al administrador:", feeAmount, "USD");
-                            const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
-                            const adminData = (await getDoc(adminProfileRef)).data();
-                            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
-                            await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
-                        }
-                        break;
-                    case 'savings_account_open':
-                        let initialDepositAmountInUSD = initialDepositAmount;
-                        if (initialDepositCurrency === 'DOP') {
-                            initialDepositAmountInUSD = initialDepositAmount / USD_TO_DOP_RATE;
-                        }
-
-                        if (userCurrentBalanceUSD < initialDepositAmountInUSD) {
-                            showMessage(`Error: Saldo insuficiente para el depósito inicial de la cuenta de ahorro.`, 'error');
-                            return;
-                        }
-                        userCurrentBalanceUSD -= initialDepositAmountInUSD;
-                        userCurrentBalanceDOP = userCurrentBalanceUSD * USD_TO_DOP_RATE;
-                        
-                        let nextDueDate = new Date();
-                        if (preferredSavingsFrequency === 'Diaria') {
-                            nextDueDate = addDays(nextDueDate, 1);
-                        } else if (preferredSavingsFrequency === 'Semanal') {
-                            nextDueDate = addWeeks(nextDueDate, 1);
-                        } else if (preferredSavingsFrequency === 'Quincenal') {
-                            nextDueDate = addDays(nextDueDate, 15);
-                        } else if (preferredSavingsFrequency === 'Mensual') {
-                            nextDueDate = addMonths(nextDueDate, 1);
-                        }
-
-                        const newSavingsAccountId = crypto.randomUUID();
-                        const savingsAccountRef = doc(db, 'artifacts', appId, 'users', userId, 'savings_accounts', newSavingsAccountId);
-                        await setDoc(savingsAccountRef, {
-                            accountId: newSavingsAccountId,
-                            userId: userId,
-                            savingsGoal: savingsGoal,
-                            balanceUSD: initialDepositAmountInUSD,
-                            balanceDOP: initialDepositAmountInUSD * USD_TO_DOP_RATE,
-                            initialDepositAmount: initialDepositAmount,
-                            initialDepositCurrency: initialDepositCurrency,
-                            preferredSavingsFrequency: preferredSavingsFrequency,
-                            periodicContributionAmount: periodicContributionAmount,
-                            nextContributionDueDate: preferredSavingsFrequency !== 'Ocasional' ? nextDueDate : null,
-                            lastContributionAttemptDate: null,
-                            endDate: endDate,
-                            createdAt: serverTimestamp(),
-                            status: 'active'
-                        });
-                        savingsAccountId = newSavingsAccountId;
-
-                        transactionDescription = `Apertura de cuenta de ahorro para ${savingsGoal}`;
-                        amountToRecordInTransaction = initialDepositAmount;
-                        currencyToRecordInTransaction = initialDepositCurrency;
-                        typeDisplay = 'Apertura Cta. Ahorro';
-                        break;
-                    default:
-                        console.error("Error: Tipo de solicitud desconocido:", type);
-                        showMessage('Tipo de solicitud desconocido.', 'error');
-                        typeDisplay = 'Desconocido';
-                        return;
-                }
-
-                await updateDoc(userProfileRef, {
-                    balanceUSD: userCurrentBalanceUSD,
-                    balanceDOP: userCurrentBalanceDOP,
-                    ...(type === 'deposit' && { hasPendingDeposit: false })
-                });
-                
-                await updateDoc(requestDocRef, {
-                    status: 'completed',
-                    confirmedAt: serverTimestamp()
-                });
-
-                const newTransactionRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-                    userId: userId,
-                    type: transactionType,
-                    amount: amountToRecordInTransaction,
-                    currency: currencyToRecordInTransaction,
-                    timestamp: serverTimestamp(),
-                    status: 'completed',
-                    description: transactionDescription,
-                    ...(type === 'withdrawal' && { feeAmount: calculatedFeeInUSD, feeCurrency: 'USD', adminReceiverId: adminId }),
-                    ...(type === 'online_purchase' && { productAmount, productCurrency, productLinks, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category }),
-                    ...(type === 'streaming_payment' && { service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category }),
-                    ...(type === 'game_recharge' && { gameName, playerId, rechargeAmount, rechargeCurrency, feeAmount, feeCurrency: 'USD', totalAmountDeducted: totalAmountToDeduct, adminReceiverId: adminId, category: category }),
-                    ...(type === 'savings_account_open' && { savingsGoal, initialDepositAmount, initialDepositCurrency, preferredSavingsFrequency, periodicContributionAmount, savingsAccountId, startDate: serverTimestamp(), endDate: endDate })
-                });
-
-                showMessage(`Solicitud #${requestId} (${typeDisplay}) confirmada exitosamente.`, 'success');
-
-                const transactionDoc = await getDoc(newTransactionRef);
-                if (transactionDoc.exists()) {
-                    showReceipt({ id: transactionDoc.id, ...transactionDoc.data() });
-                }
-
-            } catch (error) {
-                console.error(`GLOBAL CATCH: Error confirmando solicitud ${type} #${requestId}:`, error);
-                showMessage(`Error al confirmar la solicitud ${type}. Por favor, inténtalo de nuevo. Detalle: ${error.message}`, 'error');
+    try {
+        await runTransaction(db, async (transaction) => {
+            const userDocSnap = await transaction.get(userDocRef);
+            if (!userDocSnap.exists()) {
+                throw "El documento del usuario no existe.";
             }
-        }
+            const userData = userDocSnap.data();
+
+            const requestDocSnap = await transaction.get(requestDocRef);
+            if (!requestDocSnap.exists()) {
+                throw "El documento de la solicitud no existe.";
+            }
+            const requestData = requestDocSnap.data();
+
+            // Lógica para actualizar el saldo del usuario según el tipo de solicitud
+            let newBalanceUSD = userData.balanceUSD || 0;
+            let newBalanceDOP = userData.balanceDOP || 0;
+
+            let transactionDocData = {
+                type: type,
+                userId: userId,
+                usersInvolved: [userId], // Involucra al usuario en la transacción
+                timestamp: serverTimestamp(),
+                status: 'completed',
+                amount: amount,
+                currency: currency,
+            };
+
+            switch (type) {
+                case 'deposit':
+                    if (currency === 'USD') {
+                        newBalanceUSD += amount;
+                    } else if (currency === 'DOP') {
+                        newBalanceDOP += amount;
+                    }
+                    transactionDocData = { ...transactionDocData, serialNumber: serialNumber };
+                    break;
+                case 'external_deposit': // NUEVO: Lógica para confirmar depósito exterior
+                    if (currency === 'USD') {
+                        newBalanceUSD += amount;
+                    } else if (currency === 'DOP') {
+                        newBalanceDOP += amount;
+                    }
+                    transactionDocData = { ...transactionDocData, senderName, senderBank, serialNumber };
+                    break;
+                case 'withdrawal':
+                    // Ya verificamos el saldo al crear la solicitud, solo actualizamos
+                    // El monto del retiro y la tarifa se gestionan en una transacción separada para el administrador
+                    newBalanceUSD -= (amount / USD_TO_DOP_RATE); // Se asume que el retiro siempre se hace en USD internamente, aunque el usuario lo pida en DOP
+                    
+                    // Crea una transacción de tarifa
+                    const adminFeeTransaction = {
+                        type: 'withdrawal_fee',
+                        payerId: userId,
+                        receiverId: 'admin',
+                        usersInvolved: [userId, 'admin'],
+                        amount: feeAmount,
+                        currency: 'USD',
+                        originalRequestId: requestId,
+                        timestamp: serverTimestamp(),
+                        status: 'completed'
+                    };
+                    await addDoc(collection(db, 'artifacts', appId, 'transactions'), adminFeeTransaction);
+                    break;
+                case 'online_purchase':
+                    if (totalAmountToDeduct > newBalanceUSD) {
+                        throw "Error: Saldo insuficiente en la cuenta para la compra. Esto no debería suceder si la verificación inicial fue correcta.";
+                    }
+                    newBalanceUSD -= totalAmountToDeduct;
+                    transactionDocData = { ...transactionDocData, productAmount, productCurrency, productLinks, feeAmount, totalAmountDeducted: totalAmountToDeduct, category };
+                    break;
+                case 'streaming_payment':
+                    if (totalAmountToDeduct > newBalanceUSD) {
+                        throw "Error: Saldo insuficiente en la cuenta para el pago de streaming. Esto no debería suceder si la verificación inicial fue correcta.";
+                    }
+                    newBalanceUSD -= totalAmountToDeduct;
+                    transactionDocData = { ...transactionDocData, service, accountIdentifier, subscriptionAmount, subscriptionCurrency, feeAmount, totalAmountToDeduct, category };
+                    break;
+                case 'game_recharge':
+                    if (totalAmountToDeduct > newBalanceUSD) {
+                        throw "Error: Saldo insuficiente en la cuenta para la recarga de juego. Esto no debería suceder si la verificación inicial fue correcta.";
+                    }
+                    newBalanceUSD -= totalAmountToDeduct;
+                    transactionDocData = { ...transactionDocData, gameName, playerId, rechargeAmount, rechargeCurrency, feeAmount, totalAmountToDeduct, category };
+                    break;
+                case 'savings_account_open':
+                    let initialDepositAmountInUSD = initialDepositAmount;
+                    if (initialDepositCurrency === 'DOP') {
+                        initialDepositAmountInUSD = initialDepositAmount / USD_TO_DOP_RATE;
+                    }
+                    if (initialDepositAmountInUSD > newBalanceUSD) {
+                        throw "Error: Saldo insuficiente para el depósito inicial de la cuenta de ahorro. Esto no debería suceder si la verificación inicial fue correcta.";
+                    }
+                    newBalanceUSD -= initialDepositAmountInUSD;
+
+                    // Crea la nueva cuenta de ahorro
+                    const savingsAccountRef = doc(collection(db, 'artifacts', appId, 'users', userId, 'savings_accounts'));
+                    const savingsAccountId = savingsAccountRef.id;
+
+                    const newSavingsAccountData = {
+                        accountId: savingsAccountId,
+                        savingsGoal: savingsGoal,
+                        balanceUSD: initialDepositAmountInUSD,
+                        balanceDOP: 0, // Las cuentas de ahorro se manejan en USD internamente
+                        preferredSavingsFrequency: preferredSavingsFrequency,
+                        periodicContributionAmount: parseFloat(periodicContributionAmount),
+                        startDate: new Date(parseInt(startDate)),
+                        endDate: endDate,
+                        creationTimestamp: serverTimestamp(),
+                        lastContributionAttemptDate: serverTimestamp(),
+                        nextContributionDueDate: calculateNextDueDate(new Date(parseInt(startDate)), preferredSavingsFrequency),
+                        status: 'active'
+                    };
+                    transaction.set(savingsAccountRef, newSavingsAccountData);
+
+                    // Actualiza los datos de la transacción para reflejar el depósito inicial
+                    transactionDocData = { ...transactionDocData,
+                        type: 'savings_account_open',
+                        savingsAccountId: savingsAccountId,
+                        savingsGoal: savingsGoal,
+                        initialDepositAmount: initialDepositAmount,
+                        initialDepositCurrency: initialDepositCurrency,
+                        preferredSavingsFrequency: preferredSavingsFrequency,
+                        periodicContributionAmount: periodicContributionAmount,
+                        startDate: new Date(parseInt(startDate)),
+                        endDate: endDate
+                    };
+                    break;
+                default:
+                    // Si el tipo es desconocido, no hacemos nada con el saldo, pero confirmamos la solicitud para eliminarla
+                    break;
+            }
+
+            // Actualiza el saldo del usuario
+            transaction.update(userDocRef, {
+                balanceUSD: newBalanceUSD,
+                balanceDOP: newBalanceDOP
+            });
+
+            // Elimina la solicitud de la colección 'pending_requests'
+            transaction.delete(requestDocRef);
+
+            // Registra la transacción en la colección de transacciones del banco
+            const newTransactionDocRef = doc(collection(db, 'artifacts', appId, 'transactions'));
+            transaction.set(newTransactionDocRef, transactionDocData);
+
+            console.log(`Solicitud ID: ${requestId} de tipo: ${type} confirmada.`);
+        });
+
+        showMessage(`Solicitud confirmada exitosamente. El saldo del usuario ha sido actualizado.`, 'success');
+    } catch (error) {
+        console.error("Error al confirmar la solicitud:", error);
+        showMessage(`Error al confirmar la solicitud: ${error}`, 'error');
+    }
+}
 
 /**
  * Rechaza una solicitud pendiente.
+ * @param {string} requestId El ID del documento de la solicitud en 'pending_requests'.
+ * @param {string} requestType El tipo de solicitud rechazada.
  */
-async function rejectRequest(requestId, type, userId) {
+async function rejectRequest(requestId, requestType) {
+    console.log(`Rechazando solicitud ID: ${requestId} de tipo: ${requestType}`);
+    const requestDocRef = doc(db, 'artifacts', appId, 'public', 'pending_requests', requestId);
     try {
-        const requestDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_requests', requestId);
-
         await updateDoc(requestDocRef, {
             status: 'rejected',
-            rejectedAt: serverTimestamp()
+            rejectionTimestamp: serverTimestamp()
         });
-
-        // Para los depósitos, restablece la bandera hasPendingDeposit para que el usuario pueda solicitar de nuevo
-        if (type === 'deposit') {
-            const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
-            await updateDoc(userProfileRef, {
-                hasPendingDeposit: false
-            });
-        }
-
-        showMessage(`Solicitud #${requestId} (${type}) rechazada exitosamente.`, 'info');
-
+        showMessage(`Solicitud de ${requestType} rechazada exitosamente.`, 'success');
     } catch (error) {
-        console.error(`Error rechazando solicitud ${type} #${requestId}:`, error);
-        showMessage(`Error al rechazar la solicitud ${type}. Por favor, inténtalo de nuevo. Detalle: ${error.message}`, 'error');
+        console.error("Error al rechazar la solicitud:", error);
+        showMessage('Error al rechazar la solicitud. Por favor, inténtalo de nuevo.', 'error');
     }
 }
 
-
 /**
- * Carga y muestra el historial de transacciones del usuario actual.
+ * Carga y muestra todas las solicitudes pendientes para el usuario actual.
  */
-async function loadUserHistory() {
-    userHistoryTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Cargando historial...</td></tr>';
+function loadUserPendingRequests() {
+    userPendingRequestsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Cargando solicitudes pendientes...</td></tr>';
+    if (!currentUserId) {
+        userPendingRequestsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 py-4">Inicia sesión para ver tus solicitudes.</td></tr>';
+        return;
+    }
+    const pendingRequestsCollectionRef = collection(db, 'artifacts', appId, 'public', 'pending_requests');
+    const q = query(pendingRequestsCollectionRef,
+        where('userId', '==', currentUserId),
+        where('status', '==', 'pending'));
 
-    const transactionsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'transactions');
-
-    const q = query(transactionsCollectionRef,
-        where('status', '==', 'completed')
-    );
-
-    onSnapshot(q, async (snapshot) => {
-        userHistoryTableBody.innerHTML = '';
-        userTransactionsData = []; // Borra los datos anteriores
-
-        for (const docEntry of snapshot.docs) {
-            const transaction = { id: docEntry.id, ...docEntry.data() };
-
-            // Filtra las transacciones completadas del usuario actual
-            if ((transaction.type === 'deposit' || transaction.type === 'withdrawal' || transaction.type === 'online_purchase' || transaction.type === 'streaming_payment' || transaction.type === 'game_recharge' || transaction.type === 'savings_account_open' || transaction.type === 'deposit_to_savings' || transaction.type === 'withdraw_from_savings' || transaction.type === 'delete_savings_account' || transaction.type === 'automatic_savings_collection' || transaction.type === 'savings_debt_payment' || transaction.type === 'savings_indemnization_applied') && transaction.userId === currentUserId) {
-                userTransactionsData.push(transaction);
-            } else if (transaction.type === 'transfer' && (transaction.senderId === currentUserId || transaction.recipientId === currentUserId)) {
-                userTransactionsData.push(transaction);
-            }
-            // NO incluyas 'withdrawal_fee' en el historial del usuario, ya que es una transacción interna del administrador
-        }
-
-        if (userTransactionsData.length === 0) {
-            userHistoryTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">No hay movimientos en tu historial.</td></tr>';
-            return;
-        }
-
-        // Ordena las transacciones por marca de tiempo descendente (las más recientes primero)
-        userTransactionsData.sort((a, b) => {
-            const timestampA = a.timestamp && typeof a.timestamp.seconds !== 'undefined' ? a.timestamp.seconds : 0;
-            const timestampB = b.timestamp && typeof b.timestamp.seconds !== 'undefined' ? b.timestamp.seconds : 0;
-            return timestampB - timestampA;
-        });
-
-        for (const transaction of userTransactionsData) {
-            const date = (transaction.timestamp && typeof transaction.timestamp.seconds !== 'undefined')
-                ? new Date(transaction.timestamp.seconds * 1000).toLocaleString()
-                : 'Fecha no disponible';
-
-            let typeDisplay = '';
-            let detailsDisplay = '';
-            let amountDisplay = '';
-
-            switch (transaction.type) {
-                case 'deposit':
-                    typeDisplay = 'Depósito';
-                    detailsDisplay = `Serie: ${transaction.serialNumber || 'N/A'}`;
-                    amountDisplay = `+${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency}`;
-                    break;
-                case 'withdrawal':
-                    typeDisplay = 'Retiro';
-                    detailsDisplay = `Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
-                    amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency}`;
-                    break;
-                case 'transfer':
-                    if (transaction.senderId === currentUserId) {
-                        typeDisplay = 'Transferencia Enviada';
-                        const recipientDisplayName = await getUserDisplayName(transaction.recipientId);
-                        detailsDisplay = `A: ${recipientDisplayName}`;
-                        amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency}`;
-                    } else if (transaction.recipientId === currentUserId) {
-                        typeDisplay = 'Transferencia Recibida';
-                        const senderDisplayName = await getUserDisplayName(transaction.senderId);
-                        detailsDisplay = `De: ${senderDisplayName}`;
-                        amountDisplay = `+${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency}`;
-                    }
-                    break;
-                case 'online_purchase':
-                    typeDisplay = 'Compra Online';
-                    detailsDisplay = `Cat: ${transaction.category || 'N/A'}, Total prod: ${(transaction.productAmount ?? 0).toFixed(2)} ${transaction.productCurrency}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
-                    amountDisplay = `-${(transaction.totalAmountDeducted ?? 0).toFixed(2)} ${transaction.currency}`; // Este es el total deducido
-                    break;
-                case 'streaming_payment':
-                    typeDisplay = 'Pago Streaming';
-                    detailsDisplay = `Servicio: ${transaction.service}, Cat: ${transaction.category || 'N/A'}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
-                    amountDisplay = `-${(transaction.totalAmountDeducted ?? 0).toFixed(2)} ${transaction.currency}`; // Este es el total deducido
-                    break;
-                case 'game_recharge': // NUEVO: Visualización de historial de usuario para recarga de juegos
-                    typeDisplay = 'Recarga de Juego';
-                    detailsDisplay = `Juego: ${transaction.gameName}, ID Jugador: ${transaction.playerId}, Tipo: ${transaction.category || 'N/A'}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
-                    amountDisplay = `-${(transaction.totalAmountDeducted ?? 0).toFixed(2)} ${transaction.currency}`;
-                    break;
-                case 'savings_account_open':
-                    typeDisplay = 'Apertura Cta. Ahorro';
-                    detailsDisplay = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
-                    amountDisplay = `-${(transaction.initialDepositAmount ?? 0).toFixed(2)} ${transaction.initialDepositCurrency} (de cuenta principal)`;
-                    break;
-                case 'deposit_to_savings':
-                    typeDisplay = 'Depósito a Ahorro';
-                    detailsDisplay = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
-                    amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency} (de principal)`;
-                    break;
-                case 'withdraw_from_savings':
-                    typeDisplay = 'Retiro de Ahorro';
-                    detailsDisplay = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
-                    amountDisplay = `+${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency} (a principal)`;
-                    break;
-                case 'delete_savings_account':
-                    typeDisplay = 'Eliminación Cta. Ahorro';
-                    detailsDisplay = `Objetivo: ${transaction.savingsGoal}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
-                    amountDisplay = `+${(transaction.remainingBalanceTransferred ?? 0).toFixed(2)} USD (a principal)`;
-                    break;
-                case 'automatic_savings_collection':
-                    typeDisplay = 'Cobro Automático Ahorro';
-                    detailsDisplay = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
-                    amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency} (a ahorro)`;
-                    break;
-                case 'savings_debt_payment':
-                    typeDisplay = 'Pago Deuda Ahorro';
-                    detailsDisplay = `Objetivo: ${transaction.savingsGoal}, ID Deuda: ${transaction.debtId.substring(0, 8)}...`;
-                    amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency}`;
-                    break;
-                case 'savings_indemnization_applied':
-                    typeDisplay = 'Indemnización Ahorro';
-                    detailsDisplay = `ID Deuda: ${transaction.debtId.substring(0, 8)}...`;
-                    amountDisplay = `-${(transaction.amount ?? 0).toFixed(2)} ${transaction.currency} (a admin)`;
-                    break;
-            }
-
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${date}</td>
-                <td>${typeDisplay}</td>
-                <td>${detailsDisplay}</td>
-                <td>${amountDisplay}</td>
-                <td>${transaction.currency}</td>
-                <td><button class="btn-secondary view-receipt-btn" data-transaction-id="${transaction.id}">Ver Recibo</button></td>
-            `;
-            userHistoryTableBody.appendChild(row);
-        }
-
-        // Adjunta oyentes de eventos para los botones "Ver Recibo"
-        document.querySelectorAll('.view-receipt-btn').forEach(button => {
-            button.onclick = async (event) => {
-                const transactionId = event.target.dataset.transactionId;
-                const transactionDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'transactions', transactionId);
-                const transactionDocSnap = await getDoc(transactionDocRef);
-                if (transactionDocSnap.exists()) {
-                    showReceipt({ id: transactionDocSnap.id, ...transactionDocSnap.data() });
-                } else {
-                    showMessage('No se pudo encontrar el recibo para esta transacción.', 'error');
-                }
-            };
-        });
-
-    }, (error) => {
-        console.error("Error al cargar el historial del usuario:", error);
-        userHistoryTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-4">Error al cargar tu historial.</td></tr>`;
-    });
-}
-
-
-/**
- * Carga y muestra el historial completo de transacciones para todos los usuarios en el modal del administrador.
- */
-async function loadAdminFullHistory() {
-    console.log("Admin: loadAdminFullHistory() llamado.");
-    adminFullHistoryTableBodyModal.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando historial completo...</td></tr>';
-    const transactionsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'transactions');
-    const q = query(transactionsCollectionRef, where('status', '==', 'completed'));
-
-    onSnapshot(q, async (snapshot) => {
-        console.log("Admin: onSnapshot para el historial completo del administrador activado.");
-        console.log("Admin: Tamaño de la instantánea para el historial completo:", snapshot.size);
-
-        adminFullHistoryTableBodyModal.innerHTML = '';
+    onSnapshot(q, (snapshot) => {
+        userPendingRequestsTableBody.innerHTML = '';
         if (snapshot.empty) {
-            adminFullHistoryTableBodyModal.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay transacciones en el historial.</td></tr>';
-            console.log("Admin: No se encontraron transacciones para el historial del administrador.");
+            userPendingRequestsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">No hay solicitudes pendientes.</td></tr>';
             return;
         }
-
-        const allTransactions = [];
-        for (const docEntry of snapshot.docs) {
-            allTransactions.push({ id: docEntry.id, ...docEntry.data() });
-        }
-
-        // Ordena las transacciones por marca de tiempo descendente (las más recientes primero)
-        allTransactions.sort((a, b) => {
-            const timestampA = a.timestamp && typeof a.timestamp.seconds !== 'undefined' ? a.timestamp.seconds : 0;
-            const timestampB = b.timestamp && typeof b.timestamp.seconds !== 'undefined' ? b.timestamp.seconds : 0;
-            return timestampB - timestampA;
-        });
-
-        for (const transaction of allTransactions) {
-            const date = (transaction.timestamp && typeof transaction.timestamp.seconds !== 'undefined')
-                ? new Date(transaction.timestamp.seconds * 1000).toLocaleString()
-                : 'Fecha no disponible';
-
-            let typeDisplay = transaction.type;
-            let usersInvolved = '';
-            let details = '';
-            let amountValue = transaction.amount;
-            let currencyValue = transaction.currency;
-
-            switch (transaction.type) {
-                case 'deposit':
-                    typeDisplay = 'Depósito';
-                    usersInvolved = await getUserDisplayName(transaction.userId);
-                    amountValue = (transaction.amount ?? 0);
-                    details = `Serie: ${transaction.serialNumber || 'N/A'}`;
-                    break;
-                case 'withdrawal':
-                    typeDisplay = 'Retiro';
-                    usersInvolved = await getUserDisplayName(transaction.userId);
-                    amountValue = (transaction.amount ?? 0);
-                    details = `Tarifa: $${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
-                    break;
-                case 'transfer':
-                    typeDisplay = 'Transferencia';
-                    const senderName = await getUserDisplayName(transaction.senderId);
-                    const recipientName = await getUserDisplayName(transaction.recipientId);
-                    usersInvolved = `${senderName} (envía) -> ${recipientName} (recibe)`;
-                    amountValue = (transaction.amount ?? 0);
-                    details = `Descripción: ${transaction.description || 'N/A'}`;
-                    break;
-                case 'withdrawal_fee':
-                    typeDisplay = 'Tarifa de Retiro Cobrada';
-                    const feePayer = await getUserDisplayName(transaction.payerId);
-                    const feeReceiver = await getUserDisplayName(transaction.receiverId);
-                    usersInvolved = `${feePayer} (paga) -> ${feeReceiver} (recibe)`;
-                    amountValue = (transaction.amount ?? 0); // Este es el monto de la tarifa
-                    currencyValue = 'USD';
-                    details = `ID Solicitud Original: ${transaction.originalRequestId || 'N/A'}`;
-                    break;
-                case 'online_purchase':
-                    typeDisplay = 'Compra Online';
-                    usersInvolved = await getUserDisplayName(transaction.userId);
-                    amountValue = (transaction.totalAmountDeducted ?? 0); // Muestra el total deducido del usuario
-                    currencyValue = 'USD';
-                    details = `Cat: ${transaction.category || 'N/A'}. Enlaces: ${transaction.productLinks ? transaction.productLinks.substring(0, 50) + '...' : 'N/A'}. Total prod: ${(transaction.productAmount ?? 0).toFixed(2)} ${transaction.productCurrency}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
-                    break;
-                case 'streaming_payment':
-                    typeDisplay = 'Pago Streaming';
-                    usersInvolved = await getUserDisplayName(transaction.userId);
-                    amountValue = (transaction.totalAmountDeducted ?? 0); // Muestra el total deducido del usuario
-                    currencyValue = 'USD';
-                    details = `Servicio: ${transaction.service}, Cat: ${transaction.category || 'N/A'}, Cuenta: ${transaction.accountIdentifier}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
-                    break;
-                case 'game_recharge': // NUEVO: Visualización de historial de administrador para recarga de juegos
-                    typeDisplay = 'Recarga de Juego';
-                    usersInvolved = await getUserDisplayName(transaction.userId);
-                    amountValue = (transaction.totalAmountDeducted ?? 0);
-                    currencyValue = 'USD';
-                    details = `Juego: ${transaction.gameName}, ID Jugador: ${transaction.playerId}, Tipo: ${transaction.category || 'N/A'}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} ${transaction.feeCurrency}`;
-                    break;
-                case 'savings_account_open':
-                    typeDisplay = 'Apertura Cta. Ahorro';
-                    usersInvolved = await getUserDisplayName(transaction.userId);
-                    amountValue = (transaction.initialDepositAmount ?? 0);
-                    currencyValue = transaction.initialDepositCurrency;
-                    details = `Objetivo: ${transaction.savingsGoal}, Cuota Periódica: $${(transaction.periodicContributionAmount ?? 0).toFixed(2)} USD, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
-                    break;
-                case 'deposit_to_savings':
-                    typeDisplay = 'Depósito a Ahorro';
-                    usersInvolved = await getUserDisplayName(transaction.userId);
-                    amountValue = (transaction.amount ?? 0);
-                    currencyValue = transaction.currency;
-                    details = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
-                    break;
-                case 'withdraw_from_savings':
-                    typeDisplay = 'Retiro de Ahorro';
-                    usersInvolved = await getUserDisplayName(transaction.userId);
-                    amountValue = (transaction.amount ?? 0);
-                    currencyValue = transaction.currency;
-                    details = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
-                    break;
-                case 'delete_savings_account':
-                    typeDisplay = 'Eliminación Cta. Ahorro';
-                    usersInvolved = await getUserDisplayName(transaction.userId);
-                    amountValue = (transaction.remainingBalanceTransferred ?? 0);
-                    currencyValue = 'USD';
-                    details = `Objetivo: ${transaction.savingsGoal}, Tarifa: ${(transaction.feeAmount ?? 0).toFixed(2)} USD`;
-                    break;
-                case 'automatic_savings_collection':
-                    typeDisplay = 'Cobro Automático Ahorro';
-                    usersInvolved = await getUserDisplayName(transaction.userId);
-                    amountValue = (transaction.amount ?? 0);
-                    currencyValue = transaction.currency;
-                    details = `Objetivo: ${transaction.savingsGoal}, ID Cuenta: ${transaction.savingsAccountId.substring(0, 8)}...`;
-                    break;
-                case 'savings_debt_payment':
-                    typeDisplay = 'Pago Deuda Ahorro';
-                    usersInvolved = await getUserDisplayName(transaction.userId);
-                    amountValue = (transaction.amount ?? 0);
-                    currencyValue = transaction.currency;
-                    details = `Objetivo: ${transaction.savingsGoal}, ID Deuda: ${transaction.debtId.substring(0, 8)}...`;
-                    break;
-                case 'savings_indemnization_applied':
-                    typeDisplay = 'Indemnización Ahorro';
-                    const payerName = await getUserDisplayName(transaction.payerId);
-                    const receiverName = await getUserDisplayName(transaction.receiverId);
-                    usersInvolved = `${payerName} (paga) -> ${receiverName} (recibe)`;
-                    amountValue = (transaction.amount ?? 0);
-                    currencyValue = transaction.currency;
-                    details = `ID Deuda: ${transaction.debtId.substring(0, 8)}...`;
-                    break;
-                default:
-                    usersInvolved = transaction.userId || 'N/A'; // Fallback
-                    details = 'N/A';
-                    amountValue = (transaction.amount ?? 0);
-                    currencyValue = transaction.currency || 'N/A';
-            }
-
-
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${date}</td>
-                <td>${typeDisplay}</td>
-                <td>${usersInvolved}</td>
-                <td>${amountValue.toFixed(2)}</td>
-                <td>${currencyValue}</td>
-                <td>${transaction.status}</td>
-                <td>${details}</td>
-            `;
-            adminFullHistoryTableBodyModal.appendChild(row); // Agrega al tbody del modal
-        }
-        console.log(`Admin: Se cargaron ${snapshot.docs.length} transacciones totales para el historial del administrador.`);
-    }, (error) => {
-        console.error("Admin: Error al cargar el historial completo del administrador:", error);
-        adminFullHistoryTableBodyModal.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error al cargar el historial completo.</td></tr>`;
-    });
-}
-
-/**
- * Carga y muestra los depósitos y retiros pendientes del usuario actual, y otras solicitudes pendientes.
- */
-async function loadUserPendingRequests() {
-    userPendingRequestsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Cargando solicitudes...</td></tr>';
-
-    const pendingRequestsRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests');
-    const userPendingQuery = query(pendingRequestsRef, where('userId', '==', currentUserId), where('status', '==', 'pending'));
-
-    onSnapshot(userPendingQuery, async (snapshot) => {
-        userPendingRequestsTableBody.innerHTML = ''; // Borra la tabla para nuevos datos
-        const allPendingRequests = [];
 
         snapshot.forEach(docEntry => {
-            const data = docEntry.data();
+            const request = docEntry.data();
+            const requestId = docEntry.id;
+            const requestDate = (request.timestamp && typeof request.timestamp.seconds !== 'undefined') ? new Date(request.timestamp.seconds * 1000).toLocaleString() : 'Fecha no disponible';
             let typeDisplay = '';
-            let detailDisplay = '';
-            let amountToDisplay = data.amount;
-            let currencyToDisplay = data.currency;
+            let amountDisplay = '';
+            let currencyDisplay = '';
+            let detailsDisplay = '';
 
-            switch (data.type) {
+            switch (request.type) {
                 case 'deposit':
                     typeDisplay = 'Depósito';
-                    detailDisplay = `Serie: ${data.serialNumber}`;
-                    amountToDisplay = (data.amount ?? 0);
+                    amountDisplay = (request.amount ?? 0).toFixed(2);
+                    currencyDisplay = request.currency;
+                    detailsDisplay = `Serie: ${request.serialNumber}`;
+                    break;
+                case 'external_deposit':
+                    typeDisplay = 'Depósito Exterior';
+                    amountDisplay = (request.amount ?? 0).toFixed(2);
+                    currencyDisplay = request.currency;
+                    detailsDisplay = `Banco: ${request.senderBank || 'N/A'}, Remitente: ${request.senderName || 'N/A'}, Serie: ${request.serialNumber || 'N/A'}`;
                     break;
                 case 'withdrawal':
                     typeDisplay = 'Retiro';
-                    detailDisplay = `Tarifa est. (4%): $${(data.estimatedFee ?? 0).toFixed(2)} USD`;
-                    amountToDisplay = (data.amount ?? 0);
+                    amountDisplay = (request.amount ?? 0).toFixed(2);
+                    currencyDisplay = request.currency;
+                    detailsDisplay = `Tarifa est. (4%): $${(request.estimatedFee ?? 0).toFixed(2)} USD`;
                     break;
                 case 'online_purchase':
                     typeDisplay = 'Compra Online';
-                    amountToDisplay = (data.totalAmountToDeduct ?? 0); // Muestra el total que se deducirá
-                    currencyToDisplay = 'USD';
-                    detailDisplay = `Cat: ${data.category || 'N/A'}, Total prod: ${(data.productAmount ?? 0).toFixed(2)} ${data.productCurrency}, Tarifa: ${(data.feeAmount ?? 0).toFixed(2)} USD`;
+                    amountDisplay = (request.totalAmountToDeduct ?? 0).toFixed(2);
+                    currencyDisplay = 'USD';
+                    detailsDisplay = `Monto productos: ${(request.productAmount ?? 0).toFixed(2)} ${request.productCurrency}, Tarifa: ${(request.feeAmount ?? 0).toFixed(2)} USD. Cat: ${request.category || 'N/A'}.`;
                     break;
                 case 'streaming_payment':
                     typeDisplay = 'Pago Streaming';
-                    amountToDisplay = (data.totalAmountToDeduct ?? 0); // Muestra el total que se deducirá
-                    currencyToDisplay = 'USD';
-                    detailDisplay = `Servicio: ${data.service}, Cat: ${data.category || 'N/A'}, Tarifa: ${(data.feeAmount ?? 0).toFixed(2)} USD`;
+                    amountDisplay = (request.totalAmountToDeduct ?? 0).toFixed(2);
+                    currencyCurrency = 'USD';
+                    detailsDisplay = `Servicio: ${request.service}, Cuenta: ${request.accountIdentifier}, Tarifa: ${(request.feeAmount ?? 0).toFixed(2)} USD. Cat: ${request.category || 'N/A'}.`;
                     break;
-                case 'game_recharge': // NUEVO: Visualización de solicitud pendiente del usuario para recarga de juegos
+                case 'game_recharge':
                     typeDisplay = 'Recarga de Juego';
-                    amountToDisplay = (data.totalAmountToDeduct ?? 0);
-                    currencyToDisplay = 'USD';
-                    detailDisplay = `Juego: ${data.gameName}, ID Jugador: ${data.playerId}, Tipo: ${data.category || 'N/A'}, Tarifa: ${(data.feeAmount ?? 0).toFixed(2)} USD`;
+                    amountDisplay = (request.totalAmountToDeduct ?? 0).toFixed(2);
+                    currencyDisplay = 'USD';
+                    detailsDisplay = `Juego: ${request.gameName}, ID Jugador: ${request.playerId}, Tarifa: ${(request.feeAmount ?? 0).toFixed(2)} USD. Tipo: ${request.category || 'N/A'}.`;
                     break;
                 case 'savings_account_open':
                     typeDisplay = 'Apertura Cta. Ahorro';
-                    amountToDisplay = (data.initialDepositAmount ?? 0);
-                    currencyToDisplay = data.initialDepositCurrency;
-                    detailDisplay = `Objetivo: ${data.savingsGoal}, Frecuencia: ${data.preferredSavingsFrequency}, Cuota: $${(data.periodicContributionAmount ?? 0).toFixed(2)} USD, Fin: ${data.endDate || 'N/A'}`;
+                    amountDisplay = (request.initialDepositAmount ?? 0).toFixed(2);
+                    currencyCurrency = request.initialDepositCurrency;
+                    detailsDisplay = `Objetivo: ${request.savingsGoal}, Frecuencia: ${request.preferredSavingsFrequency}, Cuota: $${(request.periodicContributionAmount ?? 0).toFixed(2)} USD.`;
                     break;
                 default:
-                    typeDisplay = 'Desconocido';
-                    detailDisplay = 'N/A';
-                    amountToDisplay = (data.amount ?? 0);
+                    typeDisplay = request.type || 'Desconocido';
+                    amountDisplay = (request.amount ?? 0).toFixed(2);
+                    currencyDisplay = request.currency || 'N/A';
+                    detailsDisplay = 'N/A';
             }
 
-            allPendingRequests.push({
-                id: docEntry.id,
-                type: typeDisplay,
-                amount: amountToDisplay,
-                currency: currencyToDisplay,
-                status: data.status,
-                timestamp: data.timestamp,
-                detail: detailDisplay
-            });
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${requestDate}</td>
+                <td>${typeDisplay}</td>
+                <td>${amountDisplay}</td>
+                <td>${currencyDisplay}</td>
+                <td>${detailsDisplay}</td>
+                <td><span class="badge bg-yellow-500">Pendiente</span></td>
+            `;
+            userPendingRequestsTableBody.appendChild(row);
         });
+    }, (error) => {
+        console.error("Error al cargar las solicitudes pendientes del usuario:", error);
+        userPendingRequestsTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-4">Error al cargar solicitudes pendientes.</td></tr>`;
+    });
+}
 
-        if (allPendingRequests.length === 0) {
-            userPendingRequestsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">No tienes solicitudes pendientes.</td></tr>';
+// --- Funciones del Dashboard y UI ---
+
+/**
+ * Actualiza el texto de balance en la interfaz de usuario.
+ */
+function updateBalanceDisplay() {
+    let balanceText = '';
+    if (showCurrencyUSD) {
+        balanceText = `USD: $${currentBalanceUSD.toFixed(2)}`;
+    } else {
+        balanceText = `DOP: RD$${currentBalanceDOP.toFixed(2)}`;
+    }
+    accountBalance.textContent = balanceText;
+}
+
+/**
+ * Muestra el panel de control del usuario o administrador.
+ * @param {Object} userData Datos del usuario de Firestore.
+ */
+function showDashboard(userData) {
+    dashboardUserName.textContent = `${userData.name} ${userData.surname}`;
+    dashboardDisplayId.textContent = `ID de Usuario: ${userData.userDisplayId || userData.userId}`;
+    currentBalanceUSD = userData.balanceUSD;
+    currentBalanceDOP = userData.balanceDOP;
+    updateBalanceDisplay();
+    updateProfileAvatar(userData.name); // Actualiza el avatar del perfil
+    showAnnouncements(); // Muestra los anuncios
+    showSection(dashboardSection, loginSection, registerSection);
+
+    // Muestra los botones de administrador si el usuario es admin
+    if (userData.isAdmin) {
+        adminButtonsContainer.classList.remove('hidden');
+    } else {
+        adminButtonsContainer.classList.add('hidden');
+    }
+}
+
+/**
+ * Actualiza el avatar de perfil con la primera letra del nombre.
+ * @param {string} name El nombre del usuario.
+ */
+function updateProfileAvatar(name) {
+    if (name && name.length > 0) {
+        profileAvatar.textContent = name.charAt(0).toUpperCase();
+        profileAvatar.classList.remove('bg-gray-300'); // Quita el color de fondo por defecto
+        profileAvatar.classList.add('bg-blue-500', 'text-white'); // Añade colores para el avatar
+    } else {
+        profileAvatar.textContent = '?';
+        profileAvatar.classList.add('bg-gray-300', 'text-gray-600');
+    }
+}
+
+/**
+ * Intenta encontrar el nombre de visualización de un usuario en caché o en Firestore.
+ * @param {string} userId El UID del usuario.
+ * @returns {Promise<string>} El nombre de visualización del usuario o un marcador de posición.
+ */
+async function getUserDisplayName(userId) {
+    if (userId === 'admin') {
+        return 'Administrador';
+    }
+    if (userDisplayNamesCache[userId]) {
+        return userDisplayNamesCache[userId];
+    }
+    if (userId) {
+        try {
+            const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', userId));
+            if (userDocSnap.exists()) {
+                const userData = userDocSnap.data();
+                const displayName = `${userData.name} ${userData.surname}`;
+                userDisplayNamesCache[userId] = displayName;
+                return displayName;
+            }
+        } catch (error) {
+            console.error("Error al obtener el nombre del usuario:", error);
+        }
+    }
+    return 'Usuario Desconocido';
+}
+
+/**
+ * Carga el historial completo para el administrador y lo muestra en un modal.
+ */
+async function loadAdminFullHistory() {
+    adminFullHistoryTableBodyModal.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando historial completo...</td></tr>';
+    const transactionsCollectionRef = collection(db, 'artifacts', appId, 'transactions');
+    try {
+        const querySnapshot = await getDocs(transactionsCollectionRef);
+        adminFullHistoryTableBodyModal.innerHTML = '';
+        if (querySnapshot.empty) {
+            adminFullHistoryTableBodyModal.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay historial de transacciones.</td></tr>';
             return;
         }
 
-        // Ordena por marca de tiempo descendente
-        allPendingRequests.sort((a, b) => {
-            const timestampA = a.timestamp && typeof a.timestamp.seconds !== 'undefined' ? a.timestamp.seconds : 0;
-            const timestampB = b.timestamp && typeof b.timestamp.seconds !== 'undefined' ? b.timestamp.seconds : 0;
-            return timestampB - timestampA;
-        });
+        const transactions = [];
+        for (const docEntry of querySnapshot.docs) {
+            const transaction = docEntry.data();
+            transactions.push({ id: docEntry.id, ...transaction });
+        }
+        // Ordena las transacciones por marca de tiempo, la más reciente primero
+        transactions.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
 
-        for (const request of allPendingRequests) {
-            const date = (request.timestamp && typeof request.timestamp.seconds !== 'undefined')
-                ? new Date(request.timestamp.seconds * 1000).toLocaleString()
-                : 'Fecha no disponible';
+        for (const transaction of transactions) {
+            const date = (transaction.timestamp && typeof transaction.timestamp.seconds !== 'undefined') ? new Date(transaction.timestamp.seconds * 1000).toLocaleString() : 'Fecha no disponible';
+            const usersInvolved = transaction.usersInvolved || [];
+            const userNames = [];
+            for (const userId of usersInvolved) {
+                userNames.push(await getUserDisplayName(userId));
+            }
+            const type = transaction.type || 'Desconocido';
+            const amount = (transaction.amount ?? 0).toFixed(2);
+            const currency = transaction.currency || 'N/A';
+            const details = transaction.details || 'N/A'; // Usar un campo de detalles si existe, o construir uno
 
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${date}</td>
-                <td>${request.type}</td>
-                <td>${request.amount.toFixed(2)}</td>
-                <td>${request.currency}</td>
-                <td>${request.status === 'pending' ? 'Pendiente' : request.status}</td>
-                <td>${request.detail}</td>
-            `;
-            userPendingRequestsTableBody.appendChild(row);
-        }
-    }, (error) => {
-        console.error("Error al cargar las solicitudes pendientes del usuario:", error);
-        userPendingRequestsTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-4">Error al cargar solicitudes pendientes.</td></tr>`;
-    });
-}
-
-// --- NUEVO: Funcionalidad de abrir cuenta de ahorro ---
-openSavingsAccountBtn.addEventListener('click', () => {
-    openSavingsAccountModal.classList.remove('hidden');
-    savingsAccountForm.reset();
-    // Establece la fecha mínima para savingsEndDate en hoy
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    savingsEndDateInput.min = `${year}-${month}-${day}`;
-});
-
-cancelOpenSavingsAccountBtn.addEventListener('click', () => {
-    closeModal(openSavingsAccountModal);
-    savingsAccountForm.reset();
-});
-
-savingsAccountForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideMessage();
-
-    const savingsGoal = savingsGoalInput.value.trim();
-    const initialDepositAmount = parseFloat(initialDepositAmountInput.value);
-    const initialDepositCurrency = initialDepositCurrencyInput.value;
-    const preferredSavingsFrequency = preferredSavingsFrequencyInput.value;
-    const periodicContributionAmount = parseFloat(periodicContributionAmountInput.value); // Obtener contribución periódica
-    const savingsEndDate = savingsEndDateInput.value; // Obtener fecha de finalización
-
-    if (!savingsGoal || isNaN(initialDepositAmount) || initialDepositAmount <= 0 || !preferredSavingsFrequency || isNaN(periodicContributionAmount) || periodicContributionAmount < 0 || !savingsEndDate) {
-        showMessage('Por favor, completa todos los campos correctamente para tu cuenta de ahorro.', 'error');
-        return;
-    }
-
-    let initialDepositAmountInUSD = initialDepositAmount;
-    if (initialDepositCurrency === 'DOP') {
-        initialDepositAmountInUSD = initialDepositAmount / USD_TO_DOP_RATE;
-    }
-
-    if (currentBalanceUSD < initialDepositAmountInUSD) {
-        showMessage(`Saldo insuficiente en tu cuenta principal para depositar ${initialDepositAmount.toFixed(2)} ${initialDepositCurrency} en tu cuenta de ahorro. Necesitas al menos $${initialDepositAmountInUSD.toFixed(2)} USD.`, 'error');
-        return;
-    }
-
-    try {
-        // Agrega la solicitud de apertura de cuenta de ahorro a 'pending_requests'
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
-            userId: currentUserId,
-            type: 'savings_account_open',
-            savingsGoal: savingsGoal,
-            initialDepositAmount: initialDepositAmount,
-            initialDepositCurrency: initialDepositCurrency,
-            preferredSavingsFrequency: preferredSavingsFrequency,
-            periodicContributionAmount: periodicContributionAmount, // Almacena la contribución periódica
-            startDate: serverTimestamp(), // Establece automáticamente la fecha de inicio
-            endDate: savingsEndDate, // Almacena la fecha de finalización proporcionada
-            timestamp: serverTimestamp(),
-            status: 'pending'
-        });
-
-        showMessage(`Solicitud para abrir cuenta de ahorro para "${savingsGoal}" enviada. Esperando aprobación del administrador.`, 'success');
-        closeModal(openSavingsAccountModal);
-        savingsAccountForm.reset();
-
-        // Envía un mensaje de WhatsApp al administrador
-        const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
-        const userData = userDocSnap.data();
-        const whatsappMessage = `
-        Nueva solicitud de apertura de cuenta de ahorro pendiente:
-        Usuario: ${userData.name} ${userData.surname} (ID: ${userData.userDisplayId || userData.userId})
-        Objetivo: ${savingsGoal}
-        Depósito Inicial: ${initialDepositAmount.toFixed(2)} ${initialDepositCurrency}
-        Frecuencia Preferida: ${preferredSavingsFrequency}
-        Cuota Periódica: $${periodicContributionAmount.toFixed(2)} USD
-        Fecha Finalización: ${savingsEndDate}
-        Por favor, revisa y confirma.
-        `;
-        const encodedMessage = encodeURIComponent(whatsappMessage);
-        window.open(`https://wa.me/${ADMIN_PHONE_NUMBER_FULL}?text=${encodedMessage}`, '_blank');
-
-    } catch (error) {
-        console.error("Error al solicitar cuenta de ahorro:", error);
-        showMessage('Error al procesar la solicitud de cuenta de ahorro. Por favor, inténtalo de nuevo.', 'error');
-    }
-});
-
-// --- NUEVO: Funcionalidad de ver cuentas de ahorro ---
-viewSavingsAccountsBtn.addEventListener('click', () => {
-    viewSavingsAccountsModal.classList.remove('hidden');
-    loadSavingsAccounts();
-});
-
-closeViewSavingsAccountsBtn.addEventListener('click', () => {
-    closeModal(viewSavingsAccountsModal);
-});
-
-/**
- * Carga y muestra las cuentas de ahorro del usuario y maneja la recolección automática.
- */
-async function loadSavingsAccounts() {
-    savingsAccountsTableBody.innerHTML = '<tr><td colspan="10" class="text-center text-gray-500 py-4">Cargando cuentas de ahorro...</td></tr>';
-
-    if (!currentUserId) {
-        savingsAccountsTableBody.innerHTML = '<tr><td colspan="10" class="text-center text-red-500 py-4">Inicia sesión para ver tus cuentas de ahorro.</td></tr>';
-        return;
-    }
-
-    const savingsAccountsRef = collection(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts');
-
-    onSnapshot(savingsAccountsRef, async (snapshot) => {
-        savingsAccountsTableBody.innerHTML = '';
-        if (snapshot.empty) {
-            savingsAccountsTableBody.innerHTML = '<tr><td colspan="10" class="text-center text-gray-500 py-4">No tienes cuentas de ahorro activas.</td></tr>';
-            return;
-        }
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Normaliza al inicio del día para la comparación
-
-        for (const docEntry of snapshot.docs) {
-            const account = docEntry.data();
-            const savingsAccountId = docEntry.id;
-
-            const startDateDisplay = account.startDate ? new Date(account.startDate.seconds * 1000).toLocaleDateString() : 'N/A';
-            const endDateDisplay = account.endDate || 'N/A';
-            const nextContributionDueDateDisplay = account.nextContributionDueDate ? new Date(account.nextContributionDueDate.seconds * 1000).toLocaleDateString() : 'N/A';
-
-            // --- Lógica de recolección automática ---
-            if (account.status === 'active' && account.preferredSavingsFrequency !== 'Ocasional' && account.periodicContributionAmount > 0) {
-                const nextDueDate = account.nextContributionDueDate ? new Date(account.nextContributionDueDate.seconds * 1000) : null;
-                const lastAttemptDate = account.lastContributionAttemptDate ? new Date(account.lastContributionAttemptDate.seconds * 1000) : null;
-
-                // Normaliza nextDueDate y lastAttemptDate al inicio del día para una comparación precisa
-                if (nextDueDate) nextDueDate.setHours(0, 0, 0, 0);
-                if (lastAttemptDate) lastAttemptDate.setHours(0, 0, 0, 0);
-
-                // Comprueba si un pago está vencido Y no se ha intentado hoy
-                if (nextDueDate && today >= nextDueDate && (!lastAttemptDate || today > lastAttemptDate)) {
-                    console.log(`Intentando recolección automática para la cuenta de ahorro ${savingsAccountId} (Objetivo: ${account.savingsGoal})`);
-                    await attemptAutomaticSavingsCollection(currentUserId, savingsAccountId, account.periodicContributionAmount, account.savingsGoal);
-                }
-            }
-
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${account.accountId.substring(0, 8)}...</td>
-                <td>${account.savingsGoal}</td>
-                <td>$${(account.balanceUSD ?? 0).toFixed(2)} USD</td>
-                <td>RD$${(account.balanceDOP ?? 0).toFixed(2)} DOP</td>
-                <td>${account.preferredSavingsFrequency}</td>
-                <td>$${(account.periodicContributionAmount ?? 0).toFixed(2)} USD</td>
-                <td>${nextContributionDueDateDisplay}</td>
-                <td>${endDateDisplay}</td>
-                <td>${account.status === 'active' ? 'Activa' : account.status}</td>
+                <td>${type}</td>
+                <td>${userNames.join(', ')}</td>
+                <td class="text-right">${amount}</td>
+                <td>${currency}</td>
+                <td>${details}</td>
                 <td>
-                    <button class="btn-primary btn-sm deposit-to-savings-btn"
-                        data-account-id="${account.accountId}"
-                        data-savings-goal="${account.savingsGoal}"
-                        >Depositar</button>
-                    <button class="btn-secondary btn-sm withdraw-from-savings-btn"
-                        data-account-id="${account.accountId}"
-                        data-savings-goal="${account.savingsGoal}"
-                        data-balance-usd="${account.balanceUSD}"
-                        >Retirar</button>
-                    <button class="btn-danger btn-sm delete-savings-account-btn mt-2"
-                        data-account-id="${account.accountId}"
-                        data-savings-goal="${account.savingsGoal}"
-                        data-balance-usd="${account.balanceUSD}"
-                        >Eliminar</button>
+                    <button class="btn-info btn-sm view-receipt-btn" data-transaction-id="${transaction.id}">Ver Recibo</button>
                 </td>
             `;
-            savingsAccountsTableBody.appendChild(row);
-        }
-
-        // Adjunta oyentes de eventos para los nuevos botones usando delegación
-        savingsAccountsTableBody.querySelectorAll('.deposit-to-savings-btn').forEach(button => {
-            button.onclick = (event) => {
-                const { accountId, savingsGoal } = event.target.dataset;
-                showDepositToSavingsModal(accountId, savingsGoal);
-            };
-        });
-        savingsAccountsTableBody.querySelectorAll('.withdraw-from-savings-btn').forEach(button => {
-            button.onclick = (event) => {
-                const { accountId, savingsGoal, balanceUsd } = event.target.dataset;
-                showWithdrawFromSavingsModal(accountId, savingsGoal, parseFloat(balanceUsd));
-            };
-        });
-        savingsAccountsTableBody.querySelectorAll('.delete-savings-account-btn').forEach(button => {
-            button.onclick = (event) => {
-                const { accountId, savingsGoal, balanceUsd } = event.target.dataset;
-                showConfirmDeleteSavingsAccountModal(accountId, savingsGoal, parseFloat(balanceUsd));
-            };
-        });
-
-    }, (error) => {
-        console.error("Error al cargar las cuentas de ahorro:", error);
-        savingsAccountsTableBody.innerHTML = `<tr><td colspan="10" class="text-center text-red-500 py-4">Error al cargar cuentas de ahorro.</td></tr>`;
-    });
-}
-
-/**
- * Intenta recolectar automáticamente la contribución de ahorro.
- * @param {string} userId El UID de Firebase del usuario.
- * @param {string} savingsAccountId El ID de la cuenta de ahorro.
- * @param {number} amount La cantidad a recolectar.
- * @param {string} savingsGoal El objetivo de la cuenta de ahorro.
- */
-async function attemptAutomaticSavingsCollection(userId, savingsAccountId, amount, savingsGoal) {
-    console.log(`Intentando recolección automática para el usuario ${userId}, cuenta ${savingsAccountId}, monto ${amount}`);
-    try {
-        const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
-        const savingsAccountRef = doc(db, 'artifacts', appId, 'users', userId, 'savings_accounts', savingsAccountId);
-
-        const userDocSnap = await getDoc(userProfileRef);
-        const savingsDocSnap = await getDoc(savingsAccountRef);
-
-        if (!userDocSnap.exists() || !savingsDocSnap.exists()) {
-            console.error("Usuario o cuenta de ahorro no encontrados durante el intento de recolección automática.");
-            return;
-        }
-
-        const userData = userDocSnap.data();
-        const savingsData = savingsDocSnap.data();
-
-        let userCurrentBalanceUSD = userData.balanceUSD || 0;
-        let savingsCurrentBalanceUSD = savingsData.balanceUSD || 0;
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        // Actualiza lastContributionAttemptDate independientemente del éxito/fracaso
-        await updateDoc(savingsAccountRef, {
-            lastContributionAttemptDate: serverTimestamp()
-        });
-
-        if (userCurrentBalanceUSD >= amount) {
-            // Fondos suficientes: realiza la transferencia
-            let newUserBalanceUSD = userCurrentBalanceUSD - amount;
-            let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
-
-            let newSavingsBalanceUSD = savingsCurrentBalanceUSD + amount;
-            let newSavingsBalanceDOP = newSavingsBalanceUSD * USD_TO_DOP_RATE;
-
-            await updateDoc(userProfileRef, {
-                balanceUSD: newUserBalanceUSD,
-                balanceDOP: newUserBalanceDOP
-            });
-            await updateDoc(savingsAccountRef, {
-                balanceUSD: newSavingsBalanceUSD,
-                balanceDOP: newSavingsBalanceDOP,
-                nextContributionDueDate: getNextDueDate(savingsData.preferredSavingsFrequency, today) // Actualiza la próxima fecha de vencimiento
-            });
-
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-                userId: userId,
-                type: 'automatic_savings_collection',
-                amount: amount,
-                currency: 'USD',
-                savingsAccountId: savingsAccountId,
-                savingsGoal: savingsGoal,
-                timestamp: serverTimestamp(),
-                status: 'completed',
-                description: `Cobro automático de ahorro para "${savingsGoal}"`
-            });
-            showMessage(`¡Cobro automático de $${amount.toFixed(2)} USD para "${savingsGoal}" realizado con éxito!`, 'success');
-            console.log(`Recolección automática para ${savingsGoal} exitosa.`);
-
-        } else {
-            // Fondos insuficientes: registra una deuda
-            console.log(`Fondos insuficientes para la recolección automática de ${savingsGoal}. Registrando deuda.`);
-
-            // Comprueba si ya existe una deuda para este período y está pendiente/vencida
-            const existingDebtsQuery = query(
-                collection(db, 'artifacts', appId, 'public', 'data', 'savings_debts'),
-                where('userId', '==', userId),
-                where('savingsAccountId', '==', savingsAccountId),
-                where('status', 'in', ['pending', 'overdue'])
-            );
-            const existingDebtsSnap = await getDocs(existingDebtsQuery);
-
-            if (existingDebtsSnap.empty) {
-                // Crea una nueva entrada de deuda
-                const dueDateForDebt = addDays(today, 7); // 7 días para pagar la deuda
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'savings_debts'), {
-                    userId: userId,
-                    savingsAccountId: savingsAccountId,
-                    savingsGoal: savingsGoal,
-                    amountDue: amount,
-                    currency: 'USD',
-                    dueDate: dueDateForDebt,
-                    status: 'pending', // 'pending' para pago, 'overdue' si pasó la fecha de vencimiento, 'paid', 'penalized'
-                    penaltyApplied: false,
-                    createdAt: serverTimestamp(),
-                    lastUpdated: serverTimestamp()
-                });
-                showMessage(`No hay suficiente saldo para el cobro automático de "${savingsGoal}". Se ha registrado una deuda de $${amount.toFixed(2)} USD. Tienes hasta el ${dueDateForDebt.toLocaleDateString()} para pagar.`, 'error');
-            } else {
-                console.log(`Ya existe una deuda para ${savingsGoal} para este período. No se creó ninguna deuda nueva.`);
-                showMessage(`Ya tienes una deuda pendiente para tu cuenta de ahorro "${savingsGoal}".`, 'info');
-            }
-
-            // Actualiza la próxima fecha de vencimiento de la contribución incluso si se crea la deuda, para evitar volver a intentar el mismo período
-            await updateDoc(savingsAccountRef, {
-                nextContributionDueDate: getNextDueDate(savingsData.preferredSavingsFrequency, today)
-            });
+            adminFullHistoryTableBodyModal.appendChild(row);
         }
     } catch (error) {
-        console.error("Error durante la recolección automática de ahorros:", error);
-        showMessage(`Error en el cobro automático para "${savingsGoal}". Intenta de nuevo más tarde.`, 'error');
+        console.error("Error al cargar el historial completo del administrador:", error);
+        adminFullHistoryTableBodyModal.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error al cargar el historial.</td></tr>`;
     }
 }
 
 /**
- * Calcula la próxima fecha de vencimiento de la contribución en función de la frecuencia.
- * @param {string} frequency La frecuencia de ahorro preferida.
- * @param {Date} lastDate La última fecha en que se venció o se intentó una contribución.
- * @returns {Date} La próxima fecha de vencimiento.
+ * Carga los datos del perfil del usuario para el formulario de edición.
  */
-function getNextDueDate(frequency, lastDate) {
-    let nextDate = new Date(lastDate); // Comienza desde la última fecha intentada/vencida
-    if (frequency === 'Diaria') {
-        nextDate = addDays(nextDate, 1);
-    } else if (frequency === 'Semanal') {
-        nextDate = addWeeks(nextDate, 1);
-    } else if (frequency === 'Quincenal') {
-        nextDate = addDays(nextDate, 15);
-    } else if (frequency === 'Mensual') {
-        nextDate = addMonths(nextDate, 1);
-    }
-    return nextDate;
-}
-
-// --- NUEVO: Funciones del modal de depósito en ahorros ---
-function showDepositToSavingsModal(accountId, savingsGoal) {
-    currentSavingsAccountId = accountId;
-    depositToSavingsAccountIdDisplay.textContent = `${savingsGoal} (${accountId.substring(0, 8)}...)`;
-    depositToSavingsModal.classList.remove('hidden');
-    depositToSavingsForm.reset();
-}
-
-cancelDepositToSavingsBtn.addEventListener('click', () => {
-    closeModal(depositToSavingsModal);
-});
-
-depositToSavingsForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideMessage();
-
-    const amount = parseFloat(depositToSavingsAmountInput.value);
-    const currency = depositToSavingsCurrencyInput.value;
-
-    if (isNaN(amount) || amount <= 0) {
-        showMessage('El monto a depositar debe ser un número positivo.', 'error');
-        return;
-    }
-
-    let amountInUSD = amount;
-    if (currency === 'DOP') {
-        amountInUSD = amount / USD_TO_DOP_RATE;
-    }
-
-    if (currentBalanceUSD < amountInUSD) {
-        showMessage(`Saldo insuficiente en tu cuenta principal para depositar ${amount.toFixed(2)} ${currency} en tu cuenta de ahorro. Necesitas al menos $${amountInUSD.toFixed(2)} USD.`, 'error');
-        return;
-    }
-
+async function loadEditProfileData() {
+    if (!currentUserId) return;
     try {
-        const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
-        const savingsAccountRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts', currentSavingsAccountId);
-
-        const userDocSnap = await getDoc(userProfileRef);
-        const savingsDocSnap = await getDoc(savingsAccountRef);
-
-        if (!userDocSnap.exists() || !savingsDocSnap.exists()) {
-            showMessage('Error: No se encontró tu perfil o la cuenta de ahorro.', 'error');
-            return;
-        }
-
-        const userData = userDocSnap.data();
-        const savingsData = savingsDocSnap.data();
-
-        // Deduce de la cuenta principal
-        let newUserBalanceUSD = userData.balanceUSD - amountInUSD;
-        let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
-
-        // Agrega a la cuenta de ahorro
-        let newSavingsBalanceUSD = savingsData.balanceUSD + amountInUSD;
-        let newSavingsBalanceDOP = newSavingsBalanceUSD * USD_TO_DOP_RATE;
-
-        await updateDoc(userProfileRef, {
-            balanceUSD: newUserBalanceUSD,
-            balanceDOP: newUserBalanceDOP
-        });
-
-        await updateDoc(savingsAccountRef, {
-            balanceUSD: newSavingsBalanceUSD,
-            balanceDOP: newSavingsBalanceDOP
-        });
-
-        // Registra la transacción
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-            userId: currentUserId,
-            type: 'deposit_to_savings',
-            amount: amount,
-            currency: currency,
-            savingsAccountId: currentSavingsAccountId,
-            savingsGoal: savingsData.savingsGoal,
-            timestamp: serverTimestamp(),
-            status: 'completed',
-            description: `Depósito a cuenta de ahorro "${savingsData.savingsGoal}"`
-        });
-
-        showMessage(`¡Depósito de ${amount.toFixed(2)} ${currency} a tu cuenta de ahorro realizado con éxito!`, 'success');
-        closeModal(depositToSavingsModal);
-    } catch (error) {
-        console.error("Error al depositar en la cuenta de ahorro:", error);
-        showMessage('Error al depositar en la cuenta de ahorro. Intenta de nuevo.', 'error');
-    }
-});
-
-// --- NUEVO: Funciones del modal de retiro de ahorros ---
-function showWithdrawFromSavingsModal(accountId, savingsGoal, balanceUsd) {
-    currentSavingsAccountId = accountId;
-    currentSavingsAccountGoal = savingsGoal;
-    currentSavingsAccountBalanceUSD = balanceUsd; // Almacena para validación
-    withdrawFromSavingsAccountIdDisplay.textContent = `${savingsGoal} (${accountId.substring(0, 8)}...)`;
-    withdrawFromSavingsModal.classList.remove('hidden');
-    withdrawFromSavingsForm.reset();
-}
-
-cancelWithdrawFromSavingsBtn.addEventListener('click', () => {
-    closeModal(withdrawFromSavingsModal);
-});
-
-withdrawFromSavingsForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideMessage();
-
-    const amount = parseFloat(withdrawFromSavingsAmountInput.value);
-    const currency = withdrawFromSavingsCurrencyInput.value;
-
-    if (isNaN(amount) || amount <= 0) {
-        showMessage('El monto a retirar debe ser un número positivo.', 'error');
-        return;
-    }
-
-    let amountInUSD = amount;
-    if (currency === 'DOP') {
-        amountInUSD = amount / USD_TO_DOP_RATE;
-    }
-
-    if (currentSavingsAccountBalanceUSD < amountInUSD) {
-        showMessage(`Saldo insuficiente en tu cuenta de ahorro para retirar ${amount.toFixed(2)} ${currency}. Saldo actual: $${currentSavingsAccountBalanceUSD.toFixed(2)} USD.`, 'error');
-        return;
-    }
-
-    try {
-        const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
-        const savingsAccountRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts', currentSavingsAccountId);
-
-        const userDocSnap = await getDoc(userProfileRef);
-        const savingsDocSnap = await getDoc(savingsAccountRef);
-
-        if (!userDocSnap.exists() || !savingsDocSnap.exists()) {
-            showMessage('Error: No se encontró tu perfil o la cuenta de ahorro.', 'error');
-            return;
-        }
-
-        const userData = userDocSnap.data();
-        const savingsData = savingsDocSnap.data();
-
-        // Deduce de la cuenta de ahorro
-        let newSavingsBalanceUSD = savingsData.balanceUSD - amountInUSD;
-        let newSavingsBalanceDOP = newSavingsBalanceUSD * USD_TO_DOP_RATE;
-
-        // Agrega a la cuenta principal
-        let newUserBalanceUSD = userData.balanceUSD + amountInUSD;
-        let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
-
-        await updateDoc(userProfileRef, {
-            balanceUSD: newUserBalanceUSD,
-            balanceDOP: newUserBalanceDOP
-        });
-
-        await updateDoc(savingsAccountRef, {
-            balanceUSD: newSavingsBalanceUSD,
-            balanceDOP: newSavingsBalanceDOP
-        });
-
-        // Registra la transacción
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-            userId: currentUserId,
-            type: 'withdraw_from_savings',
-            amount: amount,
-            currency: currency,
-            savingsAccountId: currentSavingsAccountId,
-            savingsGoal: savingsData.savingsGoal,
-            timestamp: serverTimestamp(),
-            status: 'completed',
-            description: `Retiro de cuenta de ahorro "${savingsData.savingsGoal}"`
-        });
-
-        showMessage(`¡Retiro de ${amount.toFixed(2)} ${currency} de tu cuenta de ahorro realizado con éxito!`, 'success');
-        closeModal(withdrawFromSavingsModal);
-    } catch (error) {
-        console.error("Error al retirar de la cuenta de ahorro:", error);
-        showMessage('Error al retirar de la cuenta de ahorro. Intenta de nuevo.', 'error');
-    }
-});
-
-// --- NUEVO: Funciones de eliminación de cuenta de ahorro ---
-function showConfirmDeleteSavingsAccountModal(accountId, savingsGoal, balanceUsd) {
-    currentSavingsAccountId = accountId;
-    currentSavingsAccountGoal = savingsGoal;
-    currentSavingsAccountBalanceUSD = balanceUsd; // Almacena para el cálculo
-
-    const feeAmount = balanceUsd * SAVINGS_DELETE_FEE_RATE;
-    const remainingBalance = balanceUsd - feeAmount;
-
-    deleteSavingsAccountGoalDisplay.textContent = savingsGoal;
-    deleteSavingsAccountFeeDisplay.textContent = `$${feeAmount.toFixed(2)} USD`;
-    deleteSavingsAccountRemainingDisplay.textContent = `$${remainingBalance.toFixed(2)} USD`;
-
-    confirmDeleteSavingsAccountModal.classList.remove('hidden');
-}
-
-cancelDeleteSavingsAccountBtn.addEventListener('click', () => {
-    closeModal(confirmDeleteSavingsAccountModal);
-});
-cancelDeleteSavingsAccountBtn2.addEventListener('click', () => { // Segundo botón de cancelar
-    closeModal(confirmDeleteSavingsAccountModal);
-});
-
-confirmDeleteSavingsAccountBtn.addEventListener('click', async () => {
-    hideMessage();
-
-    if (!currentSavingsAccountId) {
-        showMessage('Error: No se seleccionó ninguna cuenta de ahorro para eliminar.', 'error');
-        return;
-    }
-
-    try {
-        const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
-        const savingsAccountRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts', currentSavingsAccountId);
-
-        const userDocSnap = await getDoc(userProfileRef);
-        const savingsDocSnap = await getDoc(savingsAccountRef);
-
-        if (!userDocSnap.exists() || !savingsDocSnap.exists()) {
-            showMessage('Error: No se encontró tu perfil o la cuenta de ahorro a eliminar.', 'error');
-            return;
-        }
-
-        const userData = userDocSnap.data();
-        const savingsData = savingsDocSnap.data();
-        const savingsBalanceUSD = savingsData.balanceUSD || 0;
-
-        const feeAmount = savingsBalanceUSD * SAVINGS_DELETE_FEE_RATE;
-        const remainingBalanceToTransfer = savingsBalanceUSD - feeAmount;
-
-        // Actualiza el saldo de la cuenta principal
-        let newUserBalanceUSD = userData.balanceUSD + remainingBalanceToTransfer;
-        let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
-
-        await updateDoc(userProfileRef, {
-            balanceUSD: newUserBalanceUSD,
-            balanceDOP: newUserBalanceDOP
-        });
-
-        // Transfiere la tarifa al administrador
-        let adminId = null;
-        const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
-        const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
-        const adminSnapshot = await getDocs(adminQuery);
-        if (!adminSnapshot.empty) {
-            adminId = adminSnapshot.docs[0].id;
-            const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
-            const adminData = (await getDoc(adminProfileRef)).data();
-            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + feeAmount;
-            await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
-            console.log("Tarifa de eliminación de cuenta de ahorro transferida al administrador y registrada.");
-        } else {
-            console.warn("Cuenta de administrador no encontrada. La tarifa de eliminación de cuenta de ahorro podría no transferirse.");
-        }
-
-
-        // Elimina el documento de la cuenta de ahorro
-        await deleteDoc(savingsAccountRef);
-
-        // Registra la transacción de eliminación
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-            userId: currentUserId,
-            type: 'delete_savings_account',
-            savingsAccountId: currentSavingsAccountId,
-            savingsGoal: savingsData.savingsGoal,
-            feeAmount: feeAmount,
-            remainingBalanceTransferred: remainingBalanceToTransfer,
-            timestamp: serverTimestamp(),
-            status: 'completed',
-            description: `Eliminación de cuenta de ahorro "${savingsData.savingsGoal}"`
-        });
-
-        showMessage(`¡Cuenta de ahorro "${currentSavingsAccountGoal}" eliminada con éxito! Se transfirieron $${remainingBalanceToTransfer.toFixed(2)} USD a tu cuenta principal (después de la tarifa de $${feeAmount.toFixed(2)} USD).`, 'success');
-        closeModal(confirmDeleteSavingsAccountModal);
-        // El oyente onSnapshot de loadSavingsAccounts() actualizará automáticamente la tabla
-    } catch (error) {
-        console.error("Error al eliminar la cuenta de ahorro:", error);
-        showMessage('Error al eliminar la cuenta de ahorro. Intenta de nuevo.', 'error');
-    }
-});
-
-
-// --- NUEVO: Funcionalidad de editar anuncios del administrador ---
-editAnnouncementsBtn.addEventListener('click', async () => {
-    editAnnouncementsModal.classList.remove('hidden');
-    await loadAnnouncementsForEdit(); // Carga los anuncios actuales en el área de texto
-});
-
-cancelEditAnnouncementsBtn.addEventListener('click', () => {
-    closeModal(editAnnouncementsModal);
-    editAnnouncementsForm.reset();
-});
-
-editAnnouncementsForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideMessage();
-
-    const newAnnouncementsText = announcementsTextarea.value.trim();
-    const newAnnouncementsArray = newAnnouncementsText.split('\n').map(line => line.trim()).filter(line => line !== '');
-
-    try {
-        const announcementsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'announcements');
-        await setDoc(announcementsDocRef, {
-            items: newAnnouncementsArray,
-            lastUpdated: serverTimestamp()
-        }, { merge: true }); // Usa merge para evitar sobrescribir otros campos si existen
-
-        showMessage('¡Anuncios actualizados exitosamente!', 'success');
-        closeModal(editAnnouncementsModal);
-    } catch (error) {
-        console.error("Error al actualizar los anuncios:", error);
-        showMessage('Error al actualizar los anuncios. Intenta de nuevo.', 'error');
-    }
-});
-
-/**
- * Carga los anuncios en la lista del panel de control y en el área de texto de edición.
- * Usa onSnapshot para actualizaciones en tiempo real en el panel de control.
- */
-function loadAnnouncements() {
-    const announcementsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'announcements');
-
-    onSnapshot(announcementsDocRef, (docSnap) => {
-        announcementsList.innerHTML = ''; // Borra la lista existente
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            if (data.items && Array.isArray(data.items) && data.items.length > 0) {
-                data.items.forEach(item => {
-                    const li = document.createElement('li');
-                    li.textContent = item;
-                    announcementsList.appendChild(li);
-                });
-            } else {
-                announcementsList.innerHTML = '<li>No hay anuncios importantes en este momento.</li>';
-            }
-        } else {
-            announcementsList.innerHTML = '<li>No hay anuncios importantes en este momento.</li>';
-        }
-    }, (error) => {
-        console.error("Error al cargar los anuncios:", error);
-        announcementsList.innerHTML = '<li>Error al cargar anuncios.</li>';
-    });
-}
-
-/**
- * Carga los anuncios específicamente para el área de texto del modal de edición.
- */
-async function loadAnnouncementsForEdit() {
-    try {
-        const announcementsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'announcements');
-        const docSnap = await getDoc(announcementsDocRef);
-        if (docSnap.exists() && docSnap.data().items && Array.isArray(docSnap.data().items)) {
-            announcementsTextarea.value = docSnap.data().items.join('\n');
-        } else {
-            announcementsTextarea.value = ''; // Borra si no hay anuncios o el formato es incorrecto
-        }
-    } catch (error) {
-        console.error("Error al cargar los anuncios para editar:", error);
-        announcementsTextarea.value = 'Error al cargar anuncios para editar.';
-    }
-}
-
-
-// --- Funciones de edición de perfil ---
-editProfileBtn.addEventListener('click', async () => {
-    if (!currentUser) {
-        showMessage('Debes iniciar sesión para editar tu perfil.', 'error');
-        return;
-    }
-    try {
-        const userDocRef = doc(db, 'artifacts', appId, 'users', currentUserId);
-        const userDocSnap = await getDoc(userDocRef);
+        const userDocSnap = await getDoc(doc(db, 'artifacts', appId, 'users', currentUserId));
         if (userDocSnap.exists()) {
             const userData = userDocSnap.data();
             editNameInput.value = userData.name || '';
             editSurnameInput.value = userData.surname || '';
             editAgeInput.value = userData.age || '';
-            editPhoneNumberInput.value = userData.phoneNumber || ''; // Rellena el número de teléfono
-            editProfileModal.classList.remove('hidden');
-        } else {
-            showMessage('No se pudieron cargar los datos de tu perfil.', 'error');
+            editPhoneNumberInput.value = userData.phoneNumber || '';
         }
     } catch (error) {
-        console.error("Error al cargar el perfil para editar:", error);
-        showMessage('Error al cargar los datos de tu perfil. Intenta de nuevo.', 'error');
+        console.error("Error al cargar los datos del perfil para editar:", error);
+        showMessage("Error al cargar los datos del perfil.", "error");
     }
-});
+}
 
-cancelEditProfileBtn.addEventListener('click', () => {
-    closeModal(editProfileModal);
-    editProfileForm.reset();
-});
-
+// Envío del formulario de edición de perfil
 editProfileForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideMessage();
+    if (!currentUserId) return;
+    const newName = editNameInput.value.trim();
+    const newSurname = editSurnameInput.value.trim();
+    const newAge = parseInt(editAgeInput.value);
+    const newPhoneNumber = editPhoneNumberInput.value.trim();
 
-    const name = editNameInput.value.trim();
-    const surname = editSurnameInput.value.trim();
-    const age = parseInt(editAgeInput.value);
-    const phoneNumber = editPhoneNumberInput.value.trim(); // Obtener número de teléfono
-
-    if (!name || !surname || isNaN(age) || age <= 0 || !phoneNumber) {
+    if (!newName || !newSurname || isNaN(newAge) || newAge < 13 || !newPhoneNumber) {
         showMessage('Por favor, completa todos los campos correctamente.', 'error');
         return;
     }
 
     try {
-        const userDocRef = doc(db, 'artifacts', appId, 'users', currentUserId);
-        await updateDoc(userDocRef, {
-            name: name,
-            surname: surname,
-            age: age,
-            phoneNumber: phoneNumber // Actualiza el número de teléfono
+        await updateDoc(doc(db, 'artifacts', appId, 'users', currentUserId), {
+            name: newName,
+            surname: newSurname,
+            age: newAge,
+            phoneNumber: newPhoneNumber
         });
-        showMessage('¡Perfil actualizado exitosamente!', 'success');
+        showMessage('Perfil actualizado exitosamente.', 'success');
         closeModal(editProfileModal);
+        // Actualiza la visualización del dashboard inmediatamente
+        dashboardUserName.textContent = `${newName} ${newSurname}`;
+        updateProfileAvatar(newName);
     } catch (error) {
         console.error("Error al actualizar el perfil:", error);
-        showMessage('Error al actualizar el perfil. Intenta de nuevo.', 'error');
+        showMessage('Error al actualizar el perfil. Por favor, inténtalo de nuevo.', 'error');
     }
 });
 
-// --- Funciones de cambio de contraseña ---
-changePasswordBtn.addEventListener('click', () => {
-    if (!currentUser) {
-        showMessage('Debes iniciar sesión para cambiar tu contraseña.', 'error');
-        return;
-    }
-    changePasswordModal.classList.remove('hidden');
-    changePasswordForm.reset();
-});
-
-cancelChangePasswordBtn.addEventListener('click', () => {
-    closeModal(changePasswordModal);
-    changePasswordForm.reset();
-});
-
+// Envío del formulario de cambio de contraseña
 changePasswordForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     hideMessage();
-
     const currentPassword = currentPasswordInput.value;
     const newPassword = newPasswordInput.value;
     const confirmNewPassword = confirmNewPasswordInput.value;
 
-    if (!currentPassword || !newPassword || !confirmNewPassword) {
-        showMessage('Por favor, completa todos los campos.', 'error');
-        return;
-    }
     if (newPassword !== confirmNewPassword) {
-        showMessage('La nueva contraseña y su confirmación no coinciden.', 'error');
+        showMessage('Las nuevas contraseñas no coinciden.', 'error');
         return;
     }
     if (newPassword.length < 6) {
         showMessage('La nueva contraseña debe tener al menos 6 caracteres.', 'error');
         return;
     }
-    if (currentPassword === newPassword) {
-        showMessage('La nueva contraseña no puede ser igual a la actual.', 'error');
-        return;
-    }
+
+    const user = auth.currentUser;
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
 
     try {
-        // Volver a autenticar al usuario con la contraseña actual
-        const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
-        await reauthenticateWithCredential(currentUser, credential);
-
-        // Actualizar contraseña
-        await updatePassword(currentUser, newPassword);
-
-        showMessage('¡Contraseña actualizada exitosamente!', 'success');
+        await reauthenticateWithCredential(user, credential);
+        await updatePassword(user, newPassword);
+        showMessage('Contraseña actualizada exitosamente.', 'success');
         closeModal(changePasswordModal);
         changePasswordForm.reset();
     } catch (error) {
         console.error("Error al cambiar la contraseña:", error);
-        let errorMessage = 'Error al cambiar la contraseña. Por favor, inténtalo de nuevo.';
-        if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-            errorMessage = 'La contraseña actual es incorrecta.';
-        } else if (error.code === 'auth/weak-password') {
-            errorMessage = 'La nueva contraseña es demasiado débil. Debe tener al menos 6 caracteres.';
-        } else if (error.code === 'auth/requires-recent-login') {
-            errorMessage = 'Por favor, inicia sesión de nuevo para cambiar tu contraseña. Por motivos de seguridad.';
+        if (error.code === 'auth/wrong-password') {
+            showMessage('La contraseña actual es incorrecta.', 'error');
+        } else {
+            showMessage('Error al cambiar la contraseña. Inténtalo de nuevo.', 'error');
         }
-        showMessage(errorMessage, 'error');
     }
 });
 
-// --- Funciones de consejos de seguridad ---
-securityTipsBtn.addEventListener('click', () => {
-    securityTipsModal.classList.remove('hidden');
-});
 
-closeSecurityTipsBtn.addEventListener('click', () => {
-    closeModal(securityTipsModal);
-});
-
-// --- Funciones de acerca de nosotros ---
-aboutUsBtn.addEventListener('click', () => {
-    aboutUsModal.classList.remove('hidden');
-});
-
-closeAboutUsBtn.addEventListener('click', () => {
-    closeModal(aboutUsModal);
-});
-
-// --- Funciones de contacto y soporte ---
-contactSupportBtn.addEventListener('click', () => {
-    contactSupportModal.classList.remove('hidden');
-});
-
-closeContactSupportBtn.addEventListener('click', () => {
-    closeModal(contactSupportModal);
-});
-
-// --- NUEVO: Funciones de deudas de ahorro del cliente ---
-viewSavingsDebtsBtn.addEventListener('click', () => {
-    savingsDebtsModal.classList.remove('hidden');
-    loadSavingsDebts();
-});
-
-closeSavingsDebtsModalBtn.addEventListener('click', () => {
-    closeModal(savingsDebtsModal);
-    // Desuscribirse del oyente cuando se cierra el modal
-    if (savingsDebtsUnsubscribe) {
-        savingsDebtsUnsubscribe();
-        savingsDebtsUnsubscribe = null;
-        console.log("Cliente: Desuscrito del oyente de deudas de ahorro al cerrar el modal.");
-    }
-});
-
+// --- Funciones para Cuentas de Ahorro ---
 /**
- * Carga y muestra las deudas de ahorro del usuario actual.
+ * Carga las cuentas de ahorro del usuario y las muestra en una tabla.
  */
-async function loadSavingsDebts() {
-    // Desuscribirse del oyente anterior si existe
-    if (savingsDebtsUnsubscribe) {
-        savingsDebtsUnsubscribe();
-        savingsDebtsUnsubscribe = null; // Restablecer
-        console.log("Cliente: Desuscrito del oyente de deudas de ahorro anterior.");
-    }
-
-    savingsDebtsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">Cargando deudas...</td></tr>';
-
+async function loadUserSavingsAccounts() {
     if (!currentUserId) {
-        savingsDebtsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 py-4">Inicia sesión para ver tus deudas.</td></tr>';
+        savingsAccountsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Inicia sesión para ver tus cuentas de ahorro.</td></tr>';
         return;
     }
 
-    const debtsRef = collection(db, 'artifacts', appId, 'public', 'data', 'savings_debts');
-    const q = query(debtsRef, where('userId', '==', currentUserId), where('status', 'in', ['pending', 'overdue']));
+    savingsAccountsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando cuentas de ahorro...</td></tr>';
+    const savingsCollectionRef = collection(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts');
+    const q = query(savingsCollectionRef, where('status', '==', 'active'));
 
-    // Asigna la función de desuscripción a savingsDebtsUnsubscribe
+    try {
+        const querySnapshot = await getDocs(q);
+        savingsAccountsTableBody.innerHTML = '';
+        if (querySnapshot.empty) {
+            savingsAccountsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No tienes cuentas de ahorro activas.</td></tr>';
+            return;
+        }
+
+        querySnapshot.forEach(docEntry => {
+            const account = docEntry.data();
+            const accountId = docEntry.id;
+            const startDate = account.startDate ? new Date(account.startDate.seconds * 1000).toLocaleDateString() : 'N/A';
+            const endDate = account.endDate || 'N/A';
+            const nextDueDate = account.nextContributionDueDate ? new Date(account.nextContributionDueDate.seconds * 1000).toLocaleDateString() : 'N/A';
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${account.savingsGoal || 'N/A'}</td>
+                <td class="text-right">$${(account.balanceUSD ?? 0).toFixed(2)} USD</td>
+                <td>${account.preferredSavingsFrequency || 'N/A'}</td>
+                <td>$${(account.periodicContributionAmount ?? 0).toFixed(2)} USD</td>
+                <td>${nextDueDate}</td>
+                <td>${endDate}</td>
+                <td class="whitespace-nowrap">
+                    <button class="btn-success btn-sm deposit-to-savings-btn" data-account-id="${accountId}">Depositar</button>
+                    <button class="btn-warning btn-sm withdraw-from-savings-btn" data-account-id="${accountId}" data-balance-usd="${account.balanceUSD}">Retirar</button>
+                    <button class="btn-danger btn-sm delete-savings-account-btn" data-account-id="${accountId}" data-goal="${account.savingsGoal}" data-balance-usd="${account.balanceUSD}">Eliminar</button>
+                </td>
+            `;
+            savingsAccountsTableBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Error al cargar las cuentas de ahorro:", error);
+        savingsAccountsTableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error al cargar cuentas de ahorro.</td></tr>`;
+    }
+}
+
+/**
+ * Carga las deudas de ahorro del usuario y las muestra en una tabla.
+ */
+function loadUserSavingsDebts() {
+    if (!currentUserId) {
+        savingsDebtsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Inicia sesión para ver tus deudas.</td></tr>';
+        return;
+    }
+
+    if (savingsDebtsUnsubscribe) {
+        savingsDebtsUnsubscribe();
+        savingsDebtsUnsubscribe = null;
+    }
+
+    savingsDebtsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">Cargando deudas de ahorro...</td></tr>';
+    const debtsCollectionRef = collection(db, 'artifacts', appId, 'users', currentUserId, 'savings_debts');
+    const q = query(debtsCollectionRef, where('status', '==', 'active'));
+
     savingsDebtsUnsubscribe = onSnapshot(q, async (snapshot) => {
         savingsDebtsTableBody.innerHTML = '';
         if (snapshot.empty) {
-            savingsDebtsTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500 py-4">No tienes deudas de ahorro pendientes.</td></tr>';
+            savingsDebtsTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-500 py-4">No tienes deudas de ahorro pendientes.</td></tr>';
             return;
         }
 
         for (const docEntry of snapshot.docs) {
             const debt = docEntry.data();
             const debtId = docEntry.id;
+            const savingsGoal = debt.savingsGoal || 'N/A';
+            const amountOwed = (debt.amountOwed ?? 0).toFixed(2);
             const dueDate = debt.dueDate ? new Date(debt.dueDate.seconds * 1000).toLocaleDateString() : 'N/A';
-            const statusDisplay = debt.status === 'pending' ? 'Pendiente' : (debt.status === 'overdue' ? 'Vencida' : debt.status);
+            const dateCreated = debt.creationTimestamp ? new Date(debt.creationTimestamp.seconds * 1000).toLocaleDateString() : 'N/A';
+            const indemnizationAmount = (debt.indemnizationAmount ?? 0).toFixed(2);
+            const totalToPay = (parseFloat(amountOwed) + parseFloat(indemnizationAmount)).toFixed(2);
 
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${debt.savingsGoal} (${debt.savingsAccountId.substring(0, 8)}...)</td>
-                <td>$${(debt.amountDue ?? 0).toFixed(2)} ${debt.currency}</td>
+                <td>${savingsGoal}</td>
+                <td class="text-right">$${amountOwed} USD</td>
+                <td class="text-right">$${indemnizationAmount} USD</td>
+                <td class="text-right">$${totalToPay} USD</td>
                 <td>${dueDate}</td>
-                <td>${statusDisplay}</td>
                 <td>
-                    <button class="btn-success btn-sm pay-debt-btn"
-                        data-debt-id="${debtId}"
-                        data-amount-due="${debt.amountDue}"
-                        data-currency="${debt.currency}"
-                        data-savings-goal="${debt.savingsGoal}"
-                        data-savings-account-id="${debt.savingsAccountId}"
-                        >Pagar</button>
+                    <button class="btn-success btn-sm pay-debt-btn" data-debt-id="${debtId}" data-amount="${totalToPay}">Pagar</button>
                 </td>
             `;
             savingsDebtsTableBody.appendChild(row);
         }
-
-        // Adjunta oyentes de eventos para los botones "Pagar"
-        savingsDebtsTableBody.querySelectorAll('.pay-debt-btn').forEach(button => {
-            button.onclick = async (event) => {
-                const { debtId, amountDue, currency, savingsGoal, savingsAccountId } = event.target.dataset;
-                await paySavingsDebt(debtId, parseFloat(amountDue), currency, savingsGoal, savingsAccountId);
-            };
-        });
-
     }, (error) => {
-        console.error("Error al cargar las deudas de ahorro:", error);
-        savingsDebtsTableBody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-4">Error al cargar deudas de ahorro.</td></tr>`;
+        console.error("Error al cargar las deudas de ahorro del usuario:", error);
+        savingsDebtsTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-red-500 py-4">Error al cargar deudas.</td></tr>`;
     });
 }
 
 /**
- * Maneja el pago de una deuda de ahorro.
- * @param {string} debtId El ID del documento de deuda.
- * @param {number} amountDue La cantidad a pagar.
- * @param {string} currency La moneda de la deuda.
- * @param {string} savingsGoal El objetivo de la cuenta de ahorro asociada.
- * @param {string} savingsAccountId El ID de la cuenta de ahorro asociada a la deuda.
- */
-async function paySavingsDebt(debtId, amountDue, currency, savingsGoal, savingsAccountId) {
-    hideMessage();
-    try {
-        const userProfileRef = doc(db, 'artifacts', appId, 'users', currentUserId);
-        const debtDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'savings_debts', debtId);
-        const savingsAccountRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts', savingsAccountId); // Referencia a la cuenta de ahorro
-
-        const userDocSnap = await getDoc(userProfileRef);
-        const savingsDocSnap = await getDoc(savingsAccountRef);
-
-        if (!userDocSnap.exists()) {
-            showMessage('Error: No se encontró tu perfil.', 'error');
-            return;
-        }
-        if (!savingsDocSnap.exists()) {
-            showMessage('Error: La cuenta de ahorro asociada a esta deuda ya no existe.', 'error');
-            return;
-        }
-
-        const userData = userDocSnap.data();
-        const savingsData = savingsDocSnap.data();
-
-        let userCurrentBalanceUSD = userData.balanceUSD || 0;
-        let savingsCurrentBalanceUSD = savingsData.balanceUSD || 0;
-
-        // Convierte amountDue a USD si es necesario para la deducción de la cuenta principal
-        let amountDueInUSD = amountDue;
-        if (currency === 'DOP') {
-            amountDueInUSD = amountDue / USD_TO_DOP_RATE;
-        }
-
-        if (userCurrentBalanceUSD < amountDueInUSD) {
-            showMessage(`Saldo insuficiente en tu cuenta principal para pagar esta deuda de $${amountDue.toFixed(2)} ${currency}. Necesitas al menos $${amountDueInUSD.toFixed(2)} USD.`, 'error');
-            return;
-        }
-
-        // Deduce del saldo principal del usuario
-        let newUserBalanceUSD = userCurrentBalanceUSD - amountDueInUSD;
-        let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
-
-        // Agrega al saldo de la cuenta de ahorro
-        let newSavingsBalanceUSD = savingsCurrentBalanceUSD + amountDueInUSD;
-        let newSavingsBalanceDOP = newSavingsBalanceUSD * USD_TO_DOP_RATE;
-
-        await updateDoc(userProfileRef, {
-            balanceUSD: newUserBalanceUSD,
-            balanceDOP: newUserBalanceDOP
-        });
-
-        await updateDoc(savingsAccountRef, {
-            balanceUSD: newSavingsBalanceUSD,
-            balanceDOP: newSavingsBalanceDOP
-        });
-
-        // Actualiza el estado de la deuda a pagada
-        await updateDoc(debtDocRef, {
-            status: 'paid',
-            paidAt: serverTimestamp()
-        });
-
-        // Registra la transacción
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-            userId: currentUserId,
-            type: 'savings_debt_payment',
-            amount: amountDue,
-            currency: currency,
-            savingsGoal: savingsGoal,
-            savingsAccountId: savingsAccountId, // Incluye el ID de la cuenta de ahorro
-            debtId: debtId,
-            timestamp: serverTimestamp(),
-            status: 'completed',
-            description: `Pago de deuda de ahorro para "${savingsGoal}"`
-        });
-
-        showMessage(`¡Deuda de $${amountDue.toFixed(2)} ${currency} para "${savingsGoal}" pagada con éxito!`, 'success');
-        closeModal(savingsDebtsModal); // Cierra el modal después del pago
-    } catch (error) {
-        console.error("Error al pagar la deuda de ahorro:", error);
-        showMessage('Error al pagar la deuda de ahorro. Intenta de nuevo.', 'error');
-    }
-}
-
-// --- NUEVO: Funciones de deudas de ahorro del administrador ---
-viewAdminSavingsDebtsBtn.addEventListener('click', () => {
-    adminSavingsDebtsModal.classList.remove('hidden');
-    loadAdminSavingsDebts();
-});
-
-closeAdminSavingsDebtsModalBtn.addEventListener('click', () => {
-    closeModal(adminSavingsDebtsModal);
-    if (adminSavingsDebtsUnsubscribe) {
-        adminSavingsDebtsUnsubscribe();
-        adminSavingsDebtsUnsubscribe = null;
-        console.log("Admin: Desuscrito del oyente de deudas de ahorro del administrador al cerrar el modal.");
-    }
-});
-
-/**
- * Carga y muestra todas las deudas de ahorro pendientes/vencidas para el administrador.
+ * Carga las deudas de ahorro de todos los usuarios para el administrador y las muestra en una tabla.
  */
 function loadAdminSavingsDebts() {
     if (adminSavingsDebtsUnsubscribe) {
         adminSavingsDebtsUnsubscribe();
         adminSavingsDebtsUnsubscribe = null;
-        console.log("Admin: Desuscrito del oyente de deudas de ahorro del administrador anterior.");
     }
 
-    adminSavingsDebtsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando deudas...</td></tr>';
-    const debtsRef = collection(db, 'artifacts', appId, 'public', 'data', 'savings_debts');
-    const q = query(debtsRef, where('status', 'in', ['pending', 'overdue']));
-
-    adminSavingsDebtsUnsubscribe = onSnapshot(q, async (snapshot) => {
+    adminSavingsDebtsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">Cargando deudas de ahorro del administrador...</td></tr>';
+    const allUsersRef = collection(db, 'artifacts', appId, 'users');
+    // Esto es un enfoque simplificado. Un enfoque más eficiente sería tener una colección central de deudas.
+    getDocs(allUsersRef).then(async (userSnapshots) => {
         adminSavingsDebtsTableBody.innerHTML = '';
-        if (snapshot.empty) {
+        let allDebts = [];
+        for (const userDoc of userSnapshots.docs) {
+            const userId = userDoc.id;
+            const userName = await getUserDisplayName(userId);
+            const debtsRef = collection(db, 'artifacts', appId, 'users', userId, 'savings_debts');
+            const q = query(debtsRef, where('status', '==', 'active'));
+            const debtSnapshots = await getDocs(q);
+            debtSnapshots.forEach(debtDoc => {
+                const debt = debtDoc.data();
+                allDebts.push({ ...debt, debtId: debtDoc.id, userId, userName });
+            });
+        }
+
+        if (allDebts.length === 0) {
             adminSavingsDebtsTableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-4">No hay deudas de ahorro pendientes.</td></tr>';
             return;
         }
 
-        const allDebts = [];
-        for (const docEntry of snapshot.docs) {
-            allDebts.push({ id: docEntry.id, ...docEntry.data() });
-        }
-
-        // Ordena por dueDate descendente
-        allDebts.sort((a, b) => {
-            const dueDateA = a.dueDate && typeof a.dueDate.seconds !== 'undefined' ? a.dueDate.seconds : 0;
-            const dueDateB = b.dueDate && typeof b.dueDate.seconds !== 'undefined' ? b.dueDate.seconds : 0;
-            return dueDateB - dueDateA;
-        });
-
         for (const debt of allDebts) {
-            const userNameDisplay = await getUserDisplayName(debt.userId);
-            const userPhoneNumber = await getUserPhoneNumber(debt.userId);
-            const dueDate = debt.dueDate ? new Date(debt.dueDate.seconds * 1000) : null;
-            const dueDateDisplay = dueDate ? dueDate.toLocaleDateString() : 'N/A';
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            let statusDisplay = debt.status === 'pending' ? 'Pendiente' : (debt.status === 'overdue' ? 'Vencida' : debt.status);
-            if (dueDate && today > dueDate && debt.status === 'pending') {
-                // Marca como vencida si pasó la fecha de vencimiento y aún está pendiente
-                statusDisplay = 'Vencida';
-                // Opcionalmente, actualiza el estado en Firestore aquí, pero para simplificar, solo lo muestra
-                // await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'savings_debts', debt.id), { status: 'overdue' });
-            }
-
-            const whatsappMessage = `¡Hola, ${userNameDisplay}! Te recordamos que tienes una deuda pendiente de $${(debt.amountDue ?? 0).toFixed(2)} USD para tu cuenta de ahorro "${debt.savingsGoal}". Tienes hasta el ${dueDateDisplay} para pagar. Si no pagas a tiempo, se aplicará una indemnización.`;
-            const encodedMessage = encodeURIComponent(whatsappMessage);
-            const whatsappLink = userPhoneNumber ? `https://wa.me/${userPhoneNumber}?text=${encodedMessage}` : '#';
-
+            const amountOwed = (debt.amountOwed ?? 0).toFixed(2);
+            const indemnizationAmount = (debt.indemnizationAmount ?? 0).toFixed(2);
+            const totalToPay = (parseFloat(amountOwed) + parseFloat(indemnizationAmount)).toFixed(2);
+            const dueDate = debt.dueDate ? new Date(debt.dueDate.seconds * 1000).toLocaleDateString() : 'N/A';
+            const dateCreated = debt.creationTimestamp ? new Date(debt.creationTimestamp.seconds * 1000).toLocaleDateString() : 'N/A';
+            
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${userNameDisplay}</td>
-                <td>${debt.savingsGoal} (${debt.savingsAccountId.substring(0, 8)}...)</td>
-                <td>$${(debt.amountDue ?? 0).toFixed(2)} ${debt.currency}</td>
-                <td>${dueDateDisplay}</td>
-                <td>${statusDisplay}</td>
-                <td>
-                    ${userPhoneNumber ? `<a href="${whatsappLink}" target="_blank" class="text-green-600 hover:underline font-bold">WhatsApp</a>` : 'N/A'}
-                </td>
-                <td>
-                    ${(dueDate && today > dueDate && !debt.penaltyApplied) ?
-                        `<button class="btn-danger btn-sm apply-indemnization-btn"
-                            data-debt-id="${debt.id}"
-                            data-user-id="${debt.userId}"
-                            data-amount-due="${debt.amountDue}"
-                            data-savings-goal="${debt.savingsGoal}"
-                            >Aplicar Indemnización</button>` :
-                        (debt.penaltyApplied ? '<span class="text-red-500">Indemnización Aplicada</span>' : '')
-                    }
-                    <button class="btn-secondary btn-sm resolve-debt-btn mt-2"
-                        data-debt-id="${debt.id}"
-                        data-user-id="${debt.userId}"
-                        data-amount-due="${debt.amountDue}"
-                        data-savings-goal="${debt.savingsGoal}"
-                        >Marcar como Pagada</button>
-                </td>
+                <td>${debt.userName}</td>
+                <td>${debt.savingsGoal || 'N/A'}</td>
+                <td class="text-right">$${amountOwed} USD</td>
+                <td class="text-right">$${indemnizationAmount} USD</td>
+                <td class="text-right">$${totalToPay} USD</td>
+                <td>${dueDate}</td>
+                <td><span class="badge bg-red-500">Activa</span></td>
             `;
             adminSavingsDebtsTableBody.appendChild(row);
         }
+    }).catch(error => {
+        console.error("Error al cargar las deudas del administrador:", error);
+        adminSavingsDebtsTableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error al cargar deudas.</td></tr>`;
+    });
+}
 
-        // Adjunta oyentes de eventos para las acciones de deuda del administrador
-        adminSavingsDebtsTableBody.querySelectorAll('.apply-indemnization-btn').forEach(button => {
-            button.onclick = async (event) => {
-                const { debtId, userId, amountDue, savingsGoal } = event.target.dataset;
-                await applyIndemnization(debtId, userId, parseFloat(amountDue), savingsGoal);
-            };
+// Delegación de eventos para botones de cuenta de ahorro
+savingsAccountsTableBody.addEventListener('click', (event) => {
+    const target = event.target;
+    if (target.classList.contains('deposit-to-savings-btn')) {
+        currentSavingsAccountId = target.dataset.accountId;
+        depositToSavingsAccountIdDisplay.textContent = `ID de Cuenta: ${currentSavingsAccountId.substring(0, 8)}...`;
+        showSection(depositToSavingsModal);
+        depositToSavingsForm.reset();
+    } else if (target.classList.contains('withdraw-from-savings-btn')) {
+        currentSavingsAccountId = target.dataset.accountId;
+        currentSavingsAccountBalanceUSD = parseFloat(target.dataset.balanceUsd);
+        withdrawFromSavingsAccountIdDisplay.textContent = `ID de Cuenta: ${currentSavingsAccountId.substring(0, 8)}...`;
+        showSection(withdrawFromSavingsModal);
+        withdrawFromSavingsForm.reset();
+    } else if (target.classList.contains('delete-savings-account-btn')) {
+        currentSavingsAccountId = target.dataset.accountId;
+        currentSavingsAccountGoal = target.dataset.goal;
+        currentSavingsAccountBalanceUSD = parseFloat(target.dataset.balanceUsd);
+        const fee = currentSavingsAccountBalanceUSD * SAVINGS_DELETE_FEE_RATE;
+        const remainingBalance = currentSavingsAccountBalanceUSD - fee;
+
+        deleteSavingsAccountGoalDisplay.textContent = `Objetivo de Ahorro: ${currentSavingsAccountGoal}`;
+        deleteSavingsAccountFeeDisplay.textContent = `Tarifa de Eliminación (2%): $${fee.toFixed(2)} USD`;
+        deleteSavingsAccountRemainingDisplay.textContent = `Saldo restante a transferir: $${remainingBalance.toFixed(2)} USD`;
+        showSection(confirmDeleteSavingsAccountModal);
+    }
+});
+
+// Delegación de eventos para el botón de pago de deuda
+savingsDebtsTableBody.addEventListener('click', async (event) => {
+    const target = event.target;
+    if (target.classList.contains('pay-debt-btn')) {
+        const debtId = target.dataset.debtId;
+        const amountToPay = parseFloat(target.dataset.amount);
+        if (currentBalanceUSD >= amountToPay) {
+            try {
+                await paySavingsDebt(currentUserId, debtId, amountToPay);
+                showMessage(`Deuda de ahorro pagada exitosamente.`, 'success');
+            } catch (error) {
+                console.error("Error al pagar la deuda de ahorro:", error);
+                showMessage(`Error al pagar la deuda: ${error}`, 'error');
+            }
+        } else {
+            showMessage(`Saldo insuficiente para pagar la deuda. Necesitas $${amountToPay.toFixed(2)} USD.`, 'error');
+        }
+    }
+});
+
+// Lógica de formulario de depósitos de ahorro
+depositToSavingsForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideMessage();
+    const amount = parseFloat(depositToSavingsAmountInput.value);
+    const currency = depositToSavingsCurrencyInput.value;
+
+    if (isNaN(amount) || amount <= 0) {
+        showMessage('Por favor, ingresa un monto válido.', 'error');
+        return;
+    }
+
+    try {
+        await handleSavingsDeposit(currentSavingsAccountId, amount, currency);
+        showMessage('Depósito a cuenta de ahorro realizado exitosamente.', 'success');
+        closeModal(depositToSavingsModal);
+        loadUserSavingsAccounts();
+    } catch (error) {
+        console.error("Error al depositar en la cuenta de ahorro:", error);
+        showMessage(`Error al depositar: ${error}`, 'error');
+    }
+});
+
+// Lógica de formulario de retiros de ahorro
+withdrawFromSavingsForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideMessage();
+    const amount = parseFloat(withdrawFromSavingsAmountInput.value);
+    const currency = withdrawFromSavingsCurrencyInput.value;
+
+    if (isNaN(amount) || amount <= 0) {
+        showMessage('Por favor, ingresa un monto válido.', 'error');
+        return;
+    }
+
+    let amountInUSD = amount;
+    if (currency === 'DOP') {
+        amountInUSD = amount / USD_TO_DOP_RATE;
+    }
+
+    if (amountInUSD > currentSavingsAccountBalanceUSD) {
+        showMessage('Saldo insuficiente en la cuenta de ahorro para este retiro.', 'error');
+        return;
+    }
+
+    try {
+        await handleSavingsWithdrawal(currentSavingsAccountId, amount, currency, amountInUSD);
+        showMessage('Retiro de cuenta de ahorro realizado exitosamente.', 'success');
+        closeModal(withdrawFromSavingsModal);
+        loadUserSavingsAccounts();
+    }
+    catch (error) {
+        console.error("Error al retirar de la cuenta de ahorro:", error);
+        showMessage(`Error al retirar: ${error}`, 'error');
+    }
+});
+
+// Lógica de eliminación de cuenta de ahorro
+confirmDeleteSavingsAccountBtn.addEventListener('click', async () => {
+    try {
+        await deleteSavingsAccount(currentSavingsAccountId, currentSavingsAccountBalanceUSD);
+        showMessage('Cuenta de ahorro eliminada exitosamente.', 'success');
+        closeModal(confirmDeleteSavingsAccountModal);
+        loadUserSavingsAccounts();
+    } catch (error) {
+        console.error("Error al eliminar la cuenta de ahorro:", error);
+        showMessage(`Error al eliminar la cuenta de ahorro: ${error}`, 'error');
+    }
+});
+cancelDeleteSavingsAccountBtn.addEventListener('click', () => closeModal(confirmDeleteSavingsAccountModal));
+cancelDeleteSavingsAccountBtn2.addEventListener('click', () => closeModal(confirmDeleteSavingsAccountModal));
+
+
+/**
+ * Maneja el proceso de depósito a una cuenta de ahorro.
+ * @param {string} savingsAccountId El ID de la cuenta de ahorro.
+ * @param {number} amount El monto a depositar.
+ * @param {string} currency La moneda del depósito.
+ */
+async function handleSavingsDeposit(savingsAccountId, amount, currency) {
+    if (!currentUserId) throw "Usuario no autenticado.";
+
+    const userDocRef = doc(db, 'artifacts', appId, 'users', currentUserId);
+    const savingsAccountDocRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts', savingsAccountId);
+
+    await runTransaction(db, async (transaction) => {
+        const userDocSnap = await transaction.get(userDocRef);
+        const savingsAccountDocSnap = await transaction.get(savingsAccountDocRef);
+
+        if (!userDocSnap.exists()) throw "Documento de usuario no encontrado.";
+        if (!savingsAccountDocSnap.exists()) throw "Documento de cuenta de ahorro no encontrado.";
+
+        const userData = userDocSnap.data();
+        const savingsAccountData = savingsAccountDocSnap.data();
+
+        let amountInUSD = amount;
+        if (currency === 'DOP') {
+            amountInUSD = amount / USD_TO_DOP_RATE;
+        }
+
+        if (userData.balanceUSD < amountInUSD) {
+            throw "Saldo insuficiente en tu cuenta principal.";
+        }
+
+        // Actualizar saldos
+        const newMainBalanceUSD = userData.balanceUSD - amountInUSD;
+        const newSavingsBalanceUSD = savingsAccountData.balanceUSD + amountInUSD;
+
+        transaction.update(userDocRef, {
+            balanceUSD: newMainBalanceUSD
         });
-        adminSavingsDebtsTableBody.querySelectorAll('.resolve-debt-btn').forEach(button => {
-            button.onclick = async (event) => {
-                const { debtId, userId, amountDue, savingsGoal } = event.target.dataset;
-                await resolveSavingsDebtManually(debtId, userId, parseFloat(amountDue), savingsGoal);
-            };
+        transaction.update(savingsAccountDocRef, {
+            balanceUSD: newSavingsBalanceUSD
         });
 
-    }, (error) => {
-        console.error("Error al cargar las deudas de ahorro del administrador:", error);
-        adminSavingsDebtsTableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-4">Error al cargar deudas de ahorro.</td></tr>`;
+        // Registrar transacción
+        const newTransactionDocRef = doc(collection(db, 'artifacts', appId, 'transactions'));
+        transaction.set(newTransactionDocRef, {
+            type: 'deposit_to_savings',
+            userId: currentUserId,
+            usersInvolved: [currentUserId],
+            timestamp: serverTimestamp(),
+            status: 'completed',
+            amount: amount,
+            currency: currency,
+            savingsAccountId: savingsAccountId,
+            savingsGoal: savingsAccountData.savingsGoal
+        });
     });
 }
 
 /**
- * Aplica la indemnización por una deuda vencida.
- * @param {string} debtId El ID del documento de deuda.
- * @param {string} userId El UID de Firebase del usuario.
- * @param {number} amountDue La cantidad original adeudada por la deuda.
- * @param {string} savingsGoal El objetivo de la cuenta de ahorro asociada.
+ * Maneja el proceso de retiro de una cuenta de ahorro.
+ * @param {string} savingsAccountId El ID de la cuenta de ahorro.
+ * @param {number} amount El monto a retirar.
+ * @param {string} currency La moneda del retiro.
+ * @param {number} amountInUSD El monto en USD ya convertido.
  */
-async function applyIndemnization(debtId, userId, amountDue, savingsGoal) {
-    hideMessage();
-    try {
-        const userProfileRef = doc(db, 'artifacts', appId, 'users', userId);
-        const debtDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'savings_debts', debtId);
+async function handleSavingsWithdrawal(savingsAccountId, amount, currency, amountInUSD) {
+    if (!currentUserId) throw "Usuario no autenticado.";
 
-        const userDocSnap = await getDoc(userProfileRef);
-        if (!userDocSnap.exists()) {
-            showMessage('Error: Usuario no encontrado para aplicar indemnización.', 'error');
-            return;
-        }
+    const userDocRef = doc(db, 'artifacts', appId, 'users', currentUserId);
+    const savingsAccountDocRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts', savingsAccountId);
+
+    await runTransaction(db, async (transaction) => {
+        const userDocSnap = await transaction.get(userDocRef);
+        const savingsAccountDocSnap = await transaction.get(savingsAccountDocRef);
+
+        if (!userDocSnap.exists()) throw "Documento de usuario no encontrado.";
+        if (!savingsAccountDocSnap.exists()) throw "Documento de cuenta de ahorro no encontrado.";
+
         const userData = userDocSnap.data();
-        let userCurrentBalanceUSD = userData.balanceUSD || 0;
+        const savingsAccountData = savingsAccountDocSnap.data();
 
-        const penaltyAmount = amountDue * INDEMNIZATION_RATE;
-
-        if (userCurrentBalanceUSD < penaltyAmount) {
-            showMessage(`Saldo insuficiente en la cuenta del cliente para aplicar la indemnización de $${penaltyAmount.toFixed(2)} USD.`, 'error');
-            return;
+        if (savingsAccountData.balanceUSD < amountInUSD) {
+            throw "Saldo insuficiente en la cuenta de ahorro.";
         }
 
-        // Deduce la penalización del saldo principal del usuario
-        let newUserBalanceUSD = userCurrentBalanceUSD - penaltyAmount;
-        let newUserBalanceDOP = newUserBalanceUSD * USD_TO_DOP_RATE;
+        // Actualizar saldos
+        const newMainBalanceUSD = userData.balanceUSD + amountInUSD;
+        const newSavingsBalanceUSD = savingsAccountData.balanceUSD - amountInUSD;
 
-        await updateDoc(userProfileRef, {
-            balanceUSD: newUserBalanceUSD,
-            balanceDOP: newUserBalanceDOP
+        transaction.update(userDocRef, {
+            balanceUSD: newMainBalanceUSD
+        });
+        transaction.update(savingsAccountDocRef, {
+            balanceUSD: newSavingsBalanceUSD
         });
 
-        // Agrega la penalización a la cuenta del administrador
-        let adminId = null;
-        const adminUsersCollectionRef = collection(db, 'artifacts', appId, 'users');
-        const adminQuery = query(adminUsersCollectionRef, where('email', '==', ADMIN_EMAIL));
-        const adminSnapshot = await getDocs(adminQuery);
-        if (!adminSnapshot.empty) {
-            adminId = adminSnapshot.docs[0].id;
-            const adminProfileRef = doc(db, 'artifacts', appId, 'users', adminId);
-            const adminData = (await getDoc(adminProfileRef)).data();
-            let adminNewBalanceUSD = (adminData.balanceUSD || 0) + penaltyAmount;
-            await updateDoc(adminProfileRef, { balanceUSD: adminNewBalanceUSD, balanceDOP: adminNewBalanceUSD * USD_TO_DOP_RATE });
-        } else {
-            console.warn("Cuenta de administrador no encontrada. La indemnización podría no transferirse.");
-        }
-
-        // Actualiza el estado de la deuda
-        await updateDoc(debtDocRef, {
-            status: 'penalized', // Nuevo estado para deudas penalizadas
-            penaltyApplied: true,
-            penaltyAmount: penaltyAmount,
-            penalizedAt: serverTimestamp()
-        });
-
-        // Registra la transacción de indemnización
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-            userId: userId, // Usuario que pagó la penalización
-            payerId: userId,
-            receiverId: adminId,
-            type: 'savings_indemnization_applied',
-            amount: penaltyAmount,
-            currency: 'USD',
-            savingsGoal: savingsGoal,
-            debtId: debtId,
+        // Registrar transacción
+        const newTransactionDocRef = doc(collection(db, 'artifacts', appId, 'transactions'));
+        transaction.set(newTransactionDocRef, {
+            type: 'withdraw_from_savings',
+            userId: currentUserId,
+            usersInvolved: [currentUserId],
             timestamp: serverTimestamp(),
             status: 'completed',
-            description: `Indemnización aplicada por deuda de ahorro para "${savingsGoal}"`
+            amount: amount,
+            currency: currency,
+            savingsAccountId: savingsAccountId,
+            savingsGoal: savingsAccountData.savingsGoal
+        });
+    });
+}
+
+/**
+ * Elimina una cuenta de ahorro y transfiere el saldo restante a la cuenta principal.
+ * @param {string} savingsAccountId El ID de la cuenta de ahorro a eliminar.
+ * @param {number} savingsBalanceUSD El saldo de la cuenta de ahorro en USD.
+ */
+async function deleteSavingsAccount(savingsAccountId, savingsBalanceUSD) {
+    if (!currentUserId) throw "Usuario no autenticado.";
+
+    const userDocRef = doc(db, 'artifacts', appId, 'users', currentUserId);
+    const savingsAccountDocRef = doc(db, 'artifacts', appId, 'users', currentUserId, 'savings_accounts', savingsAccountId);
+
+    await runTransaction(db, async (transaction) => {
+        const userDocSnap = await transaction.get(userDocRef);
+        const savingsAccountDocSnap = await transaction.get(savingsAccountDocRef);
+
+        if (!userDocSnap.exists()) throw "Documento de usuario no encontrado.";
+        if (!savingsAccountDocSnap.exists()) throw "Documento de cuenta de ahorro no encontrado.";
+
+        const userData = userDocSnap.data();
+        const savingsAccountData = savingsAccountDocSnap.data();
+
+        const feeAmount = savingsBalanceUSD * SAVINGS_DELETE_FEE_RATE;
+        const remainingBalance = savingsBalanceUSD - feeAmount;
+
+        // Actualizar saldos
+        const newMainBalanceUSD = userData.balanceUSD + remainingBalance;
+        transaction.update(userDocRef, {
+            balanceUSD: newMainBalanceUSD
         });
 
-        showMessage(`¡Indemnización de $${penaltyAmount.toFixed(2)} USD aplicada a ${await getUserDisplayName(userId)} por la deuda de "${savingsGoal}"!`, 'success');
+        // Desactivar la cuenta de ahorro en lugar de eliminarla para mantener el historial
+        transaction.update(savingsAccountDocRef, {
+            status: 'deleted',
+            balanceUSD: 0,
+            deletionTimestamp: serverTimestamp()
+        });
 
+        // Registrar transacción de eliminación
+        const newTransactionDocRef = doc(collection(db, 'artifacts', appId, 'transactions'));
+        transaction.set(newTransactionDocRef, {
+            type: 'delete_savings_account',
+            userId: currentUserId,
+            usersInvolved: [currentUserId],
+            timestamp: serverTimestamp(),
+            status: 'completed',
+            savingsAccountId: savingsAccountId,
+            savingsGoal: savingsAccountData.savingsGoal,
+            feeAmount: feeAmount,
+            remainingBalanceTransferred: remainingBalance
+        });
+    });
+}
+
+/**
+ * Paga una deuda de ahorro.
+ * @param {string} userId El ID del usuario.
+ * @param {string} debtId El ID de la deuda.
+ * @param {number} amountToPay El monto total a pagar.
+ */
+async function paySavingsDebt(userId, debtId, amountToPay) {
+    const userDocRef = doc(db, 'artifacts', appId, 'users', userId);
+    const debtDocRef = doc(db, 'artifacts', appId, 'users', userId, 'savings_debts', debtId);
+    
+    await runTransaction(db, async (transaction) => {
+        const userDocSnap = await transaction.get(userDocRef);
+        const debtDocSnap = await transaction.get(debtDocRef);
+
+        if (!userDocSnap.exists()) throw "Documento de usuario no encontrado.";
+        if (!debtDocSnap.exists()) throw "Documento de deuda no encontrado.";
+
+        const userData = userDocSnap.data();
+        const debtData = debtDocSnap.data();
+
+        if (userData.balanceUSD < amountToPay) {
+            throw "Saldo insuficiente en tu cuenta principal.";
+        }
+        
+        // Actualizar saldos
+        const newMainBalanceUSD = userData.balanceUSD - amountToPay;
+        transaction.update(userDocRef, {
+            balanceUSD: newMainBalanceUSD
+        });
+
+        // Marcar la deuda como pagada
+        transaction.update(debtDocRef, {
+            status: 'paid',
+            paidTimestamp: serverTimestamp()
+        });
+
+        // Registrar transacción de pago de deuda
+        const newTransactionDocRef = doc(collection(db, 'artifacts', appId, 'transactions'));
+        transaction.set(newTransactionDocRef, {
+            type: 'savings_debt_payment',
+            userId: userId,
+            usersInvolved: [userId],
+            timestamp: serverTimestamp(),
+            status: 'completed',
+            amount: amountToPay,
+            currency: 'USD',
+            debtId: debtId,
+            savingsAccountId: debtData.savingsAccountId,
+            savingsGoal: debtData.savingsGoal
+        });
+    });
+}
+
+
+// --- Funciones de Anuncios del Administrador ---
+
+/**
+ * Carga los anuncios para el formulario de edición del administrador.
+ */
+async function loadAnnouncementsForEdit() {
+    try {
+        const announcementsDocRef = doc(db, 'artifacts', appId, 'public', 'announcements');
+        const docSnap = await getDoc(announcementsDocRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            announcementsTextarea.value = data.text || '';
+        } else {
+            announcementsTextarea.value = '';
+        }
     } catch (error) {
-        console.error("Error al aplicar la indemnización:", error);
-        showMessage('Error al aplicar la indemnización. Intenta de nuevo.', 'error');
+        console.error("Error al cargar los anuncios:", error);
+        showMessage("Error al cargar los anuncios para editar.", "error");
     }
 }
 
 /**
- * Permite al administrador marcar manualmente una deuda como pagada (por ejemplo, si se pagó fuera de línea).
- * @param {string} debtId El ID del documento de deuda.
- * @param {string} userId El UID de Firebase del usuario.
- * @param {number} amountDue La cantidad original adeudada por la deuda.
- * @param {string} savingsGoal El objetivo de la cuenta de ahorro asociada.
+ * Muestra los anuncios en el dashboard del usuario.
  */
-async function resolveSavingsDebtManually(debtId, userId, amountDue, savingsGoal) {
+function showAnnouncements() {
+    announcementsList.innerHTML = '';
+    const announcementsDocRef = doc(db, 'artifacts', appId, 'public', 'announcements');
+    onSnapshot(announcementsDocRef, (docSnap) => {
+        announcementsList.innerHTML = ''; // Limpiar la lista para evitar duplicados
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            const announcementsText = data.text || '';
+            if (announcementsText.trim()) {
+                const lines = announcementsText.split('\n');
+                lines.forEach(line => {
+                    const li = document.createElement('li');
+                    li.textContent = line;
+                    li.classList.add('py-1');
+                    announcementsList.appendChild(li);
+                });
+            } else {
+                announcementsList.innerHTML = '<li class="text-gray-500">No hay anuncios disponibles.</li>';
+            }
+        } else {
+            announcementsList.innerHTML = '<li class="text-gray-500">No hay anuncios disponibles.</li>';
+        }
+    }, (error) => {
+        console.error("Error al obtener anuncios:", error);
+        announcementsList.innerHTML = '<li class="text-red-500">Error al cargar anuncios.</li>';
+    });
+}
+
+// Envío del formulario de edición de anuncios
+editAnnouncementsForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
     hideMessage();
+    const newAnnouncementsText = announcementsTextarea.value;
     try {
-        const debtDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'savings_debts', debtId);
-        await updateDoc(debtDocRef, {
-            status: 'paid',
-            paidAt: serverTimestamp(),
-            resolvedManually: true // Indica resolución manual
-        });
-
-        // Registra una transacción para la resolución manual (no hay movimiento de dinero aquí, solo actualización de estado)
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
-            userId: userId,
-            type: 'savings_debt_payment', // Usa este tipo pero aclara que es manual
-            amount: amountDue,
-            currency: 'USD',
-            savingsGoal: savingsGoal,
-            debtId: debtId,
-            timestamp: serverTimestamp(),
-            status: 'completed (manual)',
-            description: `Deuda de ahorro "${savingsGoal}" marcada manualmente como pagada.`
-        });
-
-        showMessage(`Deuda #${debtId.substring(0,8)}... para "${savingsGoal}" marcada como pagada manualmente.`, 'info');
-
+        const announcementsDocRef = doc(db, 'artifacts', appId, 'public', 'announcements');
+        await setDoc(announcementsDocRef, { text: newAnnouncementsText }, { merge: true });
+        showMessage('Anuncios actualizados exitosamente.', 'success');
+        closeModal(editAnnouncementsModal);
     } catch (error) {
-        console.error("Error al resolver la deuda de ahorro manualmente:", error);
-        showMessage('Error al marcar la deuda como pagada. Intenta de nuevo.', 'error');
+        console.error("Error al actualizar los anuncios:", error);
+        showMessage('Error al actualizar los anuncios. Por favor, inténtalo de nuevo.', 'error');
+    }
+});
+
+
+// --- Funciones de Comprobación y Mantenimiento ---
+
+/**
+ * Revisa y actualiza el estado de las deudas de ahorro y aplica indemnizaciones.
+ */
+async function checkAndProcessSavingsDebts() {
+    // Esta función se ejecutaría idealmente en un entorno del servidor (Cloud Function)
+    // para asegurar que se ejecuta de manera confiable.
+    const allUsersRef = collection(db, 'artifacts', appId, 'users');
+    const userSnapshots = await getDocs(allUsersRef);
+
+    for (const userDoc of userSnapshots.docs) {
+        const userId = userDoc.id;
+        const userDocRef = userDoc.ref;
+        const userBalanceUSD = userDoc.data().balanceUSD;
+        const debtsRef = collection(userDocRef, 'savings_debts');
+        const q = query(debtsRef, where('status', '==', 'active'));
+        const debtSnapshots = await getDocs(q);
+
+        for (const debtDoc of debtSnapshots.docs) {
+            const debtId = debtDoc.id;
+            const debtData = debtDoc.data();
+            const dueDate = debtData.dueDate.toDate();
+            
+            if (new Date() > dueDate) {
+                // La deuda está vencida, aplica la indemnización si no se ha aplicado
+                if (!debtData.indemnizationApplied) {
+                    const indemnizationAmount = debtData.amountOwed * INDEMNIZATION_RATE;
+                    const newDebtAmount = debtData.amountOwed + indemnizationAmount;
+
+                    // Aplica la indemnización y actualiza la deuda
+                    await updateDoc(debtDoc.ref, {
+                        amountOwed: newDebtAmount,
+                        indemnizationAmount: indemnizationAmount,
+                        indemnizationApplied: true,
+                        status: 'overdue' // Cambiar el estado a vencido
+                    });
+
+                    // Crea una transacción para la indemnización
+                    const transactionRef = doc(collection(db, 'artifacts', appId, 'transactions'));
+                    await setDoc(transactionRef, {
+                        type: 'savings_indemnization_applied',
+                        payerId: userId,
+                        receiverId: 'admin',
+                        usersInvolved: [userId, 'admin'],
+                        amount: indemnizationAmount,
+                        currency: 'USD',
+                        debtId: debtId,
+                        timestamp: serverTimestamp(),
+                        status: 'completed'
+                    });
+
+                    // Deduce la indemnización del saldo del usuario si es posible
+                    if (userBalanceUSD >= indemnizationAmount) {
+                        await updateDoc(userDocRef, {
+                            balanceUSD: userBalanceUSD - indemnizationAmount
+                        });
+                        console.log(`Indemnización de $${indemnizationAmount} USD aplicada y deducida del usuario ${userId}.`);
+                    } else {
+                        // Si el usuario no tiene fondos, la deuda simplemente se registra
+                        console.log(`Indemnización de $${indemnizationAmount} USD aplicada al usuario ${userId}, pero no se pudo deducir por falta de fondos.`);
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Revisa y realiza cobros automáticos de las cuentas de ahorro.
+ */
+async function checkAndProcessSavingsCollections() {
+    // Esta función también debería ejecutarse en el servidor.
+    const allUsersRef = collection(db, 'artifacts', appId, 'users');
+    const userSnapshots = await getDocs(allUsersRef);
+
+    for (const userDoc of userSnapshots.docs) {
+        const userId = userDoc.id;
+        const userDocRef = userDoc.ref;
+        const userData = userDoc.data();
+        const userBalanceUSD = userData.balanceUSD;
+
+        const savingsAccountsRef = collection(userDocRef, 'savings_accounts');
+        const activeSavingsQ = query(savingsAccountsRef, where('status', '==', 'active'));
+        const savingsSnapshots = await getDocs(activeSavingsQ);
+
+        for (const savingsDoc of savingsSnapshots.docs) {
+            const savingsData = savingsDoc.data();
+            const savingsAccountId = savingsDoc.id;
+            const nextDueDate = savingsData.nextContributionDueDate ? savingsData.nextContributionDueDate.toDate() : null;
+            const contributionAmount = savingsData.periodicContributionAmount;
+
+            if (nextDueDate && new Date() > nextDueDate) {
+                if (userBalanceUSD >= contributionAmount) {
+                    // Cobro exitoso
+                    const newMainBalanceUSD = userBalanceUSD - contributionAmount;
+                    const newSavingsBalanceUSD = savingsData.balanceUSD + contributionAmount;
+                    const newNextDueDate = calculateNextDueDate(nextDueDate, savingsData.preferredSavingsFrequency);
+
+                    await runTransaction(db, async (transaction) => {
+                        transaction.update(userDocRef, { balanceUSD: newMainBalanceUSD });
+                        transaction.update(savingsDoc.ref, {
+                            balanceUSD: newSavingsBalanceUSD,
+                            lastContributionAttemptDate: serverTimestamp(),
+                            nextContributionDueDate: newNextDueDate
+                        });
+                        const transactionRef = doc(collection(db, 'artifacts', appId, 'transactions'));
+                        transaction.set(transactionRef, {
+                            type: 'automatic_savings_collection',
+                            userId: userId,
+                            usersInvolved: [userId],
+                            timestamp: serverTimestamp(),
+                            status: 'completed',
+                            amount: contributionAmount,
+                            currency: 'USD',
+                            savingsAccountId: savingsAccountId,
+                            savingsGoal: savingsData.savingsGoal
+                        });
+                    });
+                    console.log(`Cobro automático de ahorro exitoso para el usuario ${userId} en la cuenta ${savingsAccountId}.`);
+                } else {
+                    // Saldo insuficiente, crea una deuda
+                    const debtDocRef = doc(collection(userDocRef, 'savings_debts'));
+                    const newNextDueDate = calculateNextDueDate(nextDueDate, savingsData.preferredSavingsFrequency);
+                    
+                    await runTransaction(db, async (transaction) => {
+                        transaction.set(debtDocRef, {
+                            savingsAccountId: savingsAccountId,
+                            savingsGoal: savingsData.savingsGoal,
+                            amountOwed: contributionAmount,
+                            indemnizationAmount: 0,
+                            creationTimestamp: serverTimestamp(),
+                            dueDate: newNextDueDate,
+                            status: 'active',
+                            indemnizationApplied: false
+                        });
+                        transaction.update(savingsDoc.ref, {
+                            lastContributionAttemptDate: serverTimestamp(),
+                            nextContributionDueDate: newNextDueDate
+                        });
+                    });
+                    console.log(`Saldo insuficiente para cobro automático. Deuda creada para el usuario ${userId} en la cuenta ${savingsAccountId}.`);
+                }
+            }
+        }
     }
 }
 
 
-// --- Oyentes de eventos ---
-window.onload = async () => {
-    // No se realiza ninguna autenticación automática al cargar la página.
-    // Se espera que el usuario inicie sesión o se registre a través de los formularios.
-    // onAuthStateChanged se activará una vez que el usuario se autentique.
-    console.log("Aplicación cargada. Esperando inicio de sesión o registro.");
-};
-
-
-loginTab.addEventListener('click', () => toggleTabs('login'));
-registerTab.addEventListener('click', () => toggleTabs('register'));
-closeMessage.addEventListener('click', hideMessage);
-
-loginForm.addEventListener('submit', handleLogin);
-logoutBtn.addEventListener('click', handleLogout);
-toggleCurrencyBtn.addEventListener('click', toggleCurrencyDisplay);
-
-// Botones de consentimiento de reglas
-acceptRulesBtn.addEventListener('click', () => {
-    rulesConsentModal.classList.add('hidden');
-    // Procede con el registro usando los datos almacenados
-    performRegistration(tempRegisterData.name, tempRegisterData.surname, tempRegisterData.age, tempRegisterData.phoneNumber, tempRegisterData.password);
-});
-
-rejectRulesBtn.addEventListener('click', () => {
-    rulesConsentModal.classList.add('hidden');
-    showMessage('Debes aceptar las reglas para registrarte en el Banco Juvenil.', 'error');
-    registerForm.reset(); // Borra el formulario si se rechazan las reglas
-    tempRegisterData = {}; // Borra los datos temporales
-});
-
-// Botones del modal de historial de usuario
-viewHistoryBtn.addEventListener('click', () => {
-    userHistoryModal.classList.remove('hidden');
-    loadUserHistory(); // Carga el historial específico del usuario
-});
-closeUserHistoryModalBtn.addEventListener('click', () => {
-    closeModal(userHistoryModal);
-});
-
-// Botones del modal de historial completo del administrador
-adminFullHistoryBtn.addEventListener('click', () => {
-    adminFullHistoryModal.classList.remove('hidden');
-    loadAdminFullHistory(); // Carga el historial completo del administrador
-});
-closeAdminFullHistoryModalBtn.addEventListener('click', () => {
-    closeModal(adminFullHistoryModal);
-});
-
-// Botón del modal de solicitudes pendientes del administrador (Unificado)
-viewAdminPendingRequestsBtn.addEventListener('click', () => {
-    adminPendingRequestsModal.classList.remove('hidden');
-    loadAdminPendingRequests();
-});
-// Este oyente ahora se maneja al principio del archivo para gestionar la desuscripción
-// closeAdminPendingRequestsModalBtn.addEventListener('click', () => {
-//     closeModal(adminPendingRequestsModal);
-// });
-
-// Botones del modal de preguntas frecuentes
-viewFAQBtn.addEventListener('click', () => {
-    faqModal.classList.remove('hidden');
-});
-closeFAQModalBtn.addEventListener('click', () => {
-    closeModal(faqModal);
-});
-
-// Botones de compras en línea
-onlineShoppingBtn.addEventListener('click', () => {
-    onlineShoppingModal.classList.remove('hidden');
-    onlineShoppingForm.reset(); // Restablece el formulario cuando se abre
-    updateOnlineShoppingCalculation(); // Visualización del cálculo inicial
-});
-cancelOnlineShopping.addEventListener('click', () => {
-    closeModal(onlineShoppingModal);
-});
-
-// Botones de pago de streaming
-streamingPaymentBtn.addEventListener('click', () => {
-    streamingPaymentModal.classList.remove('hidden');
-    streamingPaymentForm.reset(); // Restablece el formulario cuando se abre
-    updateStreamingPaymentCalculation(); // Visualización del cálculo inicial
-});
-cancelStreamingPayment.addEventListener('click', () => {
-    closeModal(streamingPaymentModal);
-});
-
-// Botón de solicitudes pendientes del usuario
-viewUserPendingRequestsBtn.addEventListener('click', () => {
-    userPendingRequestsModal.classList.remove('hidden');
-    loadUserPendingRequests();
-});
-closeUserPendingRequestsModalBtn.addEventListener('click', () => {
-    closeModal(userPendingRequestsModal);
-});
-
-// Botón del modal de recibo
-closeReceiptModalBtn.addEventListener('click', () => {
-    closeModal(receiptModal);
-});
-
-// NUEVO: Oyentes de eventos de abrir cuenta de ahorro
-openSavingsAccountBtn.addEventListener('click', () => {
-    openSavingsAccountModal.classList.remove('hidden');
-    savingsAccountForm.reset();
-    // Establece la fecha mínima para savingsEndDate en hoy
+/**
+ * Calcula la próxima fecha de vencimiento de una contribución de ahorro.
+ * @param {Date} startDate La fecha de inicio o la última fecha de vencimiento.
+ * @param {string} frequency La frecuencia ('daily', 'weekly', 'monthly').
+ * @returns {Date} La próxima fecha de vencimiento.
+ */
+function calculateNextDueDate(startDate, frequency) {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    savingsEndDateInput.min = `${year}-${month}-${day}`;
-});
-cancelOpenSavingsAccountBtn.addEventListener('click', () => {
-    closeModal(openSavingsAccountModal);
-});
-// El oyente de eventos de envío para savingsAccountForm ya está definido globalmente.
+    let nextDate = new Date(startDate);
+    
+    // Si la fecha de inicio es en el pasado, la próxima fecha de vencimiento debe ser hoy o más tarde.
+    if (nextDate < today) {
+        let tempDate = new Date(startDate);
+        while (tempDate < today) {
+            switch (frequency) {
+                case 'daily':
+                    tempDate = addDays(tempDate, 1);
+                    break;
+                case 'weekly':
+                    tempDate = addWeeks(tempDate, 1);
+                    break;
+                case 'monthly':
+                    tempDate = addMonths(tempDate, 1);
+                    break;
+                default:
+                    return new Date(); // Si la frecuencia es desconocida, usa la fecha actual
+            }
+        }
+        nextDate = tempDate;
+    } else {
+        // La fecha de inicio está en el futuro, simplemente la usamos
+        nextDate = startDate;
+    }
 
-// NUEVO: Oyentes de eventos de ver cuentas de ahorro
-viewSavingsAccountsBtn.addEventListener('click', () => {
-    viewSavingsAccountsModal.classList.remove('hidden');
-    loadSavingsAccounts();
-});
-closeViewSavingsAccountsBtn.addEventListener('click', () => {
-    closeModal(viewSavingsAccountsModal);
-});
+    switch (frequency) {
+        case 'daily':
+            return addDays(nextDate, 1);
+        case 'weekly':
+            return addWeeks(nextDate, 1);
+        case 'monthly':
+            return addMonths(nextDate, 1);
+        default:
+            return nextDate; // Si la frecuencia es desconocida, no la cambiamos
+    }
+}
 
-// NUEVO: Oyentes de eventos de editar anuncios
-editAnnouncementsBtn.addEventListener('click', async () => {
-    editAnnouncementsModal.classList.remove('hidden');
-    await loadAnnouncementsForEdit();
-});
-cancelEditAnnouncementsBtn.addEventListener('click', () => {
-    closeModal(editAnnouncementsModal);
-});
-// El oyente de eventos de envío para editAnnouncementsForm ya está definido globalmente.
+// Escuchar cambios en la autenticación
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        // Usuario está autenticado
+        currentUser = user;
+        currentUserId = user.uid;
+        console.log("Usuario autenticado:", user.email);
 
-// NUEVO: Oyentes de eventos del modal de depósito en ahorros
-cancelDepositToSavingsBtn.addEventListener('click', () => {
-    closeModal(depositToSavingsModal);
-});
+        // Desuscribirse del oyente anterior si existe
+        if (userProfileUnsubscribe) {
+            userProfileUnsubscribe();
+            userProfileUnsubscribe = null;
+        }
 
-// NUEVO: Oyentes de eventos del modal de retiro de ahorros
-cancelWithdrawFromSavingsBtn.addEventListener('click', () => {
-    closeModal(withdrawFromSavingsModal);
-});
+        // Configurar un oyente en tiempo real para el perfil del usuario
+        const userDocRef = doc(db, 'artifacts', appId, 'users', currentUserId);
+        userProfileUnsubscribe = onSnapshot(userDocRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const userData = docSnap.data();
+                showDashboard(userData);
+            } else {
+                console.log("Perfil de usuario no encontrado, cerrando sesión.");
+                signOut(auth);
+            }
+        }, (error) => {
+            console.error("Error al escuchar el perfil del usuario:", error);
+        });
 
-// NUEVO: Oyentes de eventos del modal de confirmación de eliminación de cuenta de ahorro
-cancelDeleteSavingsAccountBtn.addEventListener('click', () => {
-    closeModal(confirmDeleteSavingsAccountModal);
-});
-cancelDeleteSavingsAccountBtn2.addEventListener('click', () => {
-    closeModal(confirmDeleteSavingsAccountModal);
+        // Simulación de las funciones de mantenimiento del servidor
+        // En un entorno de producción, esto debería ejecutarse en el servidor.
+        checkAndProcessSavingsCollections();
+        checkAndProcessSavingsDebts();
+
+    } else {
+        // Usuario no está autenticado
+        currentUser = null;
+        currentUserId = null;
+        console.log("Usuario desautenticado.");
+        showSection(loginSection, registerSection, dashboardSection);
+        toggleTabs('login');
+        hideMessage();
+        // Desuscribirse si existe
+        if (userProfileUnsubscribe) {
+            userProfileUnsubscribe();
+            userProfileUnsubscribe = null;
+        }
+    }
 });
