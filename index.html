@@ -304,6 +304,7 @@
                     <button id="depositMoneyBtn" class="btn-primary">Depositar Dinero</button>
                     <button id="withdrawMoneyBtn" class="btn-primary">Retirar Dinero</button>
                     <button id="transferMoneyBtn" class="btn-primary">Transferir Dinero</button>
+                    <button id="receiveExternalMoneyBtn" class="btn-primary">Recibir Dinero Exterior</button> <!-- NUEVO BOTÓN -->
                     <button id="viewHistoryBtn" class="btn-primary">Ver Historial</button>
                     <button id="openSavingsAccountBtn" class="btn-primary">Abrir Cuenta de Ahorro</button>
                     <button id="viewSavingsAccountsBtn" class="btn-primary">Ver Cuentas de Ahorro</button>
@@ -382,7 +383,7 @@
                     <option value="DOP">DOP</option>
                 </select>
 
-                <button type="submit" id="confirmTransferBtn" class="btn-primary w-full mt-4" disabled>Confirmar Transferencia</button>
+                <button type="submit" id="confirmTransferBtn" class="btn-primary w-full mt-4">Confirmar Transferencia</button>
             </form>
         </div>
     </div>
@@ -395,7 +396,7 @@
             <p class="text-gray-600 mb-4">Ingresa el número de serie de tu depósito físico y el monto. Esto enviará una solicitud de aprobación al banco.</p>
             <form id="depositForm" class="flex flex-col">
                 <label for="depositSerialNumber" class="text-gray-700 font-medium mb-1">Número de Serie del Depósito:</label>
-                <input type="text" id="depositSerialNumber" class="input-field" placeholder="Número de serie único" required readonly>
+                <input type="text" id="depositSerialNumber" class="input-field" placeholder="Número de serie único" required>
 
                 <label for="depositAmount" class="text-gray-700 font-medium mb-1">Monto:</label>
                 <input type="number" id="depositAmount" class="input-field" step="0.01" min="0.01" required>
@@ -407,6 +408,36 @@
                 </select>
 
                 <button type="submit" class="btn-primary w-full mt-4">Enviar Solicitud de Depósito</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Receive External Money Modal (NUEVO) -->
+    <div id="receiveExternalMoneyModal" class="modal hidden">
+        <div class="modal-content">
+            <button id="cancelReceiveExternalMoneyBtn" class="close-btn">×</button>
+            <h2 class="text-2xl font-bold text-blue-700 mb-4">Recibir Dinero de Banco Exterior</h2>
+            <p class="text-gray-600 mb-4">Ingresa los detalles del dinero que esperas recibir de un banco exterior. Esto enviará una solicitud de aprobación al administrador.</p>
+            <form id="receiveExternalMoneyForm" class="flex flex-col">
+                <label for="externalSenderName" class="text-gray-700 font-medium mb-1">Nombre del Remitente:</label>
+                <input type="text" id="externalSenderName" class="input-field" placeholder="Nombre de quien envía el dinero" required>
+
+                <label for="externalSenderBank" class="text-gray-700 font-medium mb-1">Banco Origen:</label>
+                <input type="text" id="externalSenderBank" class="input-field" placeholder="Nombre del banco de origen" required>
+
+                <label for="externalSerialNumber" class="text-gray-700 font-medium mb-1">Número de Serie/Referencia de la Transacción:</label>
+                <input type="text" id="externalSerialNumber" class="input-field" placeholder="Número de referencia de la transacción" required>
+
+                <label for="externalDepositAmount" class="text-gray-700 font-medium mb-1">Monto a Recibir:</label>
+                <input type="number" id="externalDepositAmount" class="input-field" step="0.01" min="0.01" required>
+
+                <label for="externalDepositCurrency" class="text-gray-700 font-medium mb-1">Moneda:</label>
+                <select id="externalDepositCurrency" class="input-field" required>
+                    <option value="USD">USD</option>
+                    <option value="DOP">DOP</option>
+                </select>
+
+                <button type="submit" class="btn-primary w-full mt-4">Enviar Solicitud de Recepción</button>
             </form>
         </div>
     </div>
@@ -443,9 +474,9 @@
                         <tr>
                             <th>Fecha</th>
                             <th>Tipo</th>
-                            <th>Detalles</th>
                             <th>Monto</th>
                             <th>Moneda</th>
+                            <th>Detalles</th>
                             <th>Recibo</th>
                         </tr>
                     </thead>
@@ -471,8 +502,8 @@
                             <th>Usuarios Involucrados</th>
                             <th>Monto</th>
                             <th>Moneda</th>
-                            <th>Estado</th>
                             <th>Detalles</th>
+                            <th>Recibo</th>
                         </tr>
                     </thead>
                     <tbody id="adminFullHistoryTableBodyModal">
@@ -685,8 +716,8 @@
                             <th>Tipo</th>
                             <th>Monto</th>
                             <th>Moneda</th>
-                            <th>Estado</th>
                             <th>Detalle</th>
+                            <th>Estado</th>
                         </tr>
                     </thead>
                     <tbody id="userPendingRequestsTableBody">
@@ -846,15 +877,12 @@
                 <table class="min-w-full bg-white rounded-lg shadow-md">
                     <thead>
                         <tr>
-                            <th>ID Cuenta</th>
                             <th>Meta</th>
                             <th>Saldo USD</th>
-                            <th>Saldo DOP</th>
                             <th>Frecuencia</th>
                             <th>Cuota Periódica</th>
                             <th>Próxima Cuota</th>
                             <th>Fecha Fin</th>
-                            <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -951,8 +979,9 @@
                         <tr>
                             <th>Cuenta de Ahorro</th>
                             <th>Monto Adeudado</th>
+                            <th>Indemnización</th>
+                            <th>Total a Pagar</th>
                             <th>Fecha de Vencimiento</th>
-                            <th>Estado</th>
                             <th>Acción</th>
                         </tr>
                     </thead>
@@ -976,10 +1005,10 @@
                             <th>Usuario</th>
                             <th>Cuenta de Ahorro</th>
                             <th>Monto Adeudado</th>
+                            <th>Indemnización</th>
+                            <th>Total a Pagar</th>
                             <th>Fecha de Vencimiento</th>
                             <th>Estado</th>
-                            <th>Contactar</th>
-                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="adminSavingsDebtsTableBody">
