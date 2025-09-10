@@ -1,5 +1,7 @@
 // ui-handlers.js
 
+// ¡Importamos 'auth' aquí para que esté disponible!
+import { auth } from './firebase-config.js'; 
 import { performRegistration, handleLogin, handleLogout } from './auth.js';
 import { handleDeposit, handleTransfer } from './transactions.js';
 import { showMessage, hideMessage, showSection, showTransactionStatus, hideTransactionStatus } from './utils.js';
@@ -18,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginPassword = document.getElementById('loginPassword');
     const registerForm = document.getElementById('registerForm');
     const registerNameInput = document.getElementById('registerName');
-    const registerSurnameInput = document.getElementById('registerSurname'); // ¡CORREGIDO!
+    const registerSurnameInput = document.getElementById('registerSurname');
     const registerAgeInput = document.getElementById('registerAge');
     const registerPhoneNumberInput = document.getElementById('registerPhoneNumber');
     const registerPasswordInput = document.getElementById('registerPassword');
@@ -119,7 +121,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const user = auth.currentUser;
+            // Ahora 'auth' está definido aquí gracias a la importación
+            const user = auth.currentUser; 
             if (user) {
                 await handleDeposit(user.uid, amount, currency, serialNumber, false);
                 depositModal.classList.add('hidden');
@@ -153,7 +156,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const user = auth.currentUser;
+            // Ahora 'auth' está definido aquí gracias a la importación
+            const user = auth.currentUser; 
             if (user) {
                 showTransactionStatus('Transferencia en curso...');
                 const result = await handleTransfer(user.uid, recipientId, amount, currency);
