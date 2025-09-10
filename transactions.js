@@ -11,33 +11,22 @@ import {
     runTransaction,
     query,
     where,
-    getDocs,
-    orderBy
+    getDocs
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 import { db, appId } from './firebase-config.js';
-import { showMessage, getUserDisplayName, showReceipt, loadTransactionHistory, showAdminPanel, showUserPanel } from './utils.js';
-import { auth } from './firebase-config.js'; // Importar auth para obtener currentUser
-
-const USD_TO_DOP_RATE = 58.0; // Tasa de cambio de ejemplo, idealmente esto vendría de una configuración
+import { showMessage } from './utils.js';
 
 async function handleDeposit(userId, amount, currency, serialNumber) {
-    // Se asume que la lógica de verificar 'hasPendingDeposit' está en el listener del usuario
-    // y que se actualiza el documento del usuario.
+    // La lógica de depósito se mantiene igual
     try {
-        const depositsRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_deposits');
-        await addDoc(depositsRef, {
+        const pendingRequestRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
             userId: userId,
             type: 'deposit',
             amount: amount,
             currency: currency,
             serialNumber: serialNumber,
             timestamp: serverTimestamp(),
-            status: 'pending' // Estado inicial
-        });
-
-        // Actualizar el documento del usuario para indicar que hay un depósito pendiente
-        await updateDoc(doc(db, 'artifacts', appId, 'users', userId), {
-            hasPendingDeposit: true
+            status: 'pending'
         });
 
         showMessage('Solicitud de depósito enviada. Esperando aprobación del administrador.', 'success');
@@ -50,11 +39,8 @@ async function handleDeposit(userId, amount, currency, serialNumber) {
 }
 
 async function handleWithdrawal(userId, currentBalanceUSD, amount, currency) {
+    const USD_TO_DOP_RATE = 58.0; // Tasa de cambio de ejemplo
     const amountUSD = (currency === 'DOP') ? amount / USD_TO_DOP_RATE : amount;
-    // Si hubiera una comisión fija o variable, se calcularía aquí.
-    // Por ahora, asumo que no hay comisión directa en el retiro inicial,
-    // pero el admin podría aplicarla.
-    const feeAmount = 0; // O calcularla si aplica
 
     if (currentBalanceUSD < amountUSD) {
         showMessage('Saldo insuficiente para realizar el retiro.', 'error');
@@ -62,15 +48,13 @@ async function handleWithdrawal(userId, currentBalanceUSD, amount, currency) {
     }
 
     try {
-        const withdrawalsRef = collection(db, 'artifacts', appId, 'public', 'data', 'pending_withdrawals');
-        await addDoc(withdrawalsRef, {
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), {
             userId: userId,
             type: 'withdrawal',
             amount: amount,
             currency: currency,
-            feeAmount: feeAmount, // Si aplica
             timestamp: serverTimestamp(),
-            status: 'pending' // Estado inicial
+            status: 'pending'
         });
 
         showMessage('Solicitud de retiro enviada. Esperando aprobación del administrador.', 'success');
@@ -88,14 +72,21 @@ async function handleTransfer(senderId, recipientId, amount, currency) {
         return { success: false };
     }
 
+    const USD_TO_DOP_RATE = 58.0; // Tasa de cambio de ejemplo
     const amountUSD = (currency === 'DOP') ? amount / USD_TO_DOP_RATE : amount;
     const amountDOP = (currency === 'USD') ? amount * USD_TO_DOP_RATE : amount;
 
     try {
         await runTransaction(db, async (transaction) => {
             const senderDocRef = doc(db, 'artifacts', appId, 'users', senderId);
-            const recipientDocRef = doc(db, 'artifacts', appId, 'users', recipientId);
-            const transactionsCollectionRef = collection(db, 'artifacts', appId, 'transactions');
+            const recipientQuery = query(collection(db, 'artifacts', appId, 'users'), where('userDisplayId', '==', recipientId));
+            const recipientSnapshot = await getDocs(recipientQuery);
+
+            if (recipientSnapshot.empty) {
+                throw new Error("El usuario destinatario no existe.");
+            }
+            const recipientDoc = recipientSnapshot.docs[0];
+            const recipientDocRef = doc(db, 'artifacts', appId, 'users', recipientDoc.id);
 
             const senderDoc = await transaction.get(senderDocRef);
             if (!senderDoc.exists()) {
@@ -107,10 +98,6 @@ async function handleTransfer(senderId, recipientId, amount, currency) {
                 throw new Error("Saldo insuficiente para la transferencia.");
             }
 
-            const recipientDoc = await transaction.get(recipientDocRef);
-            if (!recipientDoc.exists()) {
-                throw new Error("El usuario destinatario no existe.");
-            }
             const recipientData = recipientDoc.data();
 
             // Actualizar saldos dentro de la transacción
@@ -124,55 +111,30 @@ async function handleTransfer(senderId, recipientId, amount, currency) {
             });
             
             // Agregar el documento de la transacción
-            // Usar addDoc para que Firebase genere el ID
-            transaction.set(doc(transactionsCollectionRef), { // doc(collectionRef) para crear un nuevo doc
+            const transactionRef = collection(db, 'artifacts', appId, 'transactions');
+            transaction.set(doc(transactionRef), {
                 type: 'transfer',
                 senderId: senderId,
-                recipientId: recipientId,
+                recipientId: recipientDoc.id,
                 amount: amount,
                 currency: currency,
                 timestamp: serverTimestamp()
             });
         });
         
-        //showMessage('Transferencia exitosa.', 'success'); // Mostrar mensaje en ui-handlers
+        showMessage('Transferencia exitosa.', 'success');
         return { success: true };
     } catch (error) {
         console.error("Error al procesar la transferencia:", error);
-        // Los mensajes de error específicos se mostrarán en ui-handlers.js
-        throw error; // Lanza el error para que ui-handlers.js pueda capturarlo
+        if (error.message.includes('Saldo insuficiente')) {
+            showMessage('Saldo insuficiente para la transferencia.', 'error');
+        } else if (error.message.includes('destinatario no existe')) {
+            showMessage('El usuario destinatario no existe.', 'error');
+        } else {
+            showMessage('Error al procesar la transferencia. Por favor, inténtalo de nuevo.', 'error');
+        }
+        return { success: false, error };
     }
 }
 
-// Podrías necesitar estas funciones si son llamadas desde ui-handlers.js o script.js
-async function fetchUserTransactions(userId) {
-    if (!userId) return [];
-    try {
-        const transactionsRef = collection(db, 'artifacts', appId, 'transactions');
-        // Consulta para obtener transacciones donde el usuario es remitente o destinatario
-        const q1 = query(transactionsRef, where('senderId', '==', userId), orderBy('timestamp', 'desc'));
-        const q2 = query(transactionsRef, where('recipientId', '==', userId), orderBy('timestamp', 'desc'));
-
-        const [snapshot1, snapshot2] = await Promise.all([getDocs(q1), getDocs(q2)]);
-        
-        const transactions = [
-            ...snapshot1.docs.map(doc => ({ id: doc.id, ...doc.data() })),
-            ...snapshot2.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-        ];
-        
-        // Ordenar por fecha descendente si hay duplicados o para asegurar el orden
-        transactions.sort((a, b) => b.timestamp.toDate().getTime() - a.timestamp.toDate().getTime());
-        
-        return transactions;
-    } catch (error) {
-        console.error("Error fetching user transactions:", error);
-        return [];
-    }
-}
-
-export { 
-    handleDeposit, 
-    handleWithdrawal, 
-    handleTransfer,
-    fetchUserTransactions // Exportar para que script.js pueda usarla
-};
+export { handleDeposit, handleWithdrawal, handleTransfer };
