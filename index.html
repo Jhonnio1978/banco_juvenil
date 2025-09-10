@@ -4,378 +4,149 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Banco Juvenil</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-        }
-        .modal {
-            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-        }
-        .modal.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-        .modal-content {
-            transform: scale(0.95);
-            transition: transform 0.3s ease-in-out;
-        }
-        .modal.visible .modal-content {
-            transform: scale(1);
-        }
-        .message-box {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            padding: 1rem 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            font-weight: 500;
-            text-align: center;
-        }
-        .message-box.success {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-        .message-box.error {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-4xl bg-white p-8 rounded-xl shadow-lg">
-        <div id="auth-section">
-            <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Iniciar Sesión</h1>
-            <form id="auth-form" class="space-y-4">
-                <div>
-                    <label for="email" class="block text-gray-700 font-medium">Correo Electrónico</label>
-                    <input type="email" id="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                </div>
-                <div>
-                    <label for="password" class="block text-gray-700 font-medium">Contraseña</label>
-                    <input type="password" id="password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                </div>
-                <div class="flex items-center space-x-4">
-                    <button type="submit" id="login-button" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                        Iniciar Sesión
-                    </button>
-                    <button type="button" id="register-button" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                        Registrarse
-                    </button>
-                </div>
-            </form>
+<body class="bg-gray-100 font-sans">
+
+    <div class="container mx-auto p-4 max-w-lg">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-blue-600">Banco Juvenil</h1>
+        </header>
+
+        <div id="messageBox" class="hidden p-4 rounded-md mb-4" role="alert">
+            <p id="messageText" class="font-medium"></p>
         </div>
 
-        <div id="main-app" class="hidden">
-            <header class="flex justify-between items-center mb-6 border-b pb-4">
-                <h1 class="text-3xl font-bold text-gray-800">Mi Cuenta</h1>
-                <div class="flex items-center space-x-4">
-                    <span id="current-user-email" class="text-gray-600 font-medium hidden md:block"></span>
-                    <button id="logout-button" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors">
-                        Cerrar Sesión
-                    </button>
-                </div>
-            </header>
+        <div id="authSection" class="bg-white p-6 rounded-lg shadow-md mb-4">
+            <div class="flex justify-around mb-4">
+                <button id="loginTab" class="py-2 px-4 rounded-md font-semibold text-blue-600 border-b-2 border-blue-600 transition-colors duration-200">Iniciar Sesión</button>
+                <button id="registerTab" class="py-2 px-4 rounded-md font-semibold text-gray-500 hover:text-blue-600 transition-colors duration-200">Registrarse</button>
+            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Saldo de la cuenta -->
-                <div class="bg-blue-500 text-white rounded-xl p-6 shadow-lg">
-                    <h2 class="text-2xl font-semibold mb-2">Saldo Actual</h2>
-                    <p id="account-balance" class="text-4xl font-bold">$0.00</p>
-                </div>
-
-                <!-- Tarjeta de acciones -->
-                <div class="bg-gray-100 rounded-xl p-6 shadow-lg">
-                    <h2 class="text-2xl font-semibold mb-4 text-gray-800">Acciones Rápidas</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <button id="open-receive-external-bank-modal" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition-colors">
-                            Recibir de Banco Exterior
-                        </button>
+            <section id="loginSection">
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label for="loginIdentifier" class="block text-gray-700 font-bold">ID de Usuario o Email</label>
+                        <input type="text" id="loginIdentifier" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
                     </div>
+                    <div>
+                        <label for="loginPassword" class="block text-gray-700 font-bold">Contraseña</label>
+                        <input type="password" id="loginPassword" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200">Iniciar Sesión</button>
+                </form>
+            </section>
+
+            <section id="registerSection" class="hidden">
+                <form id="registerForm" class="space-y-4">
+                    <div>
+                        <label for="registerName" class="block text-gray-700 font-bold">Nombre</label>
+                        <input type="text" id="registerName" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                    </div>
+                    <div>
+                        <label for="registerSurname" class="block text-gray-700 font-bold">Apellido</label>
+                        <input type="text" id="registerSurname" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                    </div>
+                    <div>
+                        <label for="registerAge" class="block text-gray-700 font-bold">Edad</label>
+                        <input type="number" id="registerAge" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                    </div>
+                    <div>
+                        <label for="registerPhoneNumber" class="block text-gray-700 font-bold">Número de Teléfono</label>
+                        <input type="tel" id="registerPhoneNumber" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                    </div>
+                    <div>
+                        <label for="registerPassword" class="block text-gray-700 font-bold">Contraseña</label>
+                        <input type="password" id="registerPassword" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200">Registrarse</button>
+                </form>
+            </section>
+        </div>
+
+        <section id="dashboardSection" class="hidden">
+            <div class="bg-white p-6 rounded-lg shadow-md mb-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-gray-800" id="dashboardUserName"></h2>
+                    <button id="logoutBtn" class="bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 transition-colors duration-200">Cerrar Sesión</button>
+                </div>
+                <p id="dashboardDisplayId" class="text-sm text-gray-500 mb-4"></p>
+                <div class="bg-blue-500 text-white p-4 rounded-lg shadow-inner flex justify-between items-center">
+                    <div class="text-sm">Saldo Actual</div>
+                    <div class="text-3xl font-bold" id="accountBalance"></div>
+                    <button id="toggleCurrency" class="bg-blue-600 text-white text-sm py-1 px-2 rounded-full hover:bg-blue-700 transition-colors duration-200">Cambiar a DOP</button>
                 </div>
             </div>
 
-            <!-- Dashboard de Administración (solo visible para admin) -->
-            <div id="admin-dashboard" class="mt-8 hidden">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Dashboard de Administrador</h2>
-                <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Solicitudes de Depósito Pendientes</h3>
-                    <div id="pending-requests-list" class="space-y-4">
-                        <p class="text-gray-500 text-center">No hay solicitudes pendientes.</p>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <button id="depositMoneyBtn" class="bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition-colors duration-200">Depositar Dinero</button>
+                <button id="transferMoneyBtn" class="bg-indigo-500 text-white py-3 rounded-lg font-bold hover:bg-indigo-600 transition-colors duration-200">Transferir Dinero</button>
+            </div>
+        </section>
+
+        <div id="depositModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <h3 class="text-lg font-bold text-center mb-4">Depositar Dinero</h3>
+                <form id="depositForm" class="space-y-4">
+                    <div>
+                        <label for="depositAmount" class="block text-gray-700">Cantidad</label>
+                        <input type="number" id="depositAmount" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
                     </div>
-                </div>
+                    <div>
+                        <label for="depositCurrency" class="block text-gray-700">Moneda</label>
+                        <select id="depositCurrency" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                            <option value="USD">USD</option>
+                            <option value="DOP">DOP</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="depositSerialNumber" class="block text-gray-700">Número de Serie del Depósito</label>
+                        <input type="text" id="depositSerialNumber" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                    </div>
+                    <div class="flex justify-between">
+                        <button type="button" id="cancelDeposit" class="bg-gray-400 text-white py-2 px-4 rounded-md hover:bg-gray-500">Cancelar</button>
+                        <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600">Enviar Solicitud</button>
+                    </div>
+                </form>
             </div>
         </div>
-    </div>
 
-    <!-- Modal para recibir de banco exterior -->
-    <div id="receive-external-bank-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
-        <div class="modal-content bg-white p-6 rounded-xl shadow-xl w-full max-w-md mx-auto relative">
-            <button id="close-receive-external-bank-modal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold leading-none">&times;</button>
-            <h2 class="text-2xl font-bold mb-4 text-gray-800 text-center">Recibir de Banco Exterior</h2>
-            <form id="receive-external-bank-form" class="space-y-4">
-                <div>
-                    <label for="external-bank-sender-name" class="block text-gray-700 font-medium">Nombre del remitente</label>
-                    <input type="text" id="external-bank-sender-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
-                </div>
-                <div>
-                    <label for="external-bank-amount" class="block text-gray-700 font-medium">Monto</label>
-                    <input type="number" id="external-bank-amount" required step="0.01" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
-                </div>
-                <div>
-                    <label for="external-bank-currency" class="block text-gray-700 font-medium">Moneda</label>
-                    <select id="external-bank-currency" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
-                        <option value="DOP">DOP</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="external-bank-name" class="block text-gray-700 font-medium">Nombre del Banco</label>
-                    <input type="text" id="external-bank-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
-                </div>
-                <div>
-                    <label for="external-bank-serial" class="block text-gray-700 font-medium">Número de Serie (Comprobante)</label>
-                    <input type="text" id="external-bank-serial" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
-                </div>
-                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
-                    Enviar Solicitud
-                </button>
-            </form>
+        <div id="transferModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <h3 class="text-lg font-bold text-center mb-4">Transferir Dinero</h3>
+                <form id="transferForm" class="space-y-4">
+                    <div>
+                        <label for="transferRecipientId" class="block text-gray-700">ID de Destinatario</label>
+                        <input type="text" id="transferRecipientId" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                    </div>
+                    <div>
+                        <label for="transferAmount" class="block text-gray-700">Cantidad</label>
+                        <input type="number" id="transferAmount" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                    </div>
+                    <div>
+                        <label for="transferCurrency" class="block text-gray-700">Moneda</label>
+                        <select id="transferCurrency" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                            <option value="USD">USD</option>
+                            <option value="DOP">DOP</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-between">
+                        <button type="button" id="cancelTransferModalBtn" class="bg-gray-400 text-white py-2 px-4 rounded-md hover:bg-gray-500">Cancelar</button>
+                        <button type="submit" class="bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600">Transferir</button>
+                    </div>
+                </form>
+            </div>
         </div>
+
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, addDoc, serverTimestamp, runTransaction, getDocs, query, where, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="transactions.js"></script>
+    <script type="module" src="utils.js"></script>
+    <script type="module" src="script.js"></script>
 
-        // Global variables provided by the environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        let db, auth, currentUserId, currentUserEmail;
-        const isAdmin = (email) => email === 'admin.jhonnio@banco-juvenil-12903.com';
-        let isAuthReady = false;
-
-        // --- UI Elements ---
-        const authSection = document.getElementById('auth-section');
-        const mainApp = document.getElementById('main-app');
-        const authForm = document.getElementById('auth-form');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const loginButton = document.getElementById('login-button');
-        const registerButton = document.getElementById('register-button');
-        const logoutButton = document.getElementById('logout-button');
-        const accountBalanceText = document.getElementById('account-balance');
-        const currentUserEmailSpan = document.getElementById('current-user-email');
-        const adminDashboard = document.getElementById('admin-dashboard');
-        const pendingRequestsList = document.getElementById('pending-requests-list');
-        const receiveExternalBankModal = document.getElementById('receive-external-bank-modal');
-        const openReceiveExternalBankModalButton = document.getElementById('open-receive-external-bank-modal');
-        const closeReceiveExternalBankModalButton = document.getElementById('close-receive-external-bank-modal');
-        const receiveExternalBankForm = document.getElementById('receive-external-bank-form');
-        const externalBankSenderNameInput = document.getElementById('external-bank-sender-name');
-        const externalBankAmountInput = document.getElementById('external-bank-amount');
-        const externalBankCurrencyInput = document.getElementById('external-bank-currency');
-        const externalBankNameInput = document.getElementById('external-bank-name');
-        const externalBankSerialInput = document.getElementById('external-bank-serial');
-
-        // --- Utility Functions ---
-        let messageTimeout;
-        function showMessage(message, type = 'success') {
-            const messageBox = document.createElement('div');
-            messageBox.className = `message-box ${type}`;
-            messageBox.textContent = message;
-            document.body.appendChild(messageBox);
-            clearTimeout(messageTimeout);
-            messageTimeout = setTimeout(() => {
-                messageBox.remove();
-            }, 5000);
-        }
-
-        function showModal(modal) {
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.add('visible');
-            }, 10);
-        }
-
-        function closeModal(modal) {
-            modal.classList.remove('visible');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-        }
-
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('es-DO', {
-                style: 'currency',
-                currency: 'DOP',
-                minimumFractionDigits: 2
-            }).format(amount);
-        }
-
-        // --- Core Functions ---
-        async function initializeFirebaseAndAuth() {
-            try {
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                // Sign in with the custom token provided by the environment
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        currentUserId = user.uid;
-                        currentUserEmail = user.email;
-                        currentUserEmailSpan.textContent = user.email;
-                        authSection.classList.add('hidden');
-                        mainApp.classList.remove('hidden');
-
-                        if (isAdmin(currentUserEmail)) {
-                            adminDashboard.classList.remove('hidden');
-                            setupAdminDashboardListener();
-                        } else {
-                            adminDashboard.classList.add('hidden');
-                        }
-
-                        // Set up listeners for the current user's data
-                        setupUserListener();
-
-                    } else {
-                        currentUserId = null;
-                        currentUserEmail = null;
-                        authSection.classList.remove('hidden');
-                        mainApp.classList.add('hidden');
-                    }
-                    isAuthReady = true;
-                });
-            } catch (error) {
-                console.error("Error initializing Firebase or authentication:", error);
-                showMessage("Error de inicialización. Intenta de nuevo más tarde.", 'error');
-            }
-        }
-
-        function setupUserListener() {
-            if (!currentUserId) return;
-            const userRef = doc(db, 'artifacts', appId, 'users', currentUserId);
-            onSnapshot(userRef, (doc) => {
-                if (doc.exists()) {
-                    const userData = doc.data();
-                    accountBalanceText.textContent = formatCurrency(userData.balance || 0);
-                } else {
-                    accountBalanceText.textContent = formatCurrency(0);
-                }
-            }, (error) => {
-                console.error("Error al escuchar los datos del usuario:", error);
-                showMessage("Error al cargar los datos de la cuenta. Intenta recargar la página.", 'error');
-            });
-        }
-
-        function setupAdminDashboardListener() {
-            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'pending_requests'), where('status', '==', 'pending'));
-            onSnapshot(q, (snapshot) => {
-                if (snapshot.empty) {
-                    pendingRequestsList.innerHTML = '<p class="text-gray-500 text-center">No hay solicitudes pendientes.</p>';
-                    return;
-                }
-                pendingRequestsList.innerHTML = '';
-                snapshot.forEach(requestDoc => {
-                    const data = requestDoc.data();
-                    const requestId = requestDoc.id;
-                    const requestItem = document.createElement('div');
-                    requestItem.className = 'bg-gray-50 rounded-lg p-4 shadow-sm flex items-center justify-between';
-                    requestItem.innerHTML = `
-                        <div>
-                            <p class="font-semibold text-gray-800">Solicitud de: <span class="text-blue-600">${data.senderName}</span></p>
-                            <p class="text-gray-600">Monto: <span class="font-bold">${formatCurrency(data.amount)}</span> (${data.currency})</p>
-                            <p class="text-gray-500 text-sm">Usuario ID: <span class="text-xs">${data.userId}</span></p>
-                        </div>
-                        <button class="approve-btn bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full transition-colors" data-id="${requestId}" data-amount="${data.amount}" data-user-id="${data.userId}" data-type="${data.type}" data-sender-name="${data.senderName}" data-currency="${data.currency}" data-bank-name="${data.bankName}" data-serial-number="${data.serialNumber}">
-                            Aprobar
-                        </button>
-                    `;
-                    pendingRequestsList.appendChild(requestItem);
-                });
-                document.querySelectorAll('.approve-btn').forEach(button => {
-                    button.addEventListener('click', handleApproveDeposit);
-                });
-            }, (error) => {
-                console.error("Error al escuchar las solicitudes pendientes:", error);
-            });
-        }
-
-        async function handleApproveDeposit(event) {
-            const button = event.target;
-            const requestId = button.dataset.id;
-            const userId = button.dataset.userId;
-            const amount = parseFloat(button.dataset.amount);
-            const senderName = button.dataset.senderName;
-            const currency = button.dataset.currency;
-            const bankName = button.dataset.bankName;
-            const serialNumber = button.dataset.serialNumber;
-            
-            if (!requestId || !userId || isNaN(amount)) {
-                showMessage('Datos de la solicitud incompletos.', 'error');
-                return;
-            }
-
-            button.disabled = true;
-            button.textContent = 'Aprobando...';
-
-            const userRef = doc(db, 'artifacts', appId, 'users', userId);
-            const requestRef = doc(db, 'artifacts', appId, 'public', 'data', 'pending_requests', requestId);
-            const transactionsRef = collection(db, 'artifacts', appId, 'public', 'data', 'transactions');
-
-            try {
-                await runTransaction(db, async (transaction) => {
-                    const userDoc = await transaction.get(userRef);
-                    if (!userDoc.exists()) {
-                        throw "Documento de usuario no existe!";
-                    }
-
-                    const newBalance = (userDoc.data().balance || 0) + amount;
-                    transaction.update(userRef, { balance: newBalance });
-
-                    const newTransaction = {
-                        userId: userId,
-                        type: 'deposit_external',
-                        amount: amount,
-                        currency: currency,
-                        bankName: bankName,
-                        serialNumber: serialNumber,
-                        senderName: senderName,
-                        timestamp: serverTimestamp(),
-                        status: 'completed'
-                    };
-                    transaction.set(transactionsRef.doc(), newTransaction);
-
-                    transaction.delete(requestRef);
-                });
-
-                showMessage('Depósito aprobado y cuenta actualizada con éxito.', 'success');
-            } catch (e) {
-                console.error("Error al aprobar el depósito:", e);
-                showMessage(`Error al aprobar el depósito: ${e}`, 'error');
-                button.disabled = false;
-                button.textContent = 'Aprobar';
-            }
-        }
-
-        // --- Event Listeners ---
-        authForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = emailInput.value;
-            const password = passwordInput.value;
+</body>
+</html>
