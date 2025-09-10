@@ -2,7 +2,6 @@
 
 import { performRegistration, handleLogin, handleLogout } from './auth.js';
 import { handleDeposit, handleTransfer } from './transactions.js';
-import { auth } from './firebase-config.js'; // Necesario para auth.currentUser
 import { showMessage, hideMessage, showSection, showTransactionStatus, hideTransactionStatus } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,11 +18,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginPassword = document.getElementById('loginPassword');
     const registerForm = document.getElementById('registerForm');
     const registerNameInput = document.getElementById('registerName');
-    const registerSurnameInput = document.getElementById('registerSurname');
+    const registerSurnameInput = document.getElementById('registerSurname'); // ¡CORREGIDO!
     const registerAgeInput = document.getElementById('registerAge');
     const registerPhoneNumberInput = document.getElementById('registerPhoneNumber');
     const registerPasswordInput = document.getElementById('registerPassword');
     const logoutBtn = document.getElementById('logoutBtn');
+    const accountBalance = document.getElementById('accountBalance');
     const depositMoneyBtn = document.getElementById('depositMoneyBtn');
     const depositModal = document.getElementById('depositModal');
     const cancelDeposit = document.getElementById('cancelDeposit');
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.success) {
                 loginIdentifierInput.value = result.email;
                 loginPassword.value = password;
-                // Si el registro es exitoso, la función onAuthStateChanged de script.js se encargará de la redirección.
+                // Ahora puedes iniciar sesión automáticamente si lo deseas
             }
         });
     }
