@@ -10,7 +10,7 @@
 </head>
 <body class="bg-gray-100 font-sans">
 
-    <div class="container mx-auto p-4 max-w-4xl">
+    <div class="container mx-auto p-4 max-w-lg">
         <header class="text-center mb-8">
             <h1 class="text-3xl font-bold text-blue-600">Banco Juvenil</h1>
         </header>
@@ -80,71 +80,18 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-3 gap-4 mb-4">
                 <button id="depositMoneyBtn" class="bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition-colors duration-200">Depositar Dinero</button>
                 <button id="transferMoneyBtn" class="bg-indigo-500 text-white py-3 rounded-lg font-bold hover:bg-indigo-600 transition-colors duration-200">Transferir Dinero</button>
+                <button id="withdrawMoneyBtn" class="bg-red-500 text-white py-3 rounded-lg font-bold hover:bg-red-600 transition-colors duration-200">Retirar Dinero</button>
             </div>
 
             <div class="bg-white p-6 rounded-lg shadow-md">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">Historial de Transacciones</h3>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full leading-normal">
-                        <thead>
-                            <tr>
-                                <th class="py-2 px-4 border-b font-semibold text-left">Fecha y Hora</th>
-                                <th class="py-2 px-4 border-b font-semibold text-left">Descripción</th>
-                                <th class="py-2 px-4 border-b font-semibold text-right">Monto</th>
-                                <th class="py-2 px-4 border-b font-semibold text-center">Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactionHistoryBody">
-                            <tr>
-                                <td colspan="4" class="text-center py-4 text-gray-500">Cargando historial...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <h3 class="text-lg font-bold mb-4">Historial de Transacciones</h3>
+                <ul id="transactionsList" class="space-y-2">
+                    <li class="text-gray-500 text-center">No hay transacciones todavía.</li>
+                </ul>
             </div>
-        </section>
-
-        <section id="adminPanelSection" class="hidden">
-            <div class="bg-white p-6 rounded-lg shadow-md mb-4">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Panel de Administración</h2>
-                
-                <div class="flex justify-around mb-6 border-b">
-                    <button id="adminDashboardTab" class="py-3 px-4 font-semibold text-blue-600 border-b-2 border-blue-600 active">Dashboard Admin</button>
-                    <button id="adminPendingRequestsTab" class="py-3 px-4 font-semibold text-gray-500 hover:text-blue-600">Solicitudes Pendientes</button>
-                    </div>
-
-                <div id="adminDashboardView">
-                    <h3 class="text-lg font-semibold mb-4">Resumen General</h3>
-                    <p>Aquí iría un resumen de la actividad del banco.</p>
-                    </div>
-
-                <div id="adminPendingRequestsView" class="hidden">
-                    <h3 class="text-lg font-semibold mb-4">Solicitudes Pendientes</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full leading-normal">
-                            <thead>
-                                <tr>
-                                    <th class="py-2 px-4 border-b font-semibold text-left">Usuario</th>
-                                    <th class="py-2 px-4 border-b font-semibold text-left">Tipo</th>
-                                    <th class="py-2 px-4 border-b font-semibold text-right">Monto</th>
-                                    <th class="py-2 px-4 border-b font-semibold text-left">Detalle/Serie</th>
-                                    <th class="py-2 px-4 border-b font-semibold text-left">Fecha</th>
-                                    <th class="py-2 px-4 border-b font-semibold text-center">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pendingRequestsBody">
-                                <tr>
-                                    <td colspan="6" class="text-center py-4 text-gray-500">Cargando solicitudes...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                
-                </div>
         </section>
 
         <div id="depositModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
@@ -163,7 +110,7 @@
                         </select>
                     </div>
                     <div>
-                        <label for="depositSerialNumber" class="block text-gray-700">Número de Serie / Referencia</label>
+                        <label for="depositSerialNumber" class="block text-gray-700">Número de Serie del Depósito</label>
                         <input type="text" id="depositSerialNumber" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
                     </div>
                     <div class="flex justify-between">
@@ -200,11 +147,30 @@
                 </form>
             </div>
         </div>
+        
+        <div id="withdrawModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <h3 class="text-lg font-bold text-center mb-4">Retirar Dinero</h3>
+                <form id="withdrawalForm" class="space-y-4">
+                    <div>
+                        <label for="withdrawalAmount" class="block text-gray-700">Cantidad</label>
+                        <input type="number" id="withdrawalAmount" step="0.01" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                    </div>
+                    <div>
+                        <label for="withdrawalCurrency" class="block text-gray-700">Moneda</label>
+                        <select id="withdrawalCurrency" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                            <option value="USD">USD</option>
+                            <option value="DOP">DOP</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-between">
+                        <button type="button" id="cancelWithdrawalBtn" class="bg-gray-400 text-white py-2 px-4 rounded-md hover:bg-gray-500">Cancelar</button>
+                        <button type="submit" class="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600">Enviar Solicitud</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-    </div>
-
-    <div id="transactionStatusMsg" class="fixed bottom-4 right-4 w-72 bg-blue-100 text-blue-800 p-4 rounded-md shadow-lg hidden" role="status">
-        <p id="transactionStatusText" class="font-medium"></p>
     </div>
 
     <script type="module" src="firebase-config.js"></script>
