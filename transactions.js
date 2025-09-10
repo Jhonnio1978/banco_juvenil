@@ -7,7 +7,8 @@ import {
     addDoc,
     collection,
     serverTimestamp,
-    getDoc
+    getDoc,
+    runTransaction // ¡CORREGIDO!
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 import { db, appId } from './firebase-config.js';
 import { showMessage, getUserDisplayName, showReceipt } from './utils.js';
@@ -79,55 +80,64 @@ async function handleTransfer(senderId, recipientId, amount, currency) {
         return { success: false };
     }
 
-    // Lógica para procesar la transferencia
+    const USD_TO_DOP_RATE = 58.0; // Tasa de cambio de ejemplo
+    const amountUSD = (currency === 'DOP') ? amount / USD_TO_DOP_RATE : amount;
+    const amountDOP = (currency === 'USD') ? amount * USD_TO_DOP_RATE : amount;
+
     try {
-        const transactionRef = await addDoc(collection(db, 'artifacts', appId, 'transactions'), {
-            type: 'transfer',
-            senderId: senderId,
-            recipientId: recipientId,
-            amount: amount,
-            currency: currency,
-            timestamp: serverTimestamp()
-        });
+        await runTransaction(db, async (transaction) => {
+            const senderDocRef = doc(db, 'artifacts', appId, 'users', senderId);
+            const recipientDocRef = doc(db, 'artifacts', appId, 'users', recipientId);
 
-        // Actualizar saldos del remitente y el destinatario (esto es un ejemplo, se debe asegurar la atomacidad con transacciones de Firestore)
-        const senderDocRef = doc(db, 'artifacts', appId, 'users', senderId);
-        const recipientDocRef = doc(db, 'artifacts', appId, 'users', recipientId);
+            const senderDoc = await transaction.get(senderDocRef);
+            if (!senderDoc.exists()) {
+                throw new Error("El usuario remitente no existe.");
+            }
+            const senderData = senderDoc.data();
+            
+            if (senderData.balanceUSD < amountUSD) {
+                throw new Error("Saldo insuficiente para la transferencia.");
+            }
 
-        const senderSnapshot = await getDoc(senderDocRef);
-        const recipientSnapshot = await getDoc(recipientDocRef);
+            const recipientDoc = await transaction.get(recipientDocRef);
+            if (!recipientDoc.exists()) {
+                throw new Error("El usuario destinatario no existe.");
+            }
+            const recipientData = recipientDoc.data();
 
-        const senderData = senderSnapshot.data();
-        const recipientData = recipientSnapshot.data();
-
-        const amountUSD = (currency === 'DOP') ? amount / USD_TO_DOP_RATE : amount;
-        const amountDOP = (currency === 'USD') ? amount * USD_TO_DOP_RATE : amount;
-
-        await updateDoc(senderDocRef, {
-            balanceUSD: senderData.balanceUSD - amountUSD,
-            balanceDOP: senderData.balanceDOP - amountDOP
-        });
-
-        await updateDoc(recipientDocRef, {
-            balanceUSD: recipientData.balanceUSD + amountUSD,
-            balanceDOP: recipientData.balanceDOP + amountDOP
+            // Actualizar saldos dentro de la transacción
+            transaction.update(senderDocRef, {
+                balanceUSD: senderData.balanceUSD - amountUSD,
+                balanceDOP: senderData.balanceDOP - amountDOP
+            });
+            transaction.update(recipientDocRef, {
+                balanceUSD: recipientData.balanceUSD + amountUSD,
+                balanceDOP: recipientData.balanceDOP + amountDOP
+            });
+            
+            // Agregar el documento de la transacción
+            const transactionRef = collection(db, 'artifacts', appId, 'transactions');
+            transaction.set(doc(transactionRef), {
+                type: 'transfer',
+                senderId: senderId,
+                recipientId: recipientId,
+                amount: amount,
+                currency: currency,
+                timestamp: serverTimestamp()
+            });
         });
         
-        const receipt = {
-            id: transactionRef.id,
-            type: 'transfer',
-            timestamp: { seconds: new Date().getTime() / 1000 },
-            senderId,
-            recipientId,
-            amount,
-            currency
-        };
-        showReceipt(receipt);
-        
+        showMessage('Transferencia exitosa.', 'success');
         return { success: true };
     } catch (error) {
         console.error("Error al procesar la transferencia:", error);
-        showMessage('Error al procesar la transferencia. Por favor, inténtalo de nuevo.', 'error');
+        if (error.message.includes('Saldo insuficiente')) {
+            showMessage('Saldo insuficiente para la transferencia.', 'error');
+        } else if (error.message.includes('destinatario no existe')) {
+            showMessage('El usuario destinatario no existe.', 'error');
+        } else {
+            showMessage('Error al procesar la transferencia. Por favor, inténtalo de nuevo.', 'error');
+        }
         return { success: false, error };
     }
 }
