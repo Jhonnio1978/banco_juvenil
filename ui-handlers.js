@@ -2,7 +2,7 @@
 
 import { auth } from './firebase-config.js'; // ¡CORREGIDO!
 import { performRegistration, handleLogin, handleLogout } from './auth.js';
-import { handleDeposit, handleTransfer } from './transactions.js';
+import { handleDeposit, handleTransfer, handleWithdrawal } from './transactions.js'; // ¡handleWithdrawal añadido!
 import { showMessage, hideMessage, showSection, showTransactionStatus, hideTransactionStatus } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -39,6 +39,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const transferRecipientIdInput = document.getElementById('transferRecipientId');
     const transferAmount = document.getElementById('transferAmount');
     const transferCurrency = document.getElementById('transferCurrency');
+    
+    // Nuevos elementos para retiro
+    const withdrawMoneyBtn = document.getElementById('withdrawMoneyBtn');
+    const withdrawModal = document.getElementById('withdrawModal');
+    const cancelWithdrawalBtn = document.getElementById('cancelWithdrawalBtn');
+    const withdrawalForm = document.getElementById('withdrawalForm');
+    const withdrawalAmountInput = document.getElementById('withdrawalAmount');
+    const withdrawalCurrencyInput = document.getElementById('withdrawalCurrency');
 
     // Event Listeners
     if (loginTab) {
@@ -86,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.success) {
                 loginIdentifierInput.value = result.email;
                 loginPassword.value = password;
-                // Ahora puedes iniciar sesión automáticamente si lo deseas
             }
         });
     }
@@ -166,6 +173,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 transferModal.classList.add('hidden');
                 transferForm.reset();
+            }
+        });
+    }
+    
+    // Event listeners para el retiro
+    if (withdrawMoneyBtn) {
+        withdrawMoneyBtn.addEventListener('click', () => {
+            withdrawModal.classList.remove('hidden');
+        });
+    }
+
+    if (cancelWithdrawalBtn) {
+        cancelWithdrawalBtn.addEventListener('click', () => {
+            withdrawModal.classList.add('hidden');
+            withdrawalForm.reset();
+        });
+    }
+
+    if (withdrawalForm) {
+        withdrawalForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amount = parseFloat(withdrawalAmountInput.value);
+            const currency = withdrawalCurrencyInput.value;
+
+            if (isNaN(amount) || amount <= 0) {
+                showMessage('Por favor, ingresa una cantidad válida.', 'error');
+                return;
+            }
+
+            const user = auth.currentUser;
+            if (user) {
+                // Obtener el balance actual del usuario para la validación
+                const userDocRef = doc(db, 'artifacts', 'banco-juvenil-12903', 'users', user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+                const currentBalanceUSD = userDocSnap.data().balanceUSD;
+                
+                await handleWithdrawal(user.uid, currentBalanceUSD, amount, currency);
+                withdrawModal.classList.add('hidden');
+                withdrawalForm.reset();
             }
         });
     }
