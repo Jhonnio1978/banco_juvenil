@@ -1,358 +1,244 @@
 // script.js
 
+// Importaciones necesarias
 import { auth, db } from './firebase-config.js';
 import { handleLogout, onAuthStateChanged } from './auth.js';
-import { showSection } from './utils.js';
-import './ui-handlers.js';
-import { doc, onSnapshot, collection, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+import { showSection, showMessage, hideMessage, showTransactionStatus, hideTransactionStatus } from './utils.js';
+import './ui-handlers.js'; // Importa el manejador de la UI
+import { doc, onSnapshot, collection, query, where, getDocs, deleteDoc, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Variables de estado
     let currentBalanceUSD = 0;
     let currentBalanceDOP = 0;
     let showCurrencyUSD = true;
-    let currentUserData = null; // Guardaremos los datos del usuario actual
-    let adminUnsubscribe = null; // Para desuscribir el listener de admin si existe
+    let currentUser = null; // Guardaremos el usuario actual aquí
 
-    const loginTab = document.getElementById('loginTab');
-    const registerTab = document.getElementById('registerTab');
-    const loginSection = document.getElementById('loginSection');
-    const registerSection = document.getElementById('registerSection');
-    const dashboardSection = document.getElementById('dashboardSection');
-    const adminPanelSection = document.getElementById('adminPanelSection'); // Nuevo elemento HTML para el panel de admin
-
+    // Elementos del DOM para el Dashboard
     const dashboardUserName = document.getElementById('dashboardUserName');
     const dashboardDisplayId = document.getElementById('dashboardDisplayId');
     const accountBalance = document.getElementById('accountBalance');
     const toggleCurrencyBtn = document.getElementById('toggleCurrency');
 
-    // Elementos del historial
+    // Elementos para el historial de transacciones
     const transactionHistoryBody = document.getElementById('transactionHistoryBody');
+    const transactionHistorySection = document.getElementById('transactionHistorySection'); // Necesitarás añadir esta sección en tu HTML
+    const backToDashboardBtn = document.getElementById('backToDashboardBtn'); // Botón para volver al dashboard
 
-    // Funciones para actualizar la UI
+    // --- Estructura para Retiro (se completará en detalle si lo necesitas) ---
+    const withdrawalMoneyBtn = document.getElementById('withdrawalMoneyBtn'); // Botón para abrir modal de retiro
+    const withdrawalModal = document.getElementById('withdrawalModal');
+    const cancelWithdrawalBtn = document.getElementById('cancelWithdrawalBtn');
+    const withdrawalForm = document.getElementById('withdrawalForm');
+    const withdrawalAmountInput = document.getElementById('withdrawalAmount');
+    const withdrawalCurrencyInput = document.getElementById('withdrawalCurrency');
+
+    // --- Estructura para Panel de Administración (se completará si lo necesitas) ---
+    const adminPanelSection = document.getElementById('adminPanelSection'); // Necesitarás añadir esta sección en tu HTML
+    const pendingDepositsList = document.getElementById('pendingDepositsList'); // Necesitarás un elemento para listar depósitos
+    const pendingWithdrawalsList = document.getElementById('pendingWithdrawalsList'); // Necesitarás un elemento para listar retiros
+
+    // --- Funciones de Ayuda UI ---
     function updateBalanceDisplay() {
         if (!accountBalance || !toggleCurrencyBtn) return;
         if (showCurrencyUSD) {
             accountBalance.textContent = `$${currentBalanceUSD.toFixed(2)} USD`;
             toggleCurrencyBtn.textContent = 'Cambiar a DOP';
         } else {
-            currentBalanceDOP = currentBalanceUSD * 58.0; // Tasa de ejemplo
+            currentBalanceDOP = currentBalanceUSD * 58.0; // Tasa de ejemplo, ajústala si es necesario
             accountBalance.textContent = `RD$${currentBalanceDOP.toFixed(2)} DOP`;
             toggleCurrencyBtn.textContent = 'Cambiar a USD';
         }
     }
 
-    async function loadTransactionHistory(userId) {
-        if (!transactionHistoryBody) return;
-        transactionHistoryBody.innerHTML = ''; // Limpiar historial previo
+    // --- Lógica de Carga del Historial de Transacciones ---
+    async function loadTransactionHistory() {
+        if (!transactionHistoryBody || !currentUser) return;
+
+        transactionHistoryBody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Cargando historial...</td></tr>';
 
         try {
-            // Construir la consulta para obtener transacciones donde el usuario sea remitente o destinatario
-            const transactionsRef = collection(db, 'artifacts', 'banco-juvenil-12903', 'transactions');
-            const q = query(transactionsRef, 
-                where('senderId', '==', userId),
-                or(where('recipientId', '==', userId)), // Usar 'or' para buscar en ambas condiciones
-                orderBy('timestamp', 'desc')
+            const userId = currentUser.uid;
+            // Consulta para obtener transacciones donde el usuario es remitente O destinatario
+            // Usamos OR lógico || dentro de la consulta.
+            // NOTA: Firestore no soporta directamente un operador OR entre múltiples `where` en una sola consulta.
+            // La forma correcta es hacer dos consultas separadas y combinar los resultados.
+            
+            // Consulta para transacciones donde el usuario es remitente
+            const sentQuery = query(
+                collection(db, 'artifacts', appId, 'transactions'),
+                where('senderId', '==', userId)
             );
-            const querySnapshot = await getDocs(q);
+            // Consulta para transacciones donde el usuario es destinatario
+            const receivedQuery = query(
+                collection(db, 'artifacts', appId, 'transactions'),
+                where('recipientId', '==', userId)
+            );
 
-            if (querySnapshot.empty) {
-                transactionHistoryBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">No hay transacciones aún.</td></tr>';
+            const [sentSnapshot, receivedSnapshot] = await Promise.all([
+                getDocs(sentQuery),
+                getDocs(receivedQuery)
+            ]);
+
+            const transactions = [];
+            sentSnapshot.forEach(doc => transactions.push({ id: doc.id, ...doc.data(), type: 'sent' }));
+            receivedSnapshot.forEach(doc => transactions.push({ id: doc.id, ...doc.data(), type: 'received' }));
+
+            // Ordenar por fecha (más reciente primero)
+            transactions.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
+
+            transactionHistoryBody.innerHTML = ''; // Limpiar el mensaje de carga
+
+            if (transactions.length === 0) {
+                transactionHistoryBody.innerHTML = '<tr><td colspan="5" class="text-center py-4">No hay transacciones aún.</td></tr>';
                 return;
             }
 
-            querySnapshot.forEach(doc => {
-                const transaction = doc.data();
+            transactions.forEach(async (tx) => {
                 const row = document.createElement('tr');
-                const date = transaction.timestamp ? new Date(transaction.timestamp.seconds * 1000).toLocaleDateString() : 'N/A';
-                const time = transaction.timestamp ? new Date(transaction.timestamp.seconds * 1000).toLocaleTimeString() : 'N/A';
-                let description = '';
-                let amountDisplay = '';
+                row.classList.add('border-b', 'hover:bg-gray-50');
 
-                if (transaction.type === 'transfer') {
-                    description = transaction.senderId === userId ? `Transferencia a ${transaction.recipientId}` : `Transferencia de ${transaction.senderId}`;
-                    amountDisplay = `${transaction.amount.toFixed(2)} ${transaction.currency}`;
-                } else {
-                    // Manejar otros tipos de transacciones si existen
-                    description = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
-                    amountDisplay = `${transaction.amount.toFixed(2)} ${transaction.currency}`;
+                const typeCell = document.createElement('td');
+                typeCell.classList.add('px-4', 'py-2', 'text-left');
+                typeCell.textContent = tx.type === 'transfer' ? (tx.type === 'sent' ? 'Envío' : 'Recepción') : tx.type;
+                row.appendChild(typeCell);
+
+                const recipientCell = document.createElement('td');
+                recipientCell.classList.add('px-4', 'py-2', 'text-left');
+                if (tx.type === 'sent') {
+                    const recipientName = await getUserDisplayName(tx.recipientId);
+                    recipientCell.textContent = recipientName;
+                } else { // received
+                    const senderName = await getUserDisplayName(tx.senderId);
+                    recipientCell.textContent = senderName;
                 }
+                row.appendChild(recipientCell);
 
-                row.innerHTML = `
-                    <td class="py-2 px-4 border-b">${date} ${time}</td>
-                    <td class="py-2 px-4 border-b">${description}</td>
-                    <td class="py-2 px-4 border-b text-right">${amountDisplay}</td>
-                    <td class="py-2 px-4 border-b text-center">${transaction.status || 'Completada'}</td> 
-                `;
+                const amountCell = document.createElement('td');
+                amountCell.classList.add('px-4', 'py-2', 'text-right');
+                amountCell.textContent = `${tx.amount.toFixed(2)} ${tx.currency}`;
+                row.appendChild(amountCell);
+                
+                const dateCell = document.createElement('td');
+                dateCell.classList.add('px-4', 'py-2', 'text-center');
+                dateCell.textContent = tx.timestamp.toDate().toLocaleDateString(); // Formato de fecha local
+                row.appendChild(dateCell);
+
+                const actionCell = document.createElement('td');
+                actionCell.classList.add('px-4', 'py-2', 'text-center');
+                // Aquí podrías añadir un botón para ver detalles o algo más
+                actionCell.innerHTML = `<button class="text-blue-600 hover:underline">Ver</button>`;
+                row.appendChild(actionCell);
+
                 transactionHistoryBody.appendChild(row);
             });
+
         } catch (error) {
             console.error("Error al cargar el historial de transacciones:", error);
-            transactionHistoryBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-red-500">Error al cargar historial.</td></tr>';
-        }
-    }
-
-    async function checkAdminStatus(userId) {
-        if (!userId) return false;
-        try {
-            const userDocRef = doc(db, 'artifacts', 'banco-juvenil-12903', 'users', userId);
-            const userDocSnap = await getDoc(userDocRef);
-            if (userDocSnap.exists()) {
-                currentUserData = userDocSnap.data(); // Guardar datos del usuario
-                return currentUserData.role === 'admin';
+            if (transactionHistoryBody) {
+                transactionHistoryBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-red-600">Error al cargar el historial.</td></tr>';
             }
-            return false;
-        } catch (error) {
-            console.error("Error al verificar rol de admin:", error);
-            return false;
+            showMessage('Error al cargar tu historial de transacciones.', 'error');
         }
     }
 
-    // Manejar la navegación entre secciones (incluyendo admin)
-    function updateUIForUser(user, userData) {
+    // --- Lógica para el Botón de Retiro ---
+    if (withdrawalMoneyBtn) {
+        withdrawalMoneyBtn.addEventListener('click', () => {
+            if (withdrawalModal) withdrawalModal.classList.remove('hidden');
+        });
+    }
+    if (cancelWithdrawalBtn) {
+        cancelWithdrawalBtn.addEventListener('click', () => {
+            if (withdrawalModal) withdrawalModal.classList.add('hidden');
+            if (withdrawalForm) withdrawalForm.reset();
+        });
+    }
+    if (withdrawalForm) {
+        withdrawalForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideMessage();
+            // Aquí irá la lógica de handleWithdrawal que se implementará pronto
+            // Por ahora, mostramos un mensaje de que está en desarrollo
+            showMessage("La funcionalidad de retiro está en desarrollo.", "info");
+            if (withdrawalModal) withdrawalModal.classList.add('hidden');
+            if (withdrawalForm) withdrawalForm.reset();
+        });
+    }
+
+    // --- Lógica para el Panel de Administración ---
+    // Esta parte es básica y se expandirá para mostrar aprobaciones, etc.
+    function loadAdminPanel() {
+        if (!adminPanelSection) return;
+        // Aquí se cargarían las listas de depósitos y retiros pendientes
+        // Por ahora, solo mostramos un mensaje
+        if (pendingDepositsList) pendingDepositsList.innerHTML = '<li>Cargando depósitos pendientes...</li>';
+        if (pendingWithdrawalsList) pendingWithdrawalsList.innerHTML = '<li>Cargando retiros pendientes...</li>';
+        
+        // TODO: Implementar la carga real de pending_requests, pending_deposits, pending_withdrawals
+        // y la lógica para que el admin pueda aprobar/rechazar.
+    }
+
+    // --- Event Listeners del Dashboard ---
+    if (toggleCurrencyBtn) {
+        toggleCurrencyBtn.addEventListener('click', () => {
+            showCurrencyUSD = !showCurrencyUSD;
+            updateBalanceDisplay();
+        });
+    }
+
+    if (backToDashboardBtn) {
+        backToDashboardBtn.addEventListener('click', () => {
+            showSection(dashboardSection, transactionHistorySection, adminPanelSection);
+        });
+    }
+    
+    // --- Observador de Estado de Autenticación ---
+    onAuthStateChanged(auth, async (user) => {
+        currentUser = user; // Guarda el usuario actual
         if (user) {
             const userId = user.uid;
-            const userDocRef = doc(db, 'artifacts', 'banco-juvenil-12903', 'users', userId);
+            const userDocRef = doc(db, 'artifacts', appId, 'users', userId);
 
-            // Limpiar listener anterior si existe
-            if (adminUnsubscribe) {
-                adminUnsubscribe();
-                adminUnsubscribe = null;
-            }
-
-            // Listener para datos del usuario (incluye rol de admin)
-            const unsubscribeUser = onSnapshot(userDocRef, async (docSnap) => {
+            const unsubscribeUser = onSnapshot(userDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const userData = docSnap.data();
-                    currentUserData = userData; // Actualizar datos del usuario
-
                     if (dashboardUserName) dashboardUserName.textContent = `${userData.name} ${userData.surname}`;
                     if (dashboardDisplayId) dashboardDisplayId.textContent = userData.userDisplayId;
                     currentBalanceUSD = userData.balanceUSD;
                     currentBalanceDOP = userData.balanceDOP;
                     updateBalanceDisplay();
 
-                    const isAdmin = userData.role === 'admin';
-
-                    // Mostrar u ocultar el panel de admin
-                    if (isAdmin && adminPanelSection) {
-                        adminPanelSection.classList.remove('hidden');
-                        // Si el admin está visible, y el dashboard no, mostrar admin
-                        if (!dashboardSection.classList.contains('hidden') && adminPanelSection.classList.contains('hidden')) {
-                             showSection(adminPanelSection, loginSection, registerSection); // O puedes querer mostrar dashboard primero
-                        } else if (dashboardSection.classList.contains('hidden')) {
-                             showSection(adminPanelSection, loginSection, registerSection);
-                        }
-                        // También podrías querer cargar datos iniciales del admin aquí
-                        await loadPendingRequests(); // Cargar solicitudes pendientes para el admin
-                    } else if (adminPanelSection) {
-                        adminPanelSection.classList.add('hidden');
-                    }
+                    // Ocultar todas las secciones principales
+                    showSection(dashboardSection); 
                     
-                    // Cargar historial para cualquier usuario
-                    await loadTransactionHistory(userId);
+                    // Aquí puedes determinar si es admin para mostrar el panel
+                    // Por ahora, todos ven el dashboard y el historial.
+                    
+                    // Cargar historial de transacciones del usuario
+                    loadTransactionHistory();
 
-                    showSection(dashboardSection, loginSection, registerSection); // Asegurarse de mostrar el dashboard
+                    // Si el usuario es un admin (necesitarías un campo 'role' en user data)
+                    // if (userData.role === 'admin') {
+                    //     loadAdminPanel();
+                    // }
 
                 } else {
-                    console.log("No such user document!");
-                    handleLogout();
+                    console.log("No existe el documento del usuario!");
+                    handleLogout(); // Si el documento no existe, cerrar sesión
                 }
+            }, (error) => {
+                console.error("Error al escuchar cambios en el documento de usuario:", error);
+                showMessage("Hubo un error al cargar tus datos.", "error");
             });
+            // Guardar la función de unsubscribe si es necesario
+            // return () => unsubscribeUser(); 
         } else {
-            // Usuario ha cerrado sesión
-            if (dashboardUserName) dashboardUserName.textContent = '';
-            if (dashboardDisplayId) dashboardDisplayId.textContent = '';
-            currentBalanceUSD = 0;
-            currentBalanceDOP = 0;
-            updateBalanceDisplay();
-            if (adminPanelSection) adminPanelSection.classList.add('hidden');
-            
-            showSection(loginSection, registerSection, dashboardSection); // Mostrar secciones de login/registro
+            console.log("Usuario ha cerrado sesión.");
+            // Asegúrate de que todas las suscripciones se limpien al cerrar sesión
+            // if (unsubscribeUser) unsubscribeUser();
+            showSection(loginSection, registerSection); // Mostrar secciones de login/registro
         }
-    }
-
-    // --- Event Listeners para el Panel de Admin ---
-    const adminDashboardTab = document.getElementById('adminDashboardTab');
-    const adminPendingRequestsTab = document.getElementById('adminPendingRequestsTab');
-    const adminApprovedHistoryTab = document.getElementById('adminApprovedHistoryTab'); // Asumiendo que esto existirá
-
-    const adminDashboardView = document.getElementById('adminDashboardView');
-    const adminPendingRequestsView = document.getElementById('adminPendingRequestsView');
-    const adminApprovedHistoryView = document.getElementById('adminApprovedHistoryView'); // Vista para historial de admin
-
-    // Función para mostrar vistas dentro del panel de admin
-    function showAdminView(viewToShow) {
-        const allAdminViews = [adminDashboardView, adminPendingRequestsView, adminApprovedHistoryView];
-        allAdminViews.forEach(view => {
-            if (view) view.classList.add('hidden');
-        });
-        if (viewToShow) {
-            viewToShow.classList.remove('hidden');
-        }
-    }
-
-    if (adminDashboardTab) {
-        adminDashboardTab.addEventListener('click', () => {
-            adminDashboardTab.classList.add('active');
-            adminPendingRequestsTab.classList.remove('active');
-            adminApprovedHistoryTab.classList.remove('active');
-            showAdminView(adminDashboardView);
-        });
-    }
-
-    if (adminPendingRequestsTab) {
-        adminPendingRequestsTab.addEventListener('click', () => {
-            adminPendingRequestsTab.classList.add('active');
-            adminDashboardTab.classList.remove('active');
-            adminApprovedHistoryTab.classList.remove('active');
-            showAdminView(adminPendingRequestsView);
-            loadPendingRequests(); // Cargar solicitudes cuando se muestra esta vista
-        });
-    }
-    
-    // --- Funciones para el Panel de Administración ---
-    async function loadPendingRequests() {
-        const pendingRequestsBody = document.getElementById('pendingRequestsBody');
-        if (!pendingRequestsBody) return;
-        pendingRequestsBody.innerHTML = ''; // Limpiar
-
-        const adminUserId = auth.currentUser ? auth.currentUser.uid : null;
-        if (!isAdmin(adminUserId)) { // Asegurarse de que el usuario es admin para ver esto
-             // Ocultar el panel de admin o redirigir
-            if (adminPanelSection) adminPanelSection.classList.add('hidden');
-            return;
-        }
-
-        const pendingRequestsRef = collection(db, 'artifacts', 'banco-juvenil-12903', 'public', 'data', 'pending_requests');
-        const q = query(pendingRequestsRef, where('status', '==', 'pending'), orderBy('timestamp', 'asc'));
-
-        // Usamos onSnapshot para tener actualizaciones en tiempo real
-        adminUnsubscribe = onSnapshot(q, (querySnapshot) => {
-            pendingRequestsBody.innerHTML = ''; // Limpiar antes de actualizar
-            if (querySnapshot.empty) {
-                pendingRequestsBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-gray-500">No hay solicitudes pendientes.</td></tr>';
-                return;
-            }
-
-            querySnapshot.forEach(async (docSnap) => {
-                const request = docSnap.data();
-                const requestDocId = docSnap.id;
-                const userName = await getUserDisplayName(request.userId);
-                const date = request.timestamp ? new Date(request.timestamp.seconds * 1000).toLocaleDateString() : 'N/A';
-                const time = request.timestamp ? new Date(request.timestamp.seconds * 1000).toLocaleTimeString() : 'N/A';
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="py-2 px-4 border-b">${userName}</td>
-                    <td class="py-2 px-4 border-b">${request.type === 'deposit' ? 'Depósito' : 'Retiro'}</td>
-                    <td class="py-2 px-4 border-b">${request.amount ? `${request.amount.toFixed(2)} ${request.currency}` : 'N/A'}</td>
-                    <td class="py-2 px-4 border-b">${request.serialNumber || request.withdrawalId || 'N/A'}</td>
-                    <td class="py-2 px-4 border-b">${date} ${time}</td>
-                    <td class="py-2 px-4 border-b text-center">
-                        <button class="approve-request-btn bg-green-500 text-white py-1 px-3 rounded mr-2" data-id="${requestDocId}" data-type="${request.type}" data-userid="${request.userId}" data-amount="${request.amount}" data-currency="${request.currency}">Aprobar</button>
-                        <button class="reject-request-btn bg-red-500 text-white py-1 px-3 rounded" data-id="${requestDocId}" data-userid="${request.userId}">Rechazar</button>
-                    </td>
-                `;
-                pendingRequestsBody.appendChild(row);
-            });
-        }, (error) => {
-            console.error("Error en onSnapshot para solicitudes pendientes:", error);
-            pendingRequestsBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-red-500">Error al cargar solicitudes.</td></tr>';
-        });
-    }
-
-    // --- Manejo de eventos para botones de Aprobar/Rechazar ---
-    document.body.addEventListener('click', async (e) => {
-        const target = e.target;
-
-        // Aprobación de Solicitud
-        if (target.classList.contains('approve-request-btn')) {
-            const requestId = target.dataset.id;
-            const requestType = target.dataset.type;
-            const userId = target.dataset.userid;
-            const amount = parseFloat(target.dataset.amount);
-            const currency = target.dataset.currency;
-
-            try {
-                // 1. Eliminar la solicitud pendiente
-                await deleteDoc(doc(db, 'artifacts', 'banco-juvenil-12903', 'public', 'data', 'pending_requests', requestId));
-
-                // 2. Actualizar saldos o registrar transacción según el tipo
-                if (requestType === 'deposit') {
-                    // Actualizar saldo del usuario y marcar que ya no tiene depósito pendiente
-                    await updateDoc(doc(db, 'artifacts', 'banco-juvenil-12903', 'users', userId), {
-                        balanceUSD: increment(requestType === 'DOP' ? (amount / 58.0) : amount), // Asumiendo tasa de cambio
-                        balanceDOP: increment(requestType === 'USD' ? (amount * 58.0) : amount),
-                        hasPendingDeposit: false // Liberar para nuevos depósitos
-                    });
-                    
-                    // Registrar en historial de transacciones
-                    await addDoc(collection(db, 'artifacts', 'banco-juvenil-12903', 'transactions'), {
-                        type: 'deposit_approved',
-                        userId: userId, // O senderId si se registra desde el admin
-                        amount: amount,
-                        currency: currency,
-                        timestamp: serverTimestamp(),
-                        status: 'completed'
-                    });
-                    showMessage('Depósito aprobado y saldo actualizado.', 'success');
-
-                } else if (requestType === 'withdrawal') {
-                    // Aquí deberías tener lógica para verificar si la cuenta del admin tiene fondos
-                    // o si el retiro se hace desde una cuenta de reserva.
-                    // Por ahora, asumimos que el admin tiene fondos y se descuenta del usuario.
-                    await updateDoc(doc(db, 'artifacts', 'banco-juvenil-12903', 'users', userId), {
-                        balanceUSD: increment(-(requestType === 'DOP' ? (amount / 58.0) : amount)), // Asumiendo tasa de cambio
-                        balanceDOP: increment(-(requestType === 'USD' ? (amount * 58.0) : amount))
-                    });
-                    
-                    // Registrar en historial de transacciones
-                    await addDoc(collection(db, 'artifacts', 'banco-juvenil-12903', 'transactions'), {
-                        type: 'withdrawal_approved',
-                        userId: userId, // O recipientId si se registra desde el admin
-                        amount: amount,
-                        currency: currency,
-                        timestamp: serverTimestamp(),
-                        status: 'completed'
-                    });
-                    showMessage('Retiro aprobado y saldo actualizado.', 'success');
-                }
-                // Recargar la lista de solicitudes pendientes
-                loadPendingRequests(); 
-            } catch (error) {
-                console.error("Error al aprobar solicitud:", error);
-                showMessage('Error al aprobar la solicitud. Revisa la consola.', 'error');
-            }
-        }
-
-        // Rechazo de Solicitud
-        if (target.classList.contains('reject-request-btn')) {
-            const requestId = target.dataset.id;
-            const userId = target.dataset.userid;
-
-            try {
-                await deleteDoc(doc(db, 'artifacts', 'banco-juvenil-12903', 'public', 'data', 'pending_requests', requestId));
-                
-                // Si era un depósito, liberar la bandera hasPendingDeposit
-                const requestDoc = await getDoc(doc(db, 'artifacts', 'banco-juvenil-12903', 'public', 'data', 'pending_requests', requestId)); // Re-obtener para saber el tipo
-                if (requestDoc.data().type === 'deposit') {
-                    await updateDoc(doc(db, 'artifacts', 'banco-juvenil-12903', 'users', userId), {
-                        hasPendingDeposit: false
-                    });
-                }
-                // Aquí podrías añadir un email o notificación al usuario informando del rechazo
-                showMessage('Solicitud rechazada.', 'info');
-                loadPendingRequests();
-            } catch (error) {
-                console.error("Error al rechazar solicitud:", error);
-                showMessage('Error al rechazar la solicitud. Revisa la consola.', 'error');
-            }
-        }
-    });
-
-    // Inicializar la UI
-    onAuthStateChanged(auth, (user) => {
-        updateUIForUser(user, currentUserData); // Pasar userData si ya la tenemos
     });
 });
