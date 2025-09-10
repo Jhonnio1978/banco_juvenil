@@ -1,6 +1,6 @@
 // ui-handlers.js
 
-// ¡Importamos 'auth' aquí para que esté disponible!
+// ¡IMPORTACIÓN AÑADIDA!
 import { auth } from './firebase-config.js'; 
 import { performRegistration, handleLogin, handleLogout } from './auth.js';
 import { handleDeposit, handleTransfer } from './transactions.js';
@@ -121,12 +121,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Ahora 'auth' está definido aquí gracias a la importación
+            // Ahora 'auth' está disponible aquí
             const user = auth.currentUser; 
             if (user) {
                 await handleDeposit(user.uid, amount, currency, serialNumber, false);
                 depositModal.classList.add('hidden');
                 depositForm.reset();
+            } else {
+                // Si no hay usuario autenticado, redirigir a login o mostrar mensaje
+                showMessage('Debes iniciar sesión para realizar esta acción.', 'error');
+                window.location.reload(); // O redirigir a la página de login
             }
         });
     }
@@ -156,8 +160,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Ahora 'auth' está definido aquí gracias a la importación
-            const user = auth.currentUser; 
+            // Ahora 'auth' está disponible aquí
+            const user = auth.currentUser;
             if (user) {
                 showTransactionStatus('Transferencia en curso...');
                 const result = await handleTransfer(user.uid, recipientId, amount, currency);
@@ -169,6 +173,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 transferModal.classList.add('hidden');
                 transferForm.reset();
+            } else {
+                // Si no hay usuario autenticado, redirigir a login o mostrar mensaje
+                showMessage('Debes iniciar sesión para realizar esta acción.', 'error');
+                window.location.reload(); // O redirigir a la página de login
             }
         });
     }
