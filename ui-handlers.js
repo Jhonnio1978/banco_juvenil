@@ -1,7 +1,6 @@
 // ui-handlers.js
 
-// ¡IMPORTACIÓN AÑADIDA!
-import { auth } from './firebase-config.js'; 
+import { auth } from './firebase-config.js'; // ¡CORREGIDO!
 import { performRegistration, handleLogin, handleLogout } from './auth.js';
 import { handleDeposit, handleTransfer } from './transactions.js';
 import { showMessage, hideMessage, showSection, showTransactionStatus, hideTransactionStatus } from './utils.js';
@@ -121,16 +120,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Ahora 'auth' está disponible aquí
-            const user = auth.currentUser; 
+            const user = auth.currentUser;
             if (user) {
                 await handleDeposit(user.uid, amount, currency, serialNumber, false);
                 depositModal.classList.add('hidden');
                 depositForm.reset();
-            } else {
-                // Si no hay usuario autenticado, redirigir a login o mostrar mensaje
-                showMessage('Debes iniciar sesión para realizar esta acción.', 'error');
-                window.location.reload(); // O redirigir a la página de login
             }
         });
     }
@@ -160,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Ahora 'auth' está disponible aquí
             const user = auth.currentUser;
             if (user) {
                 showTransactionStatus('Transferencia en curso...');
@@ -173,10 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 transferModal.classList.add('hidden');
                 transferForm.reset();
-            } else {
-                // Si no hay usuario autenticado, redirigir a login o mostrar mensaje
-                showMessage('Debes iniciar sesión para realizar esta acción.', 'error');
-                window.location.reload(); // O redirigir a la página de login
             }
         });
     }
